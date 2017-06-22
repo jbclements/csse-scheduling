@@ -10,8 +10,17 @@
   (cast (file->value (build-path here "credentials-prvt.rktd"))
         (Listof (Pairof Symbol String))))
 
-(define db-username (cdr (cast (assoc 'username credentials-sexp)
-                               (Pairof Symbol String))))
-(define db-password (cdr (cast (assoc 'password credentials-sexp)
-                               (Pairof Symbol String))))
+
+(define db-username : String
+  (match (assoc 'username credentials-sexp)
+    [(cons _ (? string? username))
+     username]
+    [#f (error 'db-username
+               "credentials file missing binding for 'username")]))
+(define db-password : String
+  (match (assoc 'password credentials-sexp)
+    [(cons _ (? string? password))
+     password]
+    [#f (error 'db-username
+               "credentials file missing binding for 'password")]))
 
