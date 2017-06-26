@@ -1,4 +1,4 @@
-#lang typed/racket
+#lang typed/racket/base
 
 ;; this file maps subject/number pairs to canonical ids.
 ;; at this point, it's sort of turning into a thin wrapper
@@ -14,11 +14,16 @@
          CatalogCycle
          CourseID
          catalog-cycle?
-         subject?)
+         subject?
+         mappings
+         MappingRow)
 
 (require/typed "fetch-mapping.rkt"
                [course-mappings Any])
 
+(require racket/match
+         racket/set
+         (only-in racket/list remove-duplicates))
 
 (define-type Subject (U "CPE" "CSC" "HNRS" "ART" "EE" "IME" "MATE"
                         "DATA"))

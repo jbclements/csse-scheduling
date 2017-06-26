@@ -12,7 +12,6 @@
 (provide
  courses-we-schedule
  supervisory-courses
- csc-technical-electives
  course-key
  csc-or-cpe
  2017-course-configuration)
@@ -22,16 +21,11 @@
 (require "canonicalize.rkt"
          "credentials.rkt")
 
-(require/typed
- db
- [#:opaque Connection connection?]
- [postgresql-connect
-  (#:port Number #:user String #:database String #:password String
-   -> Connection)]
- [query-rows
-  (Connection String Any * -> (Listof (Vectorof Any)))]
- [query-list
-  (Connection String Any * -> (Listof Any))])
+(require/typed "fetch-mapping.rkt"
+               [courses-we-schedule/db
+                (Setof CourseID)]
+               [2017-course-configurations
+                (Listof (Pair CourseID Configuration))])
 
 
 (define current-catalog : CatalogCycle "2017-2019")
@@ -161,25 +155,14 @@
        ("csc103"))))))
 
 ;; the list of courses in the 
-(define courses-we-schedule/db : (Setof CourseID)
-  (let ()
-    (define conn
-      (postgresql-connect #:port 13432
-                          #:user db-username
-                          #:database "scheduling"
-                          #:password db-password))
-    (define ids
-      (query-list
-       conn
-       (~a "SELECT id FROM our_courses")))
-    (list->set (cast ids (Listof CourseID)))))
 
 
 (unless (equal? courses-we-schedule
                 courses-we-schedule/db)
   (error 'courses-we-schedule
          "database doesn't match local list: missing ~e, extra ~e"
-         (set-subtract courses-we-schedule courses-we-schedule/db)
+         (set-subtract courses-we-schedule
+                       courses-we-schedule/db)
          (set-subtract courses-we-schedule/db courses-we-schedule)))
 
 
@@ -211,78 +194,7 @@
       "csc597"
       "csc599"))))
 
-(define csc-technical-electives
-  (list->set
-   (map ensure-canonical
-        '("csc301"
-          "csc305"
-          "csc309"
-          "csc321"
-          "csc323"
-          "csc325"
-          "csc344"
-          "csc365"
-          "csc366"
-          "csc369"
-          "csc371"
-          "csc378"
-          "csc400"
-          "csc402"
-          "csc405"
-          "csc406"
-          "csc409"
-          "csc410"
-          "csc422"
-          "csc424"
-          "csc429"
-          "csc435"
-          "csc436"
-          "csc437"
-          "csc448"
-          "csc454"
-          "csc458"
-          "csc466"
-          "csc468"
-          "csc471"
-          "csc473"
-          "csc474"
-          "csc476"
-          "csc477"
-          "csc478"
-          "csc480"
-          "csc481"
-          "csc483"
-          "csc484"
-          "csc486"
-          "csc489"
-          "csc490"
-          "csc496"
-          "csc508"
-          "csc509"
-          "csc515"
-          "csc521"
-          "csc530"
-          "csc540"
-          "csc550"
-          "csc560"
-          "csc564"
-          "csc566"
-          "csc569"
-          "csc570"
-          "csc572"
-          "csc580"
-          "csc581"
-          "csc582"
-          "cpe400"
-          "cpe416"
-          "cpe419"
-          "cpe428"
-          "cpe464"
-          "cpe465"
-          "cpe482"
-          "cpe485"
-          "cpe488"
-          "data301"))))
+
 
 
 
@@ -322,25 +234,7 @@
                         "more than one hit (~e) for course number: ~e"
                         hits coursenum)])]))
 
-(define 2017-course-configurations
-  : (Listof (Pair CourseID Configuration))
-  (let ()
-    (define conn
-      (postgresql-connect #:port 13432
-                          #:user "scheduler"
-                          #:database "scheduling"
-                          #:password "aoeuidht"))
-    (map
-     (λ (v)
-       (define v1 (cast v (Vector String Configuration)))
-       (cons (vector-ref v1 0) (vector-ref v1 1)))
-     (query-rows
-      conn
-      "SELECT ci.id, ci.configuration
- FROM (our_courses oc INNER JOIN course_info ci
-       ON oc.id = ci.id)
- WHERE ci.cycle = $1"
-      "2017-2019"))))
+
 
 ;; given a course, return its 2017 configuration string, or
 ;; #f it doesn't appear in the current catalog
