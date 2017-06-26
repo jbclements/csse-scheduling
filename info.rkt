@@ -3,17 +3,11 @@
 (define collection 'multi)
 
 (define deps
-  '()
-  #;(list "base"
-        "rackunit-lib"
-        "scribble-lib"
-        "typed-racket-lib"
-        "typed-racket-more"
-        "web-server-lib"
-        "pfds"))
+  '("base"
+    "db-lib"
+    "typed-racket-lib"
+    "with-cache"))
 
 (define build-deps
-  '()
-  #;(list "rackunit-lib"
-        "racket-doc"))
+  '("typed-racket-more"))
 
