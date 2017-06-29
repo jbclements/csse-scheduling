@@ -16,6 +16,7 @@
 (define-type Configuration String)
 
 (require "canonicalize.rkt"
+         "qtr-math.rkt"
          "credentials.rkt")
 
 (require/typed "fetch-mapping.rkt"

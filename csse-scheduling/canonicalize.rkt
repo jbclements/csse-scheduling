@@ -5,6 +5,7 @@
 ;; for the scheduling database.
 
 (provide canonicalize
+         canonicalize/qtr
          canonical-id?
          ensure-canonical
          courses-in-subject
@@ -12,9 +13,7 @@
          id-mappings
          Subject
          CourseNum
-         CatalogCycle
          CourseID
-         catalog-cycle?
          subject?
          mappings
          MappingRow)
@@ -24,19 +23,18 @@
 
 (require racket/match
          racket/set
+         "qtr-math.rkt"
          (only-in racket/list remove-duplicates))
 
 (define-type Subject (U "CPE" "CSC" "HNRS" "ART" "EE" "IME" "MATE"
                         "DATA"))
 (define-type CourseNum String) ;; such as "123" or "0123"
-(define-type CatalogCycle (U "2007-2009" "2009-2011" "2011-2013" "2013-2015" "2015-2017"
-                             "2017-2019"))
+
 
 (define-type CourseID String) ;; such as "csc123"
 
 (define-type MappingRow (Vector CatalogCycle Subject CourseNum CourseID))
 
-(define-predicate catalog-cycle? CatalogCycle)
 (define-predicate subject? Subject)
 
 (: mapping-row-id (MappingRow -> CourseID))
@@ -86,6 +84,11 @@
               (error 'canonicalize
                      "no mapping found for offering: ~e"
                      (list cycle subject number)))))
+
+;; like canonicalize, but accepts qtr rather than catalog cycle
+(: canonicalize/qtr (Natural Subject CourseNum -> CourseID))
+(define (canonicalize/qtr qtr subject number)
+  (canonicalize (qtr->cycle qtr) subject number))
 
 
 ;; is this string the canonical id of some course?
@@ -153,6 +156,8 @@
   (check-equal? (canonicalize "2015-2017" "CPE" "430") "csc430")
 
   (check-equal? (canonicalize "2015-2017" "CPE" "0430") "csc430")
+
+  (check-equal? (canonicalize/qtr 2158 "CPE" "0430") "csc430")
 
   (check-equal? (course-key "csc243") "243-csc243"))
 

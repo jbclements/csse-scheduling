@@ -6,7 +6,8 @@
 
 (require racket/runtime-path
          "canonicalize.rkt"
-         "scheduled-by-csse-dept.rkt")
+         "scheduled-by-csse-dept.rkt"
+         "qtr-math.rkt")
 
 (provide schedule-read
          year-schedule
@@ -16,8 +17,6 @@
          join-sections-tables
          course-topic?
          canonicalize-topic
-         fall-year->base-qtr
-         fall-year->catalog-cycle
          record-course
          record-qtr
          sum-sections
@@ -100,29 +99,7 @@
                         (fall-year->catalog-cycle fall-year)
                         (fall-year->base-qtr fall-year))))
 
-;; map a year to the fall qtr that occurs in it
-(define (fall-year->base-qtr [year : Natural]) : Natural
-    (cond [(< 1950 year 2150)
-           (define century-code : Natural
-             (cast (- (floor (/ year 100)) 18)
-                   Natural))
-           (define year-code
-             (modulo year 100))
-           (+ (* 1000 century-code) (* 10 year-code) 8)]
-          [else (raise-argument-error
-                 'fall-year->base-qtr
-                 "year between 1950 and 2150"
-                 0 year)]))
 
-(define (fall-year->catalog-cycle [year : Natural]) : CatalogCycle
-  ;; this could be made more general....
-  (match year
-    [2016 "2015-2017"]
-    [(or 2017 2018) "2017-2019"]))
-
-(module+ test
-  (require typed/rackunit)
-  (check-equal? (fall-year->base-qtr 2017) 2178))
 
 (: schedule->records (Schedule CatalogCycle Natural -> (Listof Record)))
 (define (schedule->records schedule catalog-cycle base-qtr)
