@@ -1,8 +1,6 @@
 #lang typed/racket
 
 ;; this file lists all of the courses that we schedule.
-;; it also provides a sort key that allows us to sort courses
-;; interleaved by number.
 
 ;; when we add new courses, we need to also add them to this
 ;; file. We'll probably notice, though, because attempts to
@@ -12,7 +10,6 @@
 (provide
  courses-we-schedule
  supervisory-courses
- course-key
  csc-or-cpe
  2017-course-configuration)
 
@@ -195,19 +192,6 @@
       "csc599"))))
 
 
-
-
-
-;; defines a mapping from course ids to strings for the purposes
-;; of sorting. Interleaves CSC and CPE, and other majors
-;; come later
-(define (course-key [course : String]) : String
-  (match course
-    [(regexp #px"^[a-zA-Z]+([0-9]+)" (list _ num))
-     (string-append (cast num String) "-" course)]
-    [other
-     (string-append "UNK-" course)]))
-
 ;; map numbers to ids
 (define num-id-table : (HashTable Natural (Listof String))
 (for/fold ([ht : (HashTable Natural (Listof String)) (hash)])
@@ -251,10 +235,7 @@
   (check-exn #px"more than one hit"
              (λ () (csc-or-cpe 290)))
   (check-equal? (csc-or-cpe 431) "csc431")
-  (check-equal? (csc-or-cpe 315) "cpe315")
-
-  
-  (check-equal? (course-key "csc243") "243-csc243"))
+  (check-equal? (csc-or-cpe 315) "cpe315"))
 
 
 

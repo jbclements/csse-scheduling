@@ -8,6 +8,7 @@
          canonical-id?
          ensure-canonical
          courses-in-subject
+         course-key
          id-mappings
          Subject
          CourseNum
@@ -135,10 +136,23 @@
                (vector-ref r 2)))
        rows))
 
+
+;; defines a mapping from course ids to strings for the purposes
+;; of sorting. Interleaves CSC and CPE, and other majors
+;; come later
+(define (course-key [course : String]) : String
+  (match course
+    [(regexp #px"^[a-zA-Z]+([0-9]+)" (list _ num))
+     (string-append (cast num String) "-" course)]
+    [other
+     (string-append "UNK-" course)]))
+
 (module+ test
   (require typed/rackunit)
 
   (check-equal? (canonicalize "2015-2017" "CPE" "430") "csc430")
 
-  (check-equal? (canonicalize "2015-2017" "CPE" "0430") "csc430"))
+  (check-equal? (canonicalize "2015-2017" "CPE" "0430") "csc430")
+
+  (check-equal? (course-key "csc243") "243-csc243"))
 
