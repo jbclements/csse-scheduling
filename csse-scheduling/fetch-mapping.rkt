@@ -9,6 +9,7 @@
          "credentials.rkt")
 
 (define week-seconds (* 7 86400))
+(define cache-weeks 1)
 
 ;; given a cache file name and a function from connection to value,
 ;; cache it
@@ -16,7 +17,8 @@
   (parameterize ([*current-cache-keys*
                   (list (λ ()
                           (floor (/ (current-seconds)
-                                    week-seconds))))])
+                                    (* cache-weeks
+                                       week-seconds)))))])
   (with-cache (cachefile name)
     (λ ()
       (printf "refreshing cache for ~a\n" name)

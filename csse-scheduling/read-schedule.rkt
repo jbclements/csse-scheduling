@@ -25,7 +25,7 @@
          by-num-by-season
          requirement->name)
 
-(define-runtime-path HERE ".")
+
 
 ;; represents a year's teaching assignments.. subtype of Sexp
 (define-type Schedule (Listof Instructor))
@@ -92,10 +92,10 @@
 
 
 ;; given a year, return a sections table for that year
-(define (year-sections-equivalent [fall-year : Natural])
+(define (year-sections-equivalent [data-path : Path-String] [fall-year : Natural])
   : SectionsTable
   (sections-equivalent (schedule->records
-                        (year-schedule fall-year)
+                        (year-schedule data-path fall-year)
                         (fall-year->catalog-cycle fall-year)
                         (fall-year->base-qtr fall-year))))
 
@@ -178,10 +178,10 @@
 
 ;; given a year, return the schedule associated with the school year
 ;; beginning in fall of that year.
-(define (year-schedule [fall-year : Natural]) : Schedule
+(define (year-schedule [data-path : Path-String] [fall-year : Natural]) : Schedule
   (define input-file (match fall-year
-                       [2016 (build-path HERE "schedule-2168.rktd")]
-                       [2017 (build-path HERE "schedule-2178.rktd")]))
+                       [2016 (build-path data-path "schedule-2168.rktd")]
+                       [2017 (build-path data-path "schedule-2178.rktd")]))
   (schedule-read input-file))
 
 ;; given a filename, read the schedule
