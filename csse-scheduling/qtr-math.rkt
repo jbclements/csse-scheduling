@@ -55,6 +55,14 @@
 (define (qtr->cycle [qtr : Natural]) : CatalogCycle
   (fall-year->catalog-cycle (qtr->fall-year qtr)))
 
+;; return the quarter numbers greater than or equal
+;; to the first quarter and less than the second.
+;; ignore summer quarters.
+(define (qtrs-in-range [min : Natural] [max : Natural]) : (Listof Natural)
+  (for/list ([qtr : Natural (in-range min max)]
+             #:when (member (modulo qtr 10) '(2 4 8)))
+    qtr))
+
 (module+ test
   (require typed/rackunit)
   (check-equal? (fall-year->base-qtr 2017) 2178)
@@ -62,4 +70,7 @@
   (check-equal? (qtr->fall-year 2176) 2017)
   (check-equal? (qtr->fall-year 2174) 2016)
   (check-equal? (qtr->cycle 2178) "2017-2019")
-  (check-equal? (fall-year->catalog-cycle 2006) "2005-2007"))
+  (check-equal? (fall-year->catalog-cycle 2006) "2005-2007")
+
+  (check-equal? (qtrs-in-range 2154 2182)
+                '(2154 2158 2162 2164 2168 2172 2174 2178)))
