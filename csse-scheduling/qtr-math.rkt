@@ -7,7 +7,8 @@
          fall-year->catalog-cycle
          fall-year->base-qtr
          qtr->fall-year
-         qtr->cycle)
+         qtr->cycle
+         qtrs-in-range)
 
 ;; extend as needed...
 (define-type CatalogCycle
