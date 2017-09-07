@@ -6,7 +6,10 @@
 
 (require db
          with-cache
-         "credentials.rkt")
+         "credentials.rkt"
+         racket/runtime-path)
+
+(define-runtime-path here-path ".")
 
 (define week-seconds (* 7 86400))
 (define cache-weeks 1)
@@ -18,7 +21,9 @@
                   (list (λ ()
                           (floor (/ (current-seconds)
                                     (* cache-weeks
-                                       week-seconds)))))])
+                                       week-seconds)))))]
+                 [*current-cache-directory*
+                  here-path])
   (with-cache (cachefile name)
     (λ ()
       (printf "refreshing cache for ~a\n" name)
@@ -32,7 +37,7 @@
 ;; fetch the course mappings from the database
 (define course-mappings
   (cache-query
-   "course-mappings"
+   "course-mappings.withcache"
    (λ (conn)
      (query-rows
       conn
@@ -40,7 +45,7 @@
 
 (define courses-we-schedule/db
   (cache-query
-   "courses-we-schedule-db"
+   "courses-we-schedule.withcache"
    (λ (conn)
      (define ids
        (query-list
@@ -50,7 +55,7 @@
 
 (define 2017-course-configurations
   (cache-query
-   "2017-course-configurations"
+   "2017-course-configurations.withcache"
    (λ (conn)
      (map
       (λ (v) (cons (vector-ref v 0) (vector-ref v 1)))

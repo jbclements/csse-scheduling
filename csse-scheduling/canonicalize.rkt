@@ -56,8 +56,8 @@
 ;; rows that we got from the db conform to the contracts that we
 ;; specifiye
 (define mapping-hash
-  (for/hash : (HashTable (Vector CatalogCycle Subject CourseNum)
-                         CourseID)
+  (for/hash : (Immutable-HashTable (Vector CatalogCycle Subject CourseNum)
+                                   CourseID)
     ([v (in-list mappings)])
     (match-define (vector cycle subject coursenum name) v)
     (unless (coursenum? coursenum)
