@@ -9,13 +9,15 @@
 
 (define credentials-sexp
   (cast (file->value (build-path here "credentials-prvt.rktd"))
-        (Listof (Pairof Symbol String))))
+        (Listof (Pairof Symbol (U Natural String)))))
 
 
 (define db-username : String
   (match (assoc 'username credentials-sexp)
     [(cons _ (? string? username))
      username]
+    [(cons _ _)
+     (error 'db-username "credentials file contained a non-string for a username")]
     [#f (error 'db-username
                "credentials file missing binding for 'username")]))
 
@@ -23,6 +25,8 @@
   (match (assoc 'password credentials-sexp)
     [(cons _ (? string? password))
      password]
+    [(cons _ _)
+     (error 'db-password "credentials file contained a non-string for a password")]
     [#f (error 'db-username
                "credentials file missing binding for 'password")]))
 
