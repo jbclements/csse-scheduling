@@ -28,7 +28,7 @@
     (λ ()
       (printf "refreshing cache for ~a\n" name)
       (define conn
-        (postgresql-connect #:port 13432
+        (postgresql-connect #:port (or db-maybe-port 13432)
                             #:user db-username
                             #:database "scheduling"
                             #:password db-password))
