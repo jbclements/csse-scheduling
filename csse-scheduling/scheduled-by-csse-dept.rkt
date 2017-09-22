@@ -9,6 +9,7 @@
 
 (provide
  courses-we-schedule
+ ee-scheduled-courses
  supervisory-courses
  csc-or-cpe
  2017-course-configuration)
@@ -27,6 +28,31 @@
 
 
 (define current-catalog : CatalogCycle "2017-2019")
+
+;; NOTE: it would probably be much more robust to list the ones
+;; that we *don't* schedule. That way, new courses will by default
+;; be listed in the yes column.
+(define ee-scheduled-courses : (Setof String)
+  (list->set
+   (map
+    ensure-canonical
+    '("cpe100" ; "Computer Engineering Orientation"
+      "cpe133" ; "Digital Design"
+      "cpe233" ; "Computer Design and Assembly Language Programming"
+      "cpe328" ; "Discrete Time Signals and Systems"
+      "cpe329" ; "Programmable Logic and Microprocessor-Based Systems Design"
+      "cpe336" ; "Microprocessor System Design"
+      "cpe368" ; "Signals and Systems Laboratory"
+      "cpe428" ; "Computer Vision"
+      "cpe432" ; "Digital Control Systems"
+      "cpe439" ; "Introduction to Real-Time Operating Systems"
+      "cpe441" ; "Computer-Aided Design of VLSI Devices"
+      "cpe472" ; "Digital Control Systems Laboratory"
+      "cpe488" ; "Microelectronics and Electronics Packaging"
+      "cpe521" ; "Computer Systems"
+      "cpe522" ; "Advanced Real-Time Operating Systems Design"
+      "cpe523" ; "Digital Systems Design"
+      ))))
 
 ;; NOTE: THIS LIST MUST BE IN SYNC WITH THE ONE IN THE DATABASE.
 ;; (you should get an error message if it's not...)
