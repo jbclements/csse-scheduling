@@ -178,7 +178,8 @@
 
 ;; given a year, return the schedule associated with the school year
 ;; beginning in fall of that year.
-(define (year-schedule [data-path : Path-String] [fall-year : Natural]) : Schedule
+(define (year-schedule [data-path : Path-String] [fall-year : Natural])
+  : Schedule
   (define input-file (match fall-year
                        [2016 (build-path data-path "schedule-2168.rktd")]
                        [2017 (build-path data-path "schedule-2178.rktd")]))
@@ -188,8 +189,11 @@
 (define (schedule-read [input-file : Path]) : Schedule
   (map
    sexp->instructor
-   (cast (file->value input-file)
-         (Listof Any))))
+   (match (file->value input-file)
+     [(? list? l) l]
+     [_ (error 'schedule-read
+               "expected file containing schedule, got ~e"
+               input-file)])))
 
 
 ;; given a list of records, return the # of sections of each course
