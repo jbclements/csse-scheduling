@@ -11,13 +11,16 @@
 
 (provide schedule-read
          year-schedule
+         year-records
          schedule->records
          sections-equivalent
          year-sections-equivalent
          join-sections-tables
          course-topic?
          canonicalize-topic
+         record-instructor
          record-course
+         record-size
          record-qtr
          sum-sections
          compress-irec
@@ -89,17 +92,17 @@
      (list (table-row-course (first g)) (apply append (map table-row-qtrs g)))
      SectionsTableRow)))
 
-
+;; given a year, return a list of records for that year
+(define (year-records [data-path : Path-String] [fall-year : Natural]) : (Listof Record)
+  (schedule->records
+   (year-schedule data-path fall-year)
+   (fall-year->catalog-cycle fall-year)
+   (fall-year->base-qtr fall-year)))
 
 ;; given a year, return a sections table for that year
 (define (year-sections-equivalent [data-path : Path-String] [fall-year : Natural])
   : SectionsTable
-  (sections-equivalent (schedule->records
-                        (year-schedule data-path fall-year)
-                        (fall-year->catalog-cycle fall-year)
-                        (fall-year->base-qtr fall-year))))
-
-
+  (sections-equivalent (year-records data-path fall-year)))
 
 (: schedule->records (Schedule CatalogCycle Natural -> (Listof Record)))
 (define (schedule->records schedule catalog-cycle base-qtr)
@@ -169,6 +172,8 @@
                0 s)]))
 
 
+(: record-instructor (Record -> Symbol))
+(define record-instructor first)
 
 (: record-course (Record -> CourseID))
 (define record-course fourth)
@@ -176,13 +181,18 @@
 (: record-qtr (Record -> Natural))
 (define record-qtr second)
 
+(: record-size (Record -> CourseSize))
+(define record-size third)
+
 ;; given a year, return the schedule associated with the school year
 ;; beginning in fall of that year.
 (define (year-schedule [data-path : Path-String] [fall-year : Natural])
   : Schedule
   (define input-file (match fall-year
                        [2016 (build-path data-path "schedule-2168.rktd")]
-                       [2017 (build-path data-path "schedule-2178.rktd")]))
+                       [2017 (build-path data-path "schedule-2178.rktd")]
+                       [_ (error 'year-schedule "unexpected year: ~e"
+                                 fall-year)]))
   (schedule-read input-file))
 
 ;; given a filename, read the schedule

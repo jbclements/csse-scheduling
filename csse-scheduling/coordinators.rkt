@@ -10,6 +10,31 @@
 (define-type CoordinatorRecord (List String (Listof String)))
 (define-type CoordinatorList (Listof CoordinatorRecord))
 
+;;> ooh, in the middle of moving this chunk over from the scraper to the live part.
+
+(define coordinator-table
+  (for/list ([l (in-list cleaned-lines)])
+    (define canonical-name
+      (match (string-trim (first l))
+        ;; 2 ad-hoc fixups:
+        ["CSC 419" (canonicalize current-catalog "CPE" "419")]
+        ["CS 448" (canonicalize current-catalog "CSC" "448")]
+        [(regexp #px"^([A-Z]+)(/[A-Z]+)? ([0-9]{3})$" (list _ subj _ num))
+         (canonicalize current-catalog subj num)]))
+    (define coordinator
+      (match l
+        [(list _ _ name)
+         (regexp-split #px"/" name)]
+        [(list _ _ "") #f]))
+    (list canonical-name coordinator)))
+
+(call-with-output-file "/tmp/coordinators.rktd"
+  (λ (port)
+    (pretty-write coordinator-table port))
+  #:exists 'truncate)
+
+
+
 (define coordinators : CoordinatorList
   '(("csc101" ("Keen"))
     ("csc108" ("Staley"))
