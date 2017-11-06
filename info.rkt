@@ -9,6 +9,7 @@
     "with-cache"))
 
 (define build-deps
-  '("typed-racket-more"))
+  '("rackunit-lib"
+    "typed-racket-more"))
 
 
