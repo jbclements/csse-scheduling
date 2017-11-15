@@ -16,7 +16,8 @@
          CourseID
          subject?
          mappings
-         MappingRow)
+         MappingRow
+         CatalogCycle)
 
 (require/typed "fetch-mapping.rkt"
                [course-mappings Any])
