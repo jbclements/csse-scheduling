@@ -10,7 +10,8 @@
          qtr->cycle
          qtrs-in-range
          qtr->season
-         qtr->year)
+         qtr->year
+         year->qtrs)
 
 ;; extend as needed...
 (define-type CatalogCycle
@@ -126,6 +127,12 @@
            qtr)]
   ))
 
+;; given a year, return the quarters of the academic year beginning in
+;; the fall of the given year.
+(define (year->qtrs [year : Natural]) : (Listof Natural)
+  (qtrs-in-range (fall-year->base-qtr year)
+                 (fall-year->base-qtr (add1 year))))
+
 (module+ test
   (require typed/rackunit)
 
@@ -154,4 +161,6 @@
 
   (check-equal? (qtr->season 2018) "Fall")
   (check-equal? (qtr->season 2102) "Winter")
+
+  (check-equal? (year->qtrs 2016) '(2168 2172 2174))
 )
