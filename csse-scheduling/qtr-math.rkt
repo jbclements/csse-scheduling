@@ -108,7 +108,8 @@
 ;; return the quarter numbers greater than or equal
 ;; to the first quarter and less than the second.
 ;; ignore summer quarters.
-(define (qtrs-in-range [min : Natural] [max : Natural]) : (Listof Natural)
+(: qtrs-in-range (Natural Natural [#:include-summer? Boolean]-> (Listof Natural)))
+(define (qtrs-in-range min max #:include-summer? [include-summer? #f])
   ;; horrible patch for missing century:
   (cond [(<= 1000 min 2000)
          (raise-argument-error 'qtrs-in-range
@@ -122,8 +123,11 @@
          (append (qtrs-in-range min 1000)
                  (qtrs-in-range 2002 max))]
         [else
+         (define qtr-digits
+           (cond [include-summer? '(2 4 6 8)]
+                 [else '(2 4 8)]))
          (for/list ([qtr : Natural (in-range min max)]
-                    #:when (member (modulo qtr 10) '(2 4 8)))
+                    #:when (member (modulo qtr 10) qtr-digits))
            qtr)]
   ))
 
@@ -156,6 +160,8 @@
 
   (check-equal? (qtrs-in-range 2154 2182)
                 '(2154 2158 2162 2164 2168 2172 2174 2178))
+  (check-equal? (qtrs-in-range 2154 2182 #:include-summer? #t)
+                '(2154 2156 2158 2162 2164 2166 2168 2172 2174 2176 2178))
   (check-equal? (qtrs-in-range 982 2014)
                 '(982 984 988 992 994 998 2002 2004 2008 2012))
 
