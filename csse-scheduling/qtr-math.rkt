@@ -11,6 +11,7 @@
          qtrs-in-range
          qtr->season
          qtr->year
+         qtr->string
          year->qtrs)
 
 ;; extend as needed...
@@ -104,6 +105,10 @@
                                0 qtr)]))
   (+ century-offset year-code))
 
+;; given a quarter, return its string form, e.g. 2018 -> "Fall 2001"
+(define (qtr->string [qtr : Natural]) : String
+  (string-append (qtr->season qtr) " " (number->string (qtr->year qtr))))
+
 
 ;; return the quarter numbers greater than or equal
 ;; to the first quarter and less than the second.
@@ -167,6 +172,9 @@
 
   (check-equal? (qtr->season 2018) "Fall")
   (check-equal? (qtr->season 2102) "Winter")
+
+  (check-equal? (qtr->string 2102) "Winter 2010")
+  (check-equal? (qtr->string 328) "Fall 1932")
 
   (check-equal? (year->qtrs 2016) '(2168 2172 2174))
 )
