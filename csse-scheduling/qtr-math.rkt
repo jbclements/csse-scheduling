@@ -1,7 +1,9 @@
-#lang typed/racket
+#lang typed/racket/base
 
 ;; functions for mapping back and forth between quarters,
 ;; fall years, and catalog cycles
+
+(require racket/match)
 
 (provide CatalogCycle
          fall-year->catalog-cycle
@@ -12,7 +14,11 @@
          qtr->season
          qtr->year
          qtr->string
-         year->qtrs)
+         year->qtrs
+         encode-qtr
+         Season)
+
+(define first-encodable-year : Natural 1900)
 
 ;; extend as needed...
 (define-type CatalogCycle
@@ -38,7 +44,9 @@
     [(= year 2000) "2000-2001"]
     [(< 2000 year)
      (define base-year (- year (modulo (sub1 year) 2)))
-     (define result (~a base-year "-" (+ base-year 2)))
+     (define result (string-append (number->string base-year)
+                                   "-"
+                                   (number->string (+ base-year 2))))
      (cond [(catalog-cycle? result) result]
            [else (raise-argument-error
                   'fall-year->catalog-cycle
@@ -52,37 +60,37 @@
 
 ;; map a year to the fall qtr that occurs in it (see example below)
 (define (fall-year->base-qtr [year : Natural]) : Natural
-    (cond [(< 1950 year 2050)
-           (define century : Natural
-             (assert (floor (/ year 100)) exact-nonnegative-integer?))
-           (define century-offset
-             (match century
-               [19 0]
-               [20 2000]))
-           (define year-code
-             (modulo year 100))
-           (+ century-offset (* 10 year-code) 8)]
-          [else (raise-argument-error
-                 'fall-year->base-qtr
-                 "year in range"
-                 0 year)]))
+  (encode-qtr year "Fall"))
 
 ;; map a qtr to the fall year (summer goes back...)
 (define (qtr->fall-year [qtr : Natural]) : Natural
   (define base-year (qtr->year qtr))
   ;; winter/spring go backward
-  (define year (match (qtr->season qtr)
-                 [(or "Winter" "Spring") (- base-year 1)]
-                 [_ base-year]))
-  (cond [(< year 1950) (raise-argument-error
-                        'qtr->fall-year
-                        "qtr falling after AD 1950"
-                        0 qtr)]
-        [else year]))
+  (match (qtr->season qtr)
+    [(or "Winter" "Spring")
+     (define year (- base-year 1))
+     (cond [(<= first-encodable-year year) year]
+           [else (raise-argument-error 'qtr->fall-year
+                                       "qtr whose fall year is encodable"
+                                       0 qtr)])]
+    ;; Fall/Summer stay the same.
+    [_ base-year]))
 
 ;; map a qtr to the cycle that it occurs in
 (define (qtr->cycle [qtr : Natural]) : CatalogCycle
   (fall-year->catalog-cycle (qtr->fall-year qtr)))
+
+;; given a string or symbol, coerce it to a season if possible
+(define (coerce-season [s : (U Symbol String)]) : Season
+  (match s
+    [(or 'winter "winter" "Winter") "Winter"]
+    [(or 'spring "spring" "Spring") "Spring"]
+    [(or 'summer "summer" "Summer") "Summer"]
+    [(or 'fall "fall" "Fall") "Fall"]
+    [other
+     (raise-argument-error 'coerce-season
+                           "season-like symbol or string"
+                           0 s)]))
 
 ;; given a quarter, return its season: "Fall", "Winter", etc.
 (define (qtr->season [qtr : Natural]) : Season
@@ -92,6 +100,14 @@
     [6 "Summer"]
     [8 "Fall"]))
 
+;; given a season, return its quarter offset
+(define (season->qtr-offset [season : Season]) : Natural
+  (match season
+    ["Winter" 2]
+    ["Spring" 4]
+    ["Summer" 6]
+    ["Fall" 8]))
+
 ;; return the year in which a quarter number falls
 (define (qtr->year [qtr : Natural]) : Natural
   (define century-code (floor (/ qtr 1000)))
@@ -100,10 +116,28 @@
     (match century-code
       [0 1900]
       [2 2000]
+      [3 2100]
+      [4 2200]
+      ;; in the year 2300 we just give up.
       [_ (raise-argument-error 'qtr-year
-                               "qtr with century code of 0 or 2"
+                               "qtr with century code of 0, 2, 3, or 4"
                                0 qtr)]))
   (+ century-offset year-code))
+
+;; given a year and a season, return the qtr number
+(define (encode-qtr [year : Natural] [season : (U Symbol String)]) : Natural
+  (define century-code
+    (cond [(<= 1900 year 1999) 0]
+          [(<= 2000 year 2099) 2]
+          [(<= 2100 year 2199) 3]
+          [(<= 2200 year 2299) 4]
+          ;; here we just give up
+          [else (raise-argument-error 'encode-qtr
+                                      "year between 1900 and 2300"
+                                      0 year)]))
+  (+ (* 1000 century-code)
+     (* 10 (modulo year 100))
+     (season->qtr-offset (coerce-season season))))
 
 ;; given a quarter, return its string form, e.g. 2018 -> "Fall 2001"
 (define (qtr->string [qtr : Natural]) : String
@@ -142,6 +176,8 @@
   (qtrs-in-range (fall-year->base-qtr year)
                  (fall-year->base-qtr (add1 year))))
 
+
+
 (module+ test
   (require typed/rackunit)
 
@@ -177,4 +213,9 @@
   (check-equal? (qtr->string 328) "Fall 1932")
 
   (check-equal? (year->qtrs 2016) '(2168 2172 2174))
+
+  (check-equal? (encode-qtr 2023 "Fall") 2238)
+  (check-equal? (encode-qtr 1984 "Winter") 842)
+  (check-equal? (encode-qtr 1984 "winter") 842)
+  (check-equal? (encode-qtr 1984 'winter) 842)
 )
