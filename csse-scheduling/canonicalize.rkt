@@ -69,12 +69,28 @@
 
 ;; given catalog cycle, subject, and number, return a string
 ;; representing the canonical course name
-(: canonicalize (CatalogCycle Subject CourseNum -> CourseID))
-(define (canonicalize cycle subject number)
-  (unless (coursenum? number)
-    (raise-argument-error 'canonicalize
-                          "legal course number"
-                          2 cycle subject number))
+(: canonicalize (CatalogCycle (U Symbol String) (U Natural CourseNum) -> CourseID))
+(define (canonicalize cycle subject-input number-input)
+  (define (check-subject [maybe-subject : String]) : Subject
+    (cond [(subject? maybe-subject) maybe-subject]
+          [else (raise-argument-error 'canonicalize
+                                      "string or symbol identifying a subject"
+                                      1 cycle subject-input number-input)]))
+  (define subject : Subject
+    (cond [(symbol? subject-input)
+           (check-subject (symbol->string subject-input))]
+          [(string? subject-input)
+           (check-subject subject-input)]))
+  (define (check-num [num : CourseNum]) : CourseNum
+    (cond [(coursenum? num) num]
+          [else (raise-argument-error 'canonicalize
+                                      "legal course number"
+                                      2 cycle subject-input number-input)]))
+  (define number : CourseNum
+    (cond [(exact-nonnegative-integer? number-input)
+           (check-num (number->string number-input))]
+          [(string? number-input)
+           (check-num number-input)]))
   (define trimmed-number
     (match number
       [(regexp #px"^0[0-9]{3}" (list _))
@@ -87,7 +103,7 @@
                      (list cycle subject number)))))
 
 ;; like canonicalize, but accepts qtr rather than catalog cycle
-(: canonicalize/qtr (Natural Subject CourseNum -> CourseID))
+(: canonicalize/qtr (Natural (U Symbol String) (U Natural String) -> CourseID))
 (define (canonicalize/qtr qtr subject number)
   (canonicalize (qtr->cycle qtr) subject number))
 
@@ -156,9 +172,13 @@
 
   (check-equal? (canonicalize "2015-2017" "CPE" "430") "csc430")
 
-  (check-equal? (canonicalize "2015-2017" "CPE" "0430") "csc430")
+  (check-equal? (canonicalize "2015-2017" 'CPE "0430") "csc430")
+  
+  (check-equal? (canonicalize "2015-2017" 'CPE 430) "csc430")
 
   (check-equal? (canonicalize/qtr 2158 "CPE" "0430") "csc430")
+
+  (check-equal? (canonicalize/qtr 2158 'CPE 430) "csc430")
 
   (check-equal? (course-key "csc243") "243-csc243"))
 
