@@ -6,7 +6,8 @@
   '("base"
     "db-lib"
     "typed-racket-lib"
-    "with-cache"))
+    "with-cache"
+    "csv-reading"))
 
 (define build-deps
   '("rackunit-lib"
