@@ -6,6 +6,8 @@
 
 (provide canonicalize
          canonicalize/qtr
+         canonicalize/noerr
+         canonicalize/qtr/noerr
          canonical-id?
          ensure-canonical
          courses-in-subject
@@ -28,7 +30,84 @@
          (only-in racket/list remove-duplicates))
 
 (define-type Subject (U "CPE" "CSC" "HNRS" "ART" "EE" "IME" "MATE"
-                        "DATA"))
+                        "DATA"
+
+                        ;; this may be foolish...
+                        "CHEM"
+                        "COMS"
+                        "ENGR"
+                        "MATH"
+                        "BMED"
+                        "PHYS"
+                        "BIO"
+                        "PSY"
+                        "HIST"
+                        "PHIL"
+                        "STAT"
+                        "ENGL"
+                        "KINE"
+                        "POLS"
+                        "AERO"
+                        "ECON"
+                        "ES"
+                        "MU"
+                        "JPNS"
+                        "TH"
+                        "ANT"
+                        "ME"
+                        "DANC"
+                        "LS"
+                        "FSN"
+                        "SOC"
+                        "SCM"
+                        "SPAN"
+                        "ARCH"
+                        "HUM"
+                        "DSCI"
+                        "ISLA"
+                        "BUS"
+                        "WGS"
+                        "GEOG"
+                        "GRC"
+                        "RPTA"
+                        "RELS"
+                        "GER"
+                        "BRAE"
+                        "SS"
+                        "LA"
+                        "ASCI"
+                        "AEPS"
+                        "GEOL"
+                        "MCRO"
+                        "JOUR"
+                        "ITAL"
+                        "CHIN"
+                        "IT"
+                        "CE"
+                        "ESE"
+                        "WLC"
+                        "FR"
+                        "BOT"
+                        "UNIV"
+                        "PEM"
+                        "NR"
+                        "MLL"
+                        "ASTR"
+                        "MSL"
+                        "LAES"
+                        "EDES"
+                        "WVIT"
+                        "PSC"
+                        "HNRC"
+                        "ENVE"
+                        "CM"
+                        "ARCE"
+                        "MSCI"
+                        "HCS"
+                        "ERSC"
+                        "CD"
+                        "ITP"
+                        ))
 (define-type CourseNum String) ;; such as "123" or "0123"
 
 
@@ -45,7 +124,8 @@
 ;; this can't be captured by a TR type
 (: coursenum? (String -> Boolean))
 (define (coursenum? s)
-  (regexp-match? #px"^0?[0-9]{3}( +X)?$" s))
+  ;; turns out there are two-digit course numbers.
+  (regexp-match? #px"^0?[0-9]{2,3}( +X)?$" s))
 
 ;; the rows in the table, representing mappings from offering
 ;; to canonical name
@@ -71,6 +151,28 @@
 ;; representing the canonical course name
 (: canonicalize (CatalogCycle (U Symbol String) (U Natural CourseNum) -> CourseID))
 (define (canonicalize cycle subject-input number-input)
+  (define try-canonicalize (canonicalize/noerr cycle subject-input number-input))
+  (cond [(not try-canonicalize)
+         (error 'canonicalize
+                "no mapping found for offering: ~e"
+                (list cycle subject-input number-input))]
+        [else try-canonicalize]))
+
+
+;; like canonicalize, but accepts qtr rather than catalog cycle
+(: canonicalize/qtr (Natural (U Symbol String) (U Natural String) -> CourseID))
+(define (canonicalize/qtr qtr subject number)
+  (canonicalize (qtr->cycle qtr) subject number))
+
+
+;; like canonicalize, but accepts qtr rather than catalog cycle
+(: canonicalize/qtr/noerr (Natural (U Symbol String) (U Natural String) -> (U False CourseID)))
+(define (canonicalize/qtr/noerr qtr subject number)
+  (canonicalize/noerr (qtr->cycle qtr) subject number))
+
+;; this one returns #f when it can't find a mapping
+(: canonicalize/noerr (CatalogCycle (U Symbol String) (U Natural CourseNum) -> (U CourseID False)))
+(define (canonicalize/noerr cycle subject-input number-input)
   (define (check-subject [maybe-subject : String]) : Subject
     (cond [(subject? maybe-subject) maybe-subject]
           [else (raise-argument-error 'canonicalize
@@ -96,16 +198,8 @@
       [(regexp #px"^0[0-9]{3}" (list _))
        (substring number 1)]
       [other number]))
-  (hash-ref mapping-hash (vector cycle subject trimmed-number)
-            (λ ()
-              (error 'canonicalize
-                     "no mapping found for offering: ~e"
-                     (list cycle subject number)))))
+  (hash-ref mapping-hash (vector cycle subject trimmed-number) #f))
 
-;; like canonicalize, but accepts qtr rather than catalog cycle
-(: canonicalize/qtr (Natural (U Symbol String) (U Natural String) -> CourseID))
-(define (canonicalize/qtr qtr subject number)
-  (canonicalize (qtr->cycle qtr) subject number))
 
 
 ;; is this string the canonical id of some course?
@@ -177,6 +271,8 @@
   (check-equal? (canonicalize "2015-2017" 'CPE 430) "csc430")
 
   (check-equal? (canonicalize/qtr 2158 "CPE" "0430") "csc430")
+
+  (check-equal? (canonicalize/qtr/noerr 2158 "CPE" "0930") #f)
 
   (check-equal? (canonicalize/qtr 2158 'CPE 430) "csc430")
 
