@@ -105,9 +105,10 @@
                         "MSCI"
                         "HCS"
                         "ERSC"
+                        
                         "CD"
                         "ITP"
-                        ))
+                        "CRP"))
 (define-type CourseNum String) ;; such as "123" or "0123"
 
 
