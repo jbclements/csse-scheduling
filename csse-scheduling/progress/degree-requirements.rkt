@@ -23,10 +23,10 @@
 (define-type Grade-Record (List Qtr Course-Id Grade))
 
 ;; given a list of grades, a course id, and a predicate mapping a grade to
-;; a boolean, return true if the student has a grade in the given
-;; course that satisfies the predicate
+;; a boolean, return a list of lists of grade-records indicating the
+;; ways that the requirement could be satisfied.
 (define (passed-pred [course-id : Course-Id]
-                     [pred : (Grade -> Boolean)])
+                     [pred : (Grade -> Boolean)]) : ReqFun
   (check-course course-id)
   (λ ([student-grades : (Listof Grade-Record)])
     (define satisfying-rows
@@ -35,7 +35,8 @@
                              course-id)
                      (pred (third gr))))
               student-grades))
-    (not (empty? satisfying-rows))))
+    (for/list ([row (in-list satisfying-rows)])
+      (remove row student-grades))))
 
 ;; is this a canonical course id?
 (define (check-course [course-id : String]) : Void
@@ -51,15 +52,25 @@
 (define passing-grades : (Listof String)
   '("A" "A-" "B+" "B" "B-" "C+" "C" "C-" "D+" "D" "D-" "CR"))
 
-(define (grade-list->pred [grade-names : (Listof Grade)]) :
+(define (grade-names->pred [grade-names : (Listof Grade)]) :
   (Grade -> Boolean)
   (λ ([g : Grade]) (not (not (member g grade-names)))))
 
+;; Requirements are interesting; for most requirements, students
+;; cannot fulfill multiple requirements using the same class.
+;; accordingly, determining whether a collection of requirements
+;; is met requires "assigning" grades to certain requirements. To
+;; model this, requirements accept a list of grades and return
+;; a list of possible ways in which the requirement is satisfied,
+;; where a "way" is represented as a list of the class grades not
+;; yet "used" by the requirement
 
-;; a requirement is a label along with a function mapping a student
-;; to a boolean (indicating whether the student has satisfied the
-;; requirement)
-(define-type ReqFun ((Listof Grade-Record) -> Boolean))
+;; a ReqFun represents a requirement test; it accepts a list of
+;; grades, and returns a list of lists of grade-records,
+;; indicating the ways in which that requirement could "use up"
+;; the student's grades. The empty list therefore indicates failure.
+(define-type ReqFun ((Listof Grade-Record) -> (Listof (Listof Grade-Record))))
+
 (define-type Requirement (List String ReqFun))
 
 ;; time for some combinators:
@@ -67,22 +78,30 @@
 ;; given a course id,
 ;; did the student pass the given course with a grade of C- or better?
 (define (passc/req [course-id : Course-Id]) : ReqFun
-  (passed-pred course-id (grade-list->pred better-than-d-grades)))
+  (passed-pred course-id (grade-names->pred better-than-d-grades)))
 
 ;; given a course id,
 ;; did the student pass the given course at all?
 (define (pass/req [course-id : Course-Id]) : ReqFun
-  (passed-pred course-id (grade-list->pred passing-grades)))
+  (passed-pred course-id (grade-names->pred passing-grades)))
 
 ;; combine two requirement-funs with an 'or'
 (define (or/req [rf1 : ReqFun] [rf2 : ReqFun])
   (λ ([g : (Listof Grade-Record)])
-    (or (rf1 g) (rf2 g))))
+    (remove-duplicates (append (rf1 g) (rf2 g)))))
 
-;; combine two requirement-funs with an 'and
+;; combine two requirement-funs with an 'and, assuming
+;; the requirements must be satisfied by different course sets
 (define (and/req [rf1 : ReqFun] [rf2 : ReqFun]) : ReqFun
   (λ ([g : (Listof Grade-Record)])
-    (and (rf1 g) (rf2 g))))
+    (define ways1 (rf1 g))
+    (remove-duplicates
+     (apply
+      append
+      (for/list ([way (in-list ways)])
+        (rf2 way))))))
+
+;; ooh, what about this?
 
 ;; negate a requirement
 (define (neg/req [rf1 : ReqFun]) : ReqFun
