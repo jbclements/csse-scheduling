@@ -1,0 +1,122 @@
+#lang typed/racket
+
+;; looks like this file is where requirements and students come together.
+
+
+(require "student-progress.rkt"
+         csse-scheduling/qtr-math
+         "degree-requirements.rkt")
+
+(define next-fall-year 2018)
+
+(provide major-requirements
+         major-requirement-names
+         student->bools
+         first-has-earlier-false?
+         grad-years-possible
+
+         and/p
+         not/p
+         or/p
+         expected-to-graduate-by
+         entered-on-or-before
+         has-major-in
+         satisfies)
+
+(define (major-requirements [major : String]) : (Listof Requirement)
+  (match major
+    ["CSC" csc-requirements]
+    ["CPE" cpe-requirements]
+    ["SE"  se-requirements]))
+
+;; given a major, return the names of the requirements
+(define (major-requirement-names [major : String]) : (Listof String)
+  (map (inst first String Any) (major-requirements major)))
+
+;; given a student, produce a list of booleans representing their
+;; satisfaction of the requirements. A #t indicates the requirement has been met.
+(define (student->bools [major : String] [student : Student]) : (Listof Boolean)
+  (define requirements (major-requirements major))
+  (for/list ([requirement (in-list requirements)])
+    ((second requirement) (student-grades student))))
+
+(define (first-has-earlier-false? [lob1 : (Listof Boolean)]
+                                  [lob2 : (Listof Boolean)]) : Boolean
+  (match (list lob1 lob2)
+    [(list '() '()) #f]
+    [(list (cons #f rest1)
+           (cons #t rest2))
+     #t]
+    [(list (cons #t rest1)
+           (cons #f rest2))
+     #f]
+    [(list (cons _ rest1)
+           (cons _ rest2))
+     (first-has-earlier-false? rest1 rest2)]
+    [_ (error 'lists-of-different-lengths)]))
+
+;; if the student graduated this year, what category would they fall into?
+(define (grad-years-possible [entry-qtr : Qtr]) : String
+  (match (- next-fall-year (qtr->fall-year entry-qtr))
+    [1 "1 year"]
+    [2 "2 years"]
+    [3 "3 years"]
+    [4 "4 years"]
+    [(or 5 6) "5-6 years"]
+    [other
+     (cond [(<= 7 other) "7+ years"]
+           [else (raise-argument-error
+                  'grad-years-possible
+                  "plausible entry quarter"
+                  0 entry-qtr)])]))
+
+
+;; STUDENT REQUIREMENT COMBINATORS
+
+(: and/p ((Student -> Boolean) * -> (Student -> Boolean)))
+(define (and/p . preds)
+  (λ ([s : Student])
+    (for/and : Boolean ([pred : (Student -> Boolean) (in-list preds)])
+      (pred s))))
+
+(: or/p ((Student -> Boolean) * -> (Student -> Boolean)))
+(define (or/p . preds)
+  (λ ([s : Student])
+    (for/or : Boolean ([pred : (Student -> Boolean) (in-list preds)])
+      (pred s))))
+
+(define (not/p [pred : (Student -> Boolean)]) : (Student -> Boolean)
+  (λ ([s : Student]) (not (pred s))))
+
+(define (expected-to-graduate-by [qtr : Qtr]) : (Student -> Boolean)
+  (λ ([s : Student])
+    (match (student-expected-graduation-qtr s)
+      ['unknown #f]
+      ['no-data (error "expected graduation data not available in this version")]
+      [(? natural? n) (<= n qtr)])))
+
+(define (entered-on-or-before [qtr : Qtr]) : (Student -> Boolean)
+  (λ ([s : Student])
+    (define eqtr (student-entry-qtr s))
+    (and eqtr (<= eqtr qtr))))
+
+(define (has-major-in [lom : (Listof String)]) : (Student -> Boolean)
+  (λ ([s : Student])
+    (and (member (student-major s) lom)
+         #t)))
+
+(define (satisfies [req : ReqFun]) : (Student -> Boolean)
+  (λ ([s : Student])
+    (req (student-grades s))))
+
+
+(module+ test
+  (require typed/rackunit)
+
+  (check-equal? (first-has-earlier-false? '(#t #t #f #t #t)
+                                          '(#t #t #t #f #t))
+                #t)
+  (check-equal? (first-has-earlier-false? '(#t #t #t #f #t)
+                                          '(#t #t #f #t #t))
+                #f)
+  )

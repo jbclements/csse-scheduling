@@ -103,11 +103,6 @@
 
 ;; ooh, what about this?
 
-;; negate a requirement
-(define (neg/req [rf1 : ReqFun]) : ReqFun
-  (λ ([g : (Listof Grade-Record)])
-    (not (rf1 g))))
-
 ;; has the student passed the "bigger projects"/OO class?
 (define passed-bigger-projects? : ReqFun
   (or/req (passc/req "csc102")
@@ -136,29 +131,72 @@
   (or/req (pass/req "csc141")
           (pass/req "csc348")))
 
+;; these classes may be used as technical electives in the 2017-2019 catalog
+(define 2017-9-tes
+  ;; NB: for accounting purposes, 123 is basically a technical elective:
+  '("csc123"
+    "csc301"
+    "csc305" "csc309" "csc321" "csc323" "csc325" "csc344" "csc365"
+    "csc366" "csc369" "csc371" "csc378" "csc400" "csc402" "csc405"
+    "csc406" "csc409" "csc410" "csc422" "csc424" "csc429" "csc435"
+    "csc436" "csc437" "csc448" "csc454" "csc458" "csc466" "csc468"
+    "csc471" "csc473" "csc474" "csc476" "csc477" "csc478" "csc480"
+    "csc481" "csc483" "csc484" "csc486" "csc489" "csc490" "csc496"
+    "csc508" "csc509" "csc515" "csc521" "csc530" "csc540" "csc550"
+    "csc560" "csc564" "csc566" "csc569" "csc570" "csc572" "csc580"
+    "csc581" "csc582" "cpe400" "cpe416" "cpe419" "cpe428" "cpe464"
+    "cpe465" "cpe482" "cpe485" "cpe488" "data301"))
 
+;; these classes may be used as the upper-level technical elective in the
+;; 2017-2019 catalog
+(define 2017-9-upper-level-tes
+  '("csc325"
+    "csc366"  "csc402"  "csc405"  "csc406"  "csc409"  "csc410"
+    "csc422"  "csc424"  "csc429"  "csc435"  "csc437"  "csc454"  "csc466"
+    "csc468"  "csc473"  "csc474"  "csc476"  "csc477"  "csc478"  "csc481"
+    "csc483"  "csc484"  "csc486"  "csc489"  "csc508"  "csc509"  "csc515"
+    "csc521"  "csc530"  "csc540"  "csc550"  "csc560"  "csc564"  "csc566"
+    "csc572"  "csc580"  "csc581"  "csc582"  "cpe416"  "cpe465"))
+
+;; represents the requirement for a technical elective
+(define passed-technical-elective? : ReqFun
+  (apply or/req (map pass/req 2017-9-tes)))
+
+;; represents the requirement for an upper-level technical elective
+(define passed-upper-level-technical-elective? : ReqFun
+  (apply or/req (map pass/req 2017-9-upper-level-tes)))
+
+
+;; CAVEAT: NO WAY TO KNOW IF THE STUDENTS WILL TAKE AN EXTERNAL TE
 
 ;; the master list of requirements
 (define csc-requirements : (Listof Requirement)
   (let ([req (λ ([course-id : Course-Id]) : Requirement
                (list course-id (pass/req course-id)))])
-    (list (list "csc101" passed-101?)
-          (list "csc202" passed-data-structures?)
-          (list "csc203" passed-bigger-projects?)
-          (req  "csc225")
-          (req  "csc300")
-          (list "SE" passed-csc-se-req?)
-          (req  "cpe315")
-          (list "discrete" passed-discrete?)
-          (req  "csc349")
-          (req  "csc357")
-          (req "csc430")
-          (req "csc431")
-          (req "csc445")
-          (req "csc453")
-          (req "csc491")
-          (req "csc492")
-          )))
+    (append
+     ;; NB: 123 is *actually* treated like a technical elective...
+     (list (list "csc101" passed-101?)
+           (list "csc202" passed-data-structures?)
+           (list "csc203" passed-bigger-projects?)
+           (req  "csc225")
+           (req  "csc300")
+           (list "SE" passed-csc-se-req?)
+           (req  "cpe315")
+           (list "discrete" passed-discrete?)
+           (req  "csc349")
+           (req  "csc357")
+           (req "csc430")
+           (req "csc431")
+           (req "csc445")
+           (req "csc453")
+           (req "csc491")
+           (req "csc492")
+           
+           (list "upper-level-tech-elect" passed-upper-level-te?)
+           )
+     ;; 24 TE units minus upper-level (above) plus 123 = 6 classes:
+     (for/list ([i (in-range 6)])
+       (list (~a "technical-elective-" i) passed-te?)))))
 
 (define se-requirements : (Listof Requirement)
   (let ([req (λ ([course-id : Course-Id]) : Requirement
