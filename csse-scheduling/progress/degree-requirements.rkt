@@ -14,13 +14,17 @@
          csc-requirements
          cpe-requirements
          se-requirements
-         make-class-requirement
-         negate-requirement)
+         make-class-requirement)
 
 (define-type Qtr Natural)
 (define-type Course-Id String)
 (define-type Grade String)
-(define-type Grade-Record (List Qtr Course-Id Grade))
+(define-type Units Real)
+(define-type Grade-Record (List Qtr Course-Id Units Grade))
+
+(define gr-course second)
+(define gr-units third)
+(define gr-grade fourth)
 
 ;; given a list of grades, a course id, and a predicate mapping a grade to
 ;; a boolean, return a list of lists of grade-records indicating the
@@ -33,7 +37,7 @@
       (filter (λ ([gr : Grade-Record])
                 (and (equal? (second gr)
                              course-id)
-                     (pred (third gr))))
+                     (pred (gr-grade gr))))
               student-grades))
     (for/list ([row (in-list satisfying-rows)])
       (remove row student-grades))))
@@ -98,7 +102,7 @@
     (remove-duplicates
      (apply
       append
-      (for/list ([way (in-list ways)])
+      (for/list : (Listof (Listof Grade-Record))([way (in-list ways1)])
         (rf2 way))))))
 
 ;; ooh, what about this?
@@ -130,6 +134,20 @@
 (define passed-discrete? : ReqFun
   (or/req (pass/req "csc141")
           (pass/req "csc348")))
+
+;; did this student get 4 units total from csc400, cpe400, or csc490.
+(define got-special-problems-credit? : ReqFun
+  (λ ([g : (Listof Grade-Record)])
+    (<= 4 (+ (total-passed-units g "csc400")
+             (total-passed-units g "cpe400")
+             (total-passed-units g "csc490")))))
+
+;; how many units did this student earn from passing the class
+(define (total-passed-units [g : (Listof Grade-Record)] [course : Course-Id])
+  (check-course course)
+  (apply + (map gr-units
+                (filter (λ ([g : Grade-Record]) (equal? (gr-course g) course))
+                        g))))
 
 ;; these classes may be used as technical electives in the 2017-2019 catalog
 (define 2017-9-tes
@@ -192,11 +210,12 @@
            (req "csc491")
            (req "csc492")
            
-           (list "upper-level-tech-elect" passed-upper-level-te?)
+           (list "upper-level-tech-elect" passed-upper-level-technical-elective?)
+           
            )
      ;; 24 TE units minus upper-level (above) plus 123 = 6 classes:
      (for/list ([i (in-range 6)])
-       (list (~a "technical-elective-" i) passed-te?)))))
+       (list (~a "technical-elective-" i) passed-technical-elective?)))))
 
 (define se-requirements : (Listof Requirement)
   (let ([req (λ ([course-id : Course-Id]) : Requirement
@@ -244,7 +263,6 @@
 
 ;; for use in checking for specific classes:
 (define make-class-requirement pass/req)
-(define negate-requirement neg/req)
 
 (module+ test
   (require typed/rackunit)
