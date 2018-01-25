@@ -3,7 +3,8 @@
 ;; this file contains information related to student requirements
 ;; for graduation
 
-(require "../canonicalize.rkt")
+(require "../canonicalize.rkt"
+         "../course-listings.rkt")
 
 (provide Qtr
          Course-Id
@@ -17,6 +18,9 @@
          make-class-requirement
          missing-requirements
          requirement-work)
+
+;; for now, pin the catalog cycle:
+(define current-catalog-cycle "2017-2019")
 
 (define-type Qtr Natural)
 (define-type Course-Id String)
@@ -62,6 +66,12 @@
   (Grade -> Boolean)
   (λ ([g : Grade]) (not (not (member g grade-names)))))
 
+(define passing-grade?
+  (grade-names->pred passing-grades))
+
+(define better-than-d-grade?
+  (grade-names->pred better-than-d-grades))
+
 ;; Requirements are interesting; for most requirements, students
 ;; cannot fulfill multiple requirements using the same class.
 ;; accordingly, determining whether a collection of requirements
@@ -84,12 +94,12 @@
 ;; given a course id,
 ;; did the student pass the given course with a grade of C- or better?
 (define (passc/req [course-id : Course-Id]) : ReqFun
-  (passed-pred course-id (grade-names->pred better-than-d-grades)))
+  (passed-pred course-id better-than-d-grade?))
 
 ;; given a course id,
 ;; did the student pass the given course at all?
 (define (pass/req [course-id : Course-Id]) : ReqFun
-  (passed-pred course-id (grade-names->pred passing-grades)))
+  (passed-pred course-id passing-grade?))
 
 ;; combine two requirement-funs with an 'or'
 (define (or/req [rf1 : ReqFun] [rf2 : ReqFun])
@@ -116,6 +126,18 @@
       (for/list : (Listof (Listof (Listof Grade-Record)))
         ([way (in-list ways1)])
         (rf2 way))))))
+
+
+;; given a list of classes, return the first success.
+;; eliminates lots of garbage
+(define (or!/classes/req [courses : (Listof Course-Id)]) : ReqFun
+  (λ ([g : (Listof Grade-Record)])
+    (or (for/or : (U False (Listof (Listof Grade-Record)))
+          ([course (in-list courses)])
+          (define try ((pass/req course) g))
+          (cond [(empty? try) #f]
+                [else try]))
+        '())))
 
 ;; make a "ghost" requirement that checks the requirement but
 ;; does not deduct the used classes from the list of grades available.
@@ -175,30 +197,23 @@
           ;; no, fail:
           [else '()])))
 
-(module+ test
-  (require typed/rackunit)
-  (check-equal? (got-special-problems-credit?
-                 '((2178 "csc101" 4 "A")
-                   (2178 "csc400" 1 "A")
-                   (2178 "csc101" 4 "A")
-                   (2178 "csc101" 4 "A")
-                   (2178 "csc490" 1 "A")
-                   (2178 "csc490" 1 "A")
-                   (2178 "csc101" 4 "A")))
-                '())
+;; got 4 units of 400?
+(define got-4-units-of-400? : ReqFun
+  (λ ([g : (Listof Grade-Record)])
+    (define special-problems-courses '("cpe400"))
+    (for-each check-course special-problems-courses)
+    (define-values (special-topics-grades other-grades)
+      (partition (λ ([g : Grade-Record]) (member (gr-course g)
+                                                 special-problems-courses))
+                 g))
+    (define special-topics-units (apply + (map gr-units special-topics-grades)))
+    (cond [(<= 4 special-topics-units)
+           ;; yay, they get credit for them, take them out of the pool
+           (list other-grades)]
+          ;; no, fail:
+          [else '()])))
 
-  (check-equal? (got-special-problems-credit?
-                 '((2178 "csc101" 4 "A")
-                   (2178 "csc400" 1 "A")
-                   (2178 "csc102" 4 "A")
-                   (2178 "csc103" 4 "A")
-                   (2178 "cpe400" 2 "A")
-                   (2178 "csc490" 1 "A")
-                   (2178 "csc104" 4 "A")))
-                '(((2178 "csc101" 4 "A")
-                   (2178 "csc102" 4 "A")
-                   (2178 "csc103" 4 "A")
-                   (2178 "csc104" 4 "A")))))
+
 
 
 
@@ -209,51 +224,32 @@
                 (filter (λ ([g : Grade-Record]) (equal? (gr-course g) course))
                         g))))
 
-;; these classes may be used as technical electives in the 2017-2019 catalog
-(define 2017-9-tes
-  ;; NB: for accounting purposes, 123 is basically a technical elective:
-  '("csc123"
-    "csc301"
-    "csc305" "csc309" "csc321" "csc323" "csc325" "csc344" "csc365"
-    "csc366" "csc369" "csc371" "csc378" "csc400" "csc402" "csc405"
-    "csc406" "csc409" "csc410" "csc422" "csc424" "csc429" "csc435"
-    "csc436" "csc437" "csc448" "csc454" "csc458" "csc466" "csc468"
-    "csc471" "csc473" "csc474" "csc476" "csc477" "csc478" "csc480"
-    "csc481" "csc483" "csc484" "csc486" "csc489" "csc490" "csc496"
-    "csc508" "csc509" "csc515" "csc521" "csc530" "csc540" "csc550"
-    "csc560" "csc564" "csc566" "csc569" "csc570" "csc572" "csc580"
-    "csc581" "csc582" "cpe400" "cpe416" "cpe419" "cpe428" "cpe464"
-    "cpe465" "cpe482" "cpe485" "cpe488" "data301"))
-
-;; these classes may be used as the upper-level technical elective in the
-;; 2017-2019 catalog
-(define 2017-9-upper-level-tes
-  '("csc325"
-    "csc366"  "csc402"  "csc405"  "csc406"  "csc409"  "csc410"
-    "csc422"  "csc424"  "csc429"  "csc435"  "csc437"  "csc454"  "csc466"
-    "csc468"  "csc473"  "csc474"  "csc476"  "csc477"  "csc478"  "csc481"
-    "csc483"  "csc484"  "csc486"  "csc489"  "csc508"  "csc509"  "csc515"
-    "csc521"  "csc530"  "csc540"  "csc550"  "csc560"  "csc564"  "csc566"
-    "csc572"  "csc580"  "csc581"  "csc582"  "cpe416"  "cpe465"))
-
-;; given a list of classes, return the first success.
-;; eliminates lots of garbage
-(define (or!/classes/req [courses : (Listof Course-Id)]) : ReqFun
-  (λ ([g : (Listof Grade-Record)])
-    (or (for/or : (U False (Listof (Listof Grade-Record)))
-          ([course (in-list courses)])
-          (define try ((pass/req course) g))
-          (cond [(empty? try) #f]
-                [else try]))
-        '())))
-
 ;; represents the requirement for a technical elective
 (define passed-technical-elective? : ReqFun
-  (or!/classes/req 2017-9-tes))
+  (or!/classes/req (hash-ref csc-te-course-table current-catalog-cycle)))
 
 ;; represents the requirement for an upper-level technical elective
 (define passed-upper-level-technical-elective? : ReqFun
-  (or!/classes/req 2017-9-upper-level-tes))
+  (or!/classes/req (hash-ref csc-ul-te-course-table current-catalog-cycle)))
+
+;; short-cutting: find a cpe TE and remove it from the list
+(define passed-cpe-technical-elective? : ReqFun
+  (let ()
+    (define cpe-te-courses (hash-ref cpe-te-course-table current-catalog-cycle))
+    (λ ([grs : (Listof Grade-Record)])
+      (define success-grade : (U False Grade-Record)
+        (let loop ([grs grs])
+          (cond [(empty? grs) #f]
+                [else
+                 (define g (first grs))
+                 (cond
+                   [(and (member (gr-course g) cpe-te-courses)
+                         (passing-grade? (gr-grade g)))
+                    g]
+                   [else (loop (rest grs))])])))
+      (cond [success-grade (list (remove success-grade grs))]
+            ['()]))))
+
 
 
 ;; CAVEAT: NO WAY TO KNOW IF THE STUDENTS WILL TAKE AN EXTERNAL TE
@@ -318,7 +314,8 @@
 (define cpe-requirements : (Listof Requirement)
   (let ([req (λ ([course-id : Course-Id]) : Requirement
                (list course-id (pass/req course-id)))])
-    (list ; (req "cpe100") not useful for planning, I think
+    (list
+     ; (req "cpe100") not useful for planning?
      (list "csc101" passed-101?)
      (list "csc202" passed-data-structures?)
      (list "csc203" passed-bigger-projects?)
@@ -333,7 +330,12 @@
      (req "cpe461")
      (req "cpe462")
      (req "cpe464")
-     (req "csc348"))))
+     (req "csc348")
+     (list "cpe-te/400" (or!/req got-4-units-of-400?
+                                 passed-cpe-technical-elective?))
+     (list "cpe-te1" passed-cpe-technical-elective?)
+     (list "cpe-te2" passed-cpe-technical-elective?))
+    ))
 
 ;; for use in checking for specific classes:
 (define make-class-requirement pass/req)
@@ -373,6 +375,29 @@
 
 (module+ test
   (require typed/rackunit)
+
+  (check-equal? (got-special-problems-credit?
+                 '((2178 "csc101" 4 "A")
+                   (2178 "csc400" 1 "A")
+                   (2178 "csc101" 4 "A")
+                   (2178 "csc101" 4 "A")
+                   (2178 "csc490" 1 "A")
+                   (2178 "csc490" 1 "A")
+                   (2178 "csc101" 4 "A")))
+                '())
+
+  (check-equal? (got-special-problems-credit?
+                 '((2178 "csc101" 4 "A")
+                   (2178 "csc400" 1 "A")
+                   (2178 "csc102" 4 "A")
+                   (2178 "csc103" 4 "A")
+                   (2178 "cpe400" 2 "A")
+                   (2178 "csc490" 1 "A")
+                   (2178 "csc104" 4 "A")))
+                '(((2178 "csc101" 4 "A")
+                   (2178 "csc102" 4 "A")
+                   (2178 "csc103" 4 "A")
+                   (2178 "csc104" 4 "A"))))
   
   (check-equal?
    ((or!/req (pass/req "cpe100")
@@ -413,6 +438,24 @@
    (list '((2138 "cpe100" 4 "CR")
            (2138 "csc123" 4 "A")
            (2142 "csc102" 4 "A"))))
+
+  (check-equal?
+   (passed-cpe-technical-elective?
+    '((2178 "csc100" 4 "A")
+      (2178 "csc101" 4 "A")
+      (2178 "csc100" 4 "A")
+      (2178 "csc100" 4 "A")))
+   '())
+
+  (check-equal?
+   (passed-cpe-technical-elective?
+    '((2178 "csc100" 4 "A")
+      (2178 "csc101" 4 "A")
+      (2178 "csc530" 4 "A")
+      (2178 "csc100" 4 "A")))
+   '(((2178 "csc100" 4 "A")
+      (2178 "csc101" 4 "A")
+      (2178 "csc100" 4 "A"))))
 
   (check-equal? (apply
                  +
