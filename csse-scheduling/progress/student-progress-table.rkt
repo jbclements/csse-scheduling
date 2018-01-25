@@ -11,7 +11,7 @@
 
 (provide major-requirements
          major-requirement-names
-         student->bools
+         #;student->bools
          first-has-earlier-false?
          grad-years-possible
 
@@ -33,12 +33,15 @@
 (define (major-requirement-names [major : String]) : (Listof String)
   (map (inst first String Any) (major-requirements major)))
 
+
+;; requirements no longer produce booleans, so this is all commented out for now:
+#;(
 ;; given a student, produce a list of booleans representing their
 ;; satisfaction of the requirements. A #t indicates the requirement has been met.
 (define (student->bools [major : String] [student : Student]) : (Listof Boolean)
   (define requirements (major-requirements major))
   (for/list ([requirement (in-list requirements)])
-    ((second requirement) (student-grades student))))
+    ((second requirement) (student-grades student)))))
 
 (define (first-has-earlier-false? [lob1 : (Listof Boolean)]
                                   [lob2 : (Listof Boolean)]) : Boolean
@@ -88,26 +91,25 @@
 (define (not/p [pred : (Student -> Boolean)]) : (Student -> Boolean)
   (λ ([s : Student]) (not (pred s))))
 
-(define (expected-to-graduate-by [qtr : Qtr]) : (Student -> Boolean)
+(define ((expected-to-graduate-by [ds : Student-Dataset]) [qtr : Qtr]) : (Student -> Boolean)
   (λ ([s : Student])
-    (match (student-expected-graduation-qtr s)
-      ['unknown #f]
-      ['no-data (error "expected graduation data not available in this version")]
+    (match ((Student-Dataset-->expected-graduation-qtr ds) s)
+      [#f #f]
       [(? natural? n) (<= n qtr)])))
 
-(define (entered-on-or-before [qtr : Qtr]) : (Student -> Boolean)
+(define ((entered-on-or-before [ds : Student-Dataset]) [qtr : Qtr]) : (Student -> Boolean)
   (λ ([s : Student])
-    (define eqtr (student-entry-qtr s))
+    (define eqtr ((Student-Dataset-->entry-qtr ds) s))
     (and eqtr (<= eqtr qtr))))
 
-(define (has-major-in [lom : (Listof String)]) : (Student -> Boolean)
+(define ((has-major-in [ds : Student-Dataset]) [lom : (Listof String)]) : (Student -> Boolean)
   (λ ([s : Student])
-    (and (member (student-major s) lom)
+    (and (member ((Student-Dataset-->major ds) s) lom)
          #t)))
 
-(define (satisfies [req : ReqFun]) : (Student -> Boolean)
+(define ((satisfies [ds : Student-Dataset]) [req : ReqFun]) : (Student -> Boolean)
   (λ ([s : Student])
-    (req (student-grades s))))
+    (not (empty? (req ((Student-Dataset-->grades ds) s))))))
 
 
 (module+ test
