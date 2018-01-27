@@ -9,9 +9,7 @@
          "scheduled-by-csse-dept.rkt"
          "qtr-math.rkt")
 
-(provide schedule-read
-         year-schedule
-         year-records
+(provide validate-schedule
          schedule->records
          sections-equivalent
          year-sections-equivalent
@@ -31,7 +29,7 @@
 
 
 ;; represents a year's teaching assignments.. subtype of Sexp
-(define-type Schedule (Listof Instructor))
+(define-type Schedule (Pairof Natural (Listof Instructor)))
 
 ;; represents an instructor's assignments for the year
 (define-type Instructor (List Symbol
@@ -92,26 +90,22 @@
      (list (table-row-course (first g)) (apply append (map table-row-qtrs g)))
      SectionsTableRow)))
 
-;; given a year, return a list of records for that year
-(define (year-records [data-path : Path-String] [fall-year : Natural]) : (Listof Record)
-  (schedule->records
-   (year-schedule data-path fall-year)
-   (fall-year->catalog-cycle fall-year)
-   (fall-year->base-qtr fall-year)))
+;; given a schedule, return a sections table for that year
+(define (year-sections-equivalent [schedule : Schedule]) : SectionsTable
+  (sections-equivalent (schedule->records schedule)))
 
-;; given a year, return a sections table for that year
-(define (year-sections-equivalent [data-path : Path-String] [fall-year : Natural])
-  : SectionsTable
-  (sections-equivalent (year-records data-path fall-year)))
-
-(: schedule->records (Schedule CatalogCycle Natural -> (Listof Record)))
-(define (schedule->records schedule catalog-cycle base-qtr)
+(: schedule->records (Schedule -> (Listof Record)))
+(define (schedule->records schedule)
+  (define instructors (rest schedule))
+  (define catalog-cycle (fall-year->catalog-cycle
+                         (qtr->fall-year (first schedule))))
+  (define base-qtr (first schedule))
   (unless (= (modulo base-qtr 10) 8)
     (error 'schedule->records
            "expected base quarter ending in 8, got: ~a\v" base-qtr))
   (apply append
          (for/list : (Listof (Listof Record))
-           ([irec (in-list schedule)])
+           ([irec (in-list instructors)])
            (define instructor (first irec))
            (append
             (for/list : (Listof Record)
@@ -184,26 +178,14 @@
 (: record-size (Record -> CourseSize))
 (define record-size third)
 
-;; given a year, return the schedule associated with the school year
-;; beginning in fall of that year.
-(define (year-schedule [data-path : Path-String] [fall-year : Natural])
-  : Schedule
-  (define input-file (match fall-year
-                       [2016 (build-path data-path "schedule-2168.rktd")]
-                       [2017 (build-path data-path "schedule-2178.rktd")]
-                       [_ (error 'year-schedule "unexpected year: ~e"
-                                 fall-year)]))
-  (schedule-read input-file))
-
-;; given a filename, read the schedule
-(define (schedule-read [input-file : Path]) : Schedule
-  (map
-   sexp->instructor
-   (match (file->value input-file)
-     [(? list? l) l]
-     [_ (error 'schedule-read
-               "expected file containing schedule, got ~e"
-               input-file)])))
+;; validate that this is a legal schedule sexp
+(define (validate-schedule [schedule-sexp : Sexp]) : Schedule
+  (match schedule-sexp
+    [(cons (? natural? fall-qtr) (? list? instructors))
+     (cons fall-qtr (map sexp->instructor instructors))]
+    [other (raise-argument-error 'validate-schedule
+                                 "list containing fall qtr and list of instructors"
+                                 0 schedule-sexp)]))
 
 
 ;; given a list of records, return the # of sections of each course
