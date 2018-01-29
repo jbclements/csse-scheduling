@@ -91,25 +91,25 @@
 (define (not/p [pred : (Student -> Boolean)]) : (Student -> Boolean)
   (λ ([s : Student]) (not (pred s))))
 
-(define ((expected-to-graduate-by [ds : Student-Dataset]) [qtr : Qtr]) : (Student -> Boolean)
+(define (expected-to-graduate-by [qtr : Qtr]) : (Student -> Boolean)
   (λ ([s : Student])
-    (match ((Student-Dataset-->expected-graduation-qtr ds) s)
-      [#f #f]
+    (match (Student-expected-graduation-qtr s)
+      ['future #f]
       [(? natural? n) (<= n qtr)])))
 
-(define ((entered-on-or-before [ds : Student-Dataset]) [qtr : Qtr]) : (Student -> Boolean)
+(define (entered-on-or-before [qtr : Qtr]) : (Student -> Boolean)
   (λ ([s : Student])
-    (define eqtr ((Student-Dataset-->entry-qtr ds) s))
-    (and eqtr (<= eqtr qtr))))
+    (define eqtr (Student-entry-qtr s))
+    (and (not (equal? eqtr 'pre-poly)) (<= eqtr qtr))))
 
-(define ((has-major-in [ds : Student-Dataset]) [lom : (Listof String)]) : (Student -> Boolean)
+(define (has-major-in [lom : (Listof String)]) : (Student -> Boolean)
   (λ ([s : Student])
-    (and (member ((Student-Dataset-->major ds) s) lom)
+    (and (member (Student-major s) lom)
          #t)))
 
-(define ((satisfies [ds : Student-Dataset]) [req : ReqFun]) : (Student -> Boolean)
+(define (satisfies [req : ReqFun]) : (Student -> Boolean)
   (λ ([s : Student])
-    (not (empty? (req ((Student-Dataset-->grades ds) s))))))
+    (not (empty? (req (Student-grades s))))))
 
 
 (module+ test

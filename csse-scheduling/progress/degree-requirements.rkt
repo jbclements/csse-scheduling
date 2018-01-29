@@ -15,7 +15,9 @@
          csc-requirements
          cpe-requirements
          se-requirements
-         make-class-requirement
+         pass-requirement
+         pass-in-qtr-requirement
+         pass-with-c-in-qtr-requirement
          missing-requirements
          requirement-work)
 
@@ -28,6 +30,7 @@
 (define-type Units Real)
 (define-type Grade-Record (List Qtr Course-Id Units Grade))
 
+(define gr-qtr : (Grade-Record -> Qtr) first)
 (define gr-course : (Grade-Record -> Course-Id) second)
 (define gr-units : (Grade-Record -> Units) third)
 (define gr-grade : (Grade-Record -> String) fourth)
@@ -38,13 +41,21 @@
 (define (passed-pred [course-id : Course-Id]
                      [pred : (Grade -> Boolean)]) : ReqFun
   (check-course course-id)
+  (define passed-course?
+    (λ ([gr : Grade-Record])
+      (and (equal? (second gr)
+                   course-id)
+           (pred (gr-grade gr)))))
+  (satisfied-pred passed-course?))
+
+;; given a list of grades, and a predicate indicating whether a
+;; Grade-Record satisfies the requirement, return a list of
+;; lists of grade-recrods indicating the ways that the requirement
+;; could be satisfied
+(define (satisfied-pred [pred : (Grade-Record -> Boolean)]) : ReqFun
   (λ ([student-grades : (Listof Grade-Record)])
     (define satisfying-rows
-      (filter (λ ([gr : Grade-Record])
-                (and (equal? (second gr)
-                             course-id)
-                     (pred (gr-grade gr))))
-              student-grades))
+      (filter pred student-grades))
     (for/list ([row (in-list satisfying-rows)])
       (remove row student-grades))))
 
@@ -73,12 +84,12 @@
   (grade-names->pred better-than-d-grades))
 
 ;; Requirements are interesting; for most requirements, students
-;; cannot fulfill multiple requirements using the same class.
+;; cannot fulfill multiple requirements using the same course.
 ;; accordingly, determining whether a collection of requirements
 ;; is met requires "assigning" grades to certain requirements. To
 ;; model this, requirements accept a list of grades and return
 ;; a list of possible ways in which the requirement is satisfied,
-;; where a "way" is represented as a list of the class grades not
+;; where a "way" is represented as a list of the course grades not
 ;; yet "used" by the requirement
 
 ;; a ReqFun represents a requirement test; it accepts a list of
@@ -100,6 +111,20 @@
 ;; did the student pass the given course at all?
 (define (pass/req [course-id : Course-Id]) : ReqFun
   (passed-pred course-id passing-grade?))
+
+(define (pass-with-grade-in-qtr/req [course-id : Course-Id] [qtr : Qtr]
+                                    [grade-pred : (Grade -> Boolean)]) : ReqFun
+  (check-course course-id)
+  (satisfied-pred (λ ([gr : Grade-Record])
+                    (and (= (gr-qtr gr) qtr)
+                         (equal? (gr-course gr) course-id)
+                         (grade-pred (gr-grade gr))))))
+
+(define (pass-in-qtr/req [course-id : Course-Id] [qtr : Qtr]) : ReqFun
+  (pass-with-grade-in-qtr/req course-id qtr passing-grade?))
+
+(define (pass/c-in-qtr/req [course-id : Course-Id] [qtr : Qtr]) : ReqFun
+  (pass-with-grade-in-qtr/req course-id qtr better-than-d-grade?))
 
 ;; combine two requirement-funs with an 'or'
 (define (or/req [rf1 : ReqFun] [rf2 : ReqFun])
@@ -128,9 +153,9 @@
         (rf2 way))))))
 
 
-;; given a list of classes, return the first success.
+;; given a list of courses, return the first success.
 ;; eliminates lots of garbage
-(define (or!/classes/req [courses : (Listof Course-Id)]) : ReqFun
+(define (or!/courses/req [courses : (Listof Course-Id)]) : ReqFun
   (λ ([g : (Listof Grade-Record)])
     (or (for/or : (U False (Listof (Listof Grade-Record)))
           ([course (in-list courses)])
@@ -140,7 +165,7 @@
         '())))
 
 ;; make a "ghost" requirement that checks the requirement but
-;; does not deduct the used classes from the list of grades available.
+;; does not deduct the used courses from the list of grades available.
 ;; useful as e.g. when passing 102 is used as evidence that student
 ;; has 101 credit
 (define (ghost/req [rf : ReqFun]) : ReqFun
@@ -148,21 +173,21 @@
     (cond [(not (empty? (rf g))) (list g)]
           [else '()])))
 
-;; has the student passed the "bigger projects"/OO class?
+;; has the student passed the "bigger projects"/OO course?
 (define passed-bigger-projects? : ReqFun
   (or!/req
    (or!/req (passc/req "csc102")
             (passc/req "csc203"))
    (ghost/req (pass/req "csc357"))))
 
-;; has the student passed the data structures class?
+;; has the student passed the data structures course?
 (define passed-data-structures? : ReqFun
   (or!/req
    (or!/req (passc/req "csc202")
             (passc/req "csc103"))
    (ghost/req (pass/req "csc357"))))
 
-;; passed-101 : has the student passed 101 or taken a later class
+;; passed-101 : has the student passed 101 or taken a later course
 ;; indicating that they didn't need it?
 (define passed-101?
   (or!/req (passc/req "csc101")
@@ -214,10 +239,7 @@
           [else '()])))
 
 
-
-
-
-;; how many units did this student earn from passing the class
+;; how many units did this student earn from passing the course
 (define (total-passed-units [g : (Listof Grade-Record)] [course : Course-Id])
   (check-course course)
   (apply + (map gr-units
@@ -226,11 +248,11 @@
 
 ;; represents the requirement for a technical elective
 (define passed-technical-elective? : ReqFun
-  (or!/classes/req (hash-ref csc-te-course-table current-catalog-cycle)))
+  (or!/courses/req (hash-ref csc-te-course-table current-catalog-cycle)))
 
 ;; represents the requirement for an upper-level technical elective
 (define passed-upper-level-technical-elective? : ReqFun
-  (or!/classes/req (hash-ref csc-ul-te-course-table current-catalog-cycle)))
+  (or!/courses/req (hash-ref csc-ul-te-course-table current-catalog-cycle)))
 
 ;; short-cutting: find a cpe TE and remove it from the list
 (define passed-cpe-technical-elective? : ReqFun
@@ -282,7 +304,7 @@
                                                 passed-technical-elective?))
            
            )
-     ;; 24 TE units minus upper-level (above) minus special-problems plus 123 = 5 classes:
+     ;; 24 TE units minus upper-level (above) minus special-problems plus 123 = 5 courses:
      (for/list : (Listof Requirement)
        ([i (in-range 5)])
        (list (~a "technical-elective-" i) passed-technical-elective?)))))
@@ -337,8 +359,10 @@
      (list "cpe-te2" passed-cpe-technical-elective?))
     ))
 
-;; for use in checking for specific classes:
-(define make-class-requirement pass/req)
+;; for use in checking for specific courses:
+(define pass-requirement pass/req)
+(define pass-in-qtr-requirement pass-in-qtr/req)
+(define pass-with-c-in-qtr-requirement pass/c-in-qtr/req)
 
 ;; return a list of the names of the student's unsatisfied requirements
 (define (missing-requirements [rs : (Listof Requirement)]
@@ -418,6 +442,62 @@
    '(((2178 "csc400" 4 "A")
       (2178 "csc400" 4 "A")
       (2178 "csc400" 4 "A"))))
+
+  (check-equal?
+   ((pass/req "cpe100")
+    '((2178 "csc400" 4 "A")
+      (2178 "cpe100" 4 "D")
+      (2178 "csc400" 4 "A")
+      (2178 "csc400" 4 "A")))
+   '(((2178 "csc400" 4 "A")
+      (2178 "csc400" 4 "A")
+      (2178 "csc400" 4 "A"))))
+
+  (check-equal?
+   ((passc/req "cpe100")
+    '((2178 "csc400" 4 "A")
+      (2178 "cpe100" 4 "D")
+      (2178 "csc400" 4 "A")
+      (2178 "csc400" 4 "A")))
+   '())
+
+  (check-equal?
+   ((pass-in-qtr/req "cpe100" 2178)
+    '((2178 "csc400" 4 "A")
+      (2178 "cpe100" 4 "D")
+      (2178 "csc400" 4 "A")
+      (2178 "csc400" 4 "A")))
+   '(((2178 "csc400" 4 "A")
+      (2178 "csc400" 4 "A")
+      (2178 "csc400" 4 "A"))))
+
+  (check-equal?
+   ((pass/c-in-qtr/req "cpe100" 2178)
+    '((2178 "csc400" 4 "A")
+      (2178 "cpe100" 4 "A")
+      (2178 "csc400" 4 "A")
+      (2178 "csc400" 4 "A")))
+   '(((2178 "csc400" 4 "A")
+      (2178 "csc400" 4 "A")
+      (2178 "csc400" 4 "A"))))
+  
+  (check-equal?
+   ((pass/c-in-qtr/req "cpe100" 2178)
+    '((2178 "csc400" 4 "A")
+      (2178 "cpe100" 4 "A")
+      (2178 "csc400" 4 "A")
+      (2178 "csc400" 4 "A")))
+   '(((2178 "csc400" 4 "A")
+      (2178 "csc400" 4 "A")
+      (2178 "csc400" 4 "A"))))
+
+  (check-equal?
+   ((pass-in-qtr/req "cpe100" 2174)
+    '((2178 "csc400" 4 "A")
+      (2178 "cpe100" 4 "A")
+      (2178 "csc400" 4 "A")
+      (2178 "csc400" 4 "A")))
+   '())
 
   (check-equal?
    ((or!/req (pass/req "cpe100")

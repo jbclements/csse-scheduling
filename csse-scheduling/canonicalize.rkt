@@ -242,6 +242,7 @@
 ;; return all of the mappings for a given class id
 (: id-mappings (CourseID -> (Listof (List CatalogCycle Subject CourseNum))))
 (define (id-mappings id)
+  (ensure-canonical id)
   (define rows
     (filter (λ ([r : MappingRow])
               (equal? (mapping-row-id r) id))
