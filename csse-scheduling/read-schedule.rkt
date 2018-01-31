@@ -157,9 +157,21 @@
 
 (define-predicate instructor? Instructor)
 
+;; remove underscores (they're just placeholders)
+(define (strip-placeholders [i : Instructor]) : Instructor
+  (list (first i)
+        (cons 'f (strip-underscores (rest (second i))))
+        (cons 'w (strip-underscores (rest (third i))))
+        (cons 's (strip-underscores (rest (fourth i))))))
+
+(define (strip-underscores [cs : Quarter]) : Quarter
+  (filter (λ ([c : CourseA]) : Boolean
+            (not (equal? c '_)))
+          cs))
+
 (: sexp->instructor (Any -> Instructor))
 (define (sexp->instructor s)
-  (cond [(instructor? s) s]
+  (cond [(instructor? s) (strip-placeholders s)]
         [else (raise-argument-error
                'sexp->instructor
                "legal instructor s-expression"
