@@ -3,10 +3,12 @@
 ;; functions for mapping back and forth between quarters,
 ;; fall years, and catalog cycles
 
-(require racket/match)
+(require racket/match
+         (only-in racket/list range))
 
 (provide CatalogCycle
          fall-year->catalog-cycle
+         catalog-cycle->fall-years
          fall-year->base-qtr
          qtr->fall-year
          qtr->cycle
@@ -15,6 +17,7 @@
          qtr->year
          qtr->string
          year->qtrs
+         catalog-cycle->qtrs
          encode-qtr
          Season)
 
@@ -57,6 +60,16 @@
            "year mapping to known cycle (extend list?)"
            0 year)]))
 
+;; given a cycle (e.g. "2015-2017", return the fall years that
+;; map to it
+(define (catalog-cycle->fall-years [cycle : CatalogCycle]) : (Listof Natural)
+  (match cycle
+    [(regexp #px"^(\\d{4})-(\\d{4})$" (list _ startstr endstr))
+     (define start-year (assert (string->number (assert startstr string?)) natural?))
+     (define end-year (assert (string->number (assert endstr string?)) natural?))
+     (range start-year end-year)]))
+
+(define natural? exact-nonnegative-integer?)
 
 ;; map a year to the fall qtr that occurs in it (see example below)
 (define (fall-year->base-qtr [year : Natural]) : Natural
@@ -143,7 +156,6 @@
 (define (qtr->string [qtr : Natural]) : String
   (string-append (qtr->season qtr) " " (number->string (qtr->year qtr))))
 
-
 ;; return the quarter numbers greater than or equal
 ;; to the first quarter and less than the second.
 ;; ignore summer quarters.
@@ -176,11 +188,21 @@
   (qtrs-in-range (fall-year->base-qtr year)
                  (fall-year->base-qtr (add1 year))))
 
+;; given a catalog cycle, return the quarters that fall into it.
+(define (catalog-cycle->qtrs [cycle : CatalogCycle]) : (Listof Natural)
+  (apply append (map year->qtrs (catalog-cycle->fall-years cycle))))
+
 
 
 (module+ test
   (require typed/rackunit)
 
+  
+  (check-equal? (catalog-cycle->fall-years "1994-1997") '(1994 1995 1996))
+  (check-equal? (catalog-cycle->fall-years "2015-2017") '(2015 2016))
+
+  (check-equal? (catalog-cycle->qtrs "2015-2017")
+                '(2158 2162 2164 #;2166 2168 2172 2174 #;2176))
   
   (check-equal? (qtr->year 2018) 2001)
   (check-equal? (qtr->year 976) 1997)

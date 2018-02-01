@@ -154,7 +154,7 @@
 
 
 ;; given a list of courses, return the first success.
-;; eliminates lots of garbage
+;; eliminates lots of garbage collection
 (define (or!/courses/req [courses : (Listof Course-Id)]) : ReqFun
   (λ ([g : (Listof Grade-Record)])
     (or (for/or : (U False (Listof (Listof Grade-Record)))
@@ -206,10 +206,11 @@
   (or!/req (pass/req "csc141")
           (pass/req "csc348")))
 
-;; did this student get 4 units total from csc400, cpe400, or csc490.
+;; did this student get 4 units total from csc400, cpe400, or csc490/496.
 (define got-special-problems-credit? : ReqFun
   (λ ([g : (Listof Grade-Record)])
-    (define special-problems-courses '("csc400" "cpe400" "csc490"))
+    (define special-problems-courses
+      '("csc400" "cpe400" "csc490" "csc496"))
     (for-each check-course special-problems-courses)
     (define-values (special-topics-grades other-grades)
       (partition (λ ([g : Grade-Record]) (member (gr-course g)
@@ -253,6 +254,14 @@
 ;; represents the requirement for an upper-level technical elective
 (define passed-upper-level-technical-elective? : ReqFun
   (or!/courses/req (hash-ref csc-ul-te-course-table current-catalog-cycle)))
+
+;; represents the requirement for a technical elective
+(define passed-se-technical-elective? : ReqFun
+  (or!/courses/req (hash-ref se-te-course-table current-catalog-cycle)))
+
+;; represents the requirement for an upper-level technical elective
+(define passed-upper-level-se-technical-elective? : ReqFun
+  (or!/courses/req (hash-ref se-ul-te-course-table current-catalog-cycle)))
 
 ;; short-cutting: find a cpe TE and remove it from the list
 (define passed-cpe-technical-elective? : ReqFun
@@ -312,25 +321,35 @@
 (define se-requirements : (Listof Requirement)
   (let ([req (λ ([course-id : Course-Id]) : Requirement
                (list course-id (pass/req course-id)))])
-    (list (list "csc101" passed-101?)
-          (list "csc202" passed-data-structures?)
-          (list "csc203" passed-bigger-projects?)
-          (req  "csc225")
-          (req  "csc300")
-          (req  "csc305")
-          (req  "csc308")
-          (req  "csc309")
-          (list "discrete" passed-discrete?)
-          (req  "csc349")
-          (req  "csc357")
-          (req  "csc402")
-          (req  "csc405")
-          (req  "csc406")
-          (req  "csc430")
-          (req  "csc484")
-          (req "csc491")
-          (req "csc492")
-          )
+    (append
+     (list (list "csc101" passed-101?)
+           (list "csc202" passed-data-structures?)
+           (list "csc203" passed-bigger-projects?)
+           (req  "csc225")
+           (req  "csc300")
+           (req  "csc305")
+           (req  "csc308")
+           (req  "csc309")
+           (list "discrete" passed-discrete?)
+           (req "csc349")
+           (req "csc357")
+           (req  "csc402")
+           (req  "csc405")
+           (req  "csc406")
+           (req  "csc430")
+           (req  "csc484")
+           (req "csc491")
+           (req "csc492")
+           (list "se-upper-level-tech-elect"
+                 passed-upper-level-se-technical-elective?)
+           (list "te/special-problems"
+                 (or!/req got-special-problems-credit?
+                          passed-se-technical-elective?)))
+     ;; 20 TE units minus upper-level (above) minus special problems plus 123
+     (for/list : (Listof Requirement)
+       ([i (in-range 4)])
+       (list (~a "SE-technical-elective-" i)
+             passed-se-technical-elective?)))
     ))
 
 (define cpe-requirements : (Listof Requirement)
@@ -346,8 +365,8 @@
      (req "cpe315")
      (req "cpe329")
      (req "csc357")
-     (req "cpe350")
-     (req "cpe450")
+     (req "cpe350") ;; limited work for us
+     (req "cpe450") ;; limited work for us
      (req "csc453")
      (req "cpe461")
      (req "cpe462")
@@ -394,6 +413,10 @@
     [(or "csc491" "csc492") (list 'csse-senior-project 2)]
     [(or "cpe461" "cpe462") (list 'cpe-senior-project 2)]
     ;; we don't have masters' requirements in here yet... :(
+    ;; no work is required from us for these, taught by EE:
+    [(or "cpe233" "cpe133" "cpe329") (list 'ugrad 0)]
+    ["cpe350" (list 'cpe-capstone 4)]
+    ["cpe450" (list 'cpe-capstone 3)]
     [else (list 'ugrad 4)]))
 
 
@@ -545,6 +568,16 @@
                    requirement-work
                    (map (inst first String Any) csc-requirements))))
                 88)
+
+  (check-equal? (apply
+                 +
+                 (map
+                  (inst second Any Real Any)
+                  (map
+                   requirement-work
+                   (map (inst first String Any) cpe-requirements))))
+                ;; REGRESSION:
+                55)
 
   (check-equal? (missing-requirements csc-requirements '())
                 (map (inst first String Any) csc-requirements))
