@@ -1,6 +1,7 @@
 #lang typed/racket
 
-(provide csc-te-course-table
+(provide (all-defined-out))
+#;(provide csc-te-course-table
          csc-ul-te-course-table
          se-te-course-table
          se-ul-te-course-table
@@ -55,12 +56,20 @@
     "csc550" "csc560" "csc564" "csc566" "csc572" "csc580"
     "csc581" "csc582" "cpe416" "cpe465"))
 
+(define 2017-csc-grad-courses : (Listof String)
+  '("csc508"
+    "csc509" "csc515" "csc521" "csc530" "csc540" "csc550" "csc560"
+    "csc564" "csc566" "csc569" "csc570" "csc572" "csc580" "csc581"
+    "csc582"))
+
 ;; the courses that are legal as CPE technical electives.
-;; specifically, all 400 and 500-level CPE and CSC courses.
+;; specifically, all 300, 400 and 500-level CPE and CSC courses.
 ;; There are eligible EE courses, as well, but they don't
 ;; appear in our database.
-(define cpe-te-courses
-  '("csc405"
+;; this includes a bunch of required courses, too, which is weird.
+(define 2017-cpe-te-courses
+  (append
+   '("csc405"
     "csc493" "csc486" "csc454" "csc476" "csc409" "csc581" "cpe479"
     "csc521" "cpe522" "csc406" "csc469" "csc466" "csc471" "cpe461"
     "csc437" "csc530" "cpe441" "csc429" "cpe432" "cpe493" "csc481"
@@ -73,7 +82,15 @@
     "cpe450" "csc402" "csc453" "csc509" "csc436" "cpe495" "csc500"
     "csc424" "csc491" "csc566" "cpe465" "csc508" "csc580" "csc496"
     "csc474" "csc569" "cpe464" "csc582" "cpe439" "cpe400" "csc564"
-    "cpe521" "csc515" "csc540" "csc478" "csc483"))
+    "cpe521" "csc515" "csc540" "csc478" "csc483")
+   '("cpe315"
+     "cpe328" "cpe329" "cpe336" "cpe350" "cpe368" "csc300" "csc301"
+     "csc302" "csc303" "csc305" "csc307" "csc308" "csc309" "csc310"
+     "csc311" "csc320" "csc321" "csc323" "csc325" "csc344" "csc348"
+     "csc349" "csc350" "csc357" "csc365" "csc366" "csc369" "csc371"
+     "csc378")))
+
+
 
 (define csc-te-course-table : (Immutable-HashTable String (Listof String))
   (make-immutable-hash
@@ -99,4 +116,4 @@
 
 (define cpe-te-course-table : (Immutable-HashTable String (Listof String))
   (make-immutable-hash
-   `(("2017-2019" . ,cpe-te-courses))))
+   `(("2017-2019" . ,2017-cpe-te-courses))))
