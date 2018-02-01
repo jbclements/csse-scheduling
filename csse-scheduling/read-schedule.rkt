@@ -2,7 +2,6 @@
 
 ;; this file parses the schedule-FALLQTR.rktd file, and rearranges
 ;; the data to show what's happening by quarter by course.
-;; it also generates a .csv file, suitable 
 
 (require racket/runtime-path
          "canonicalize.rkt"
