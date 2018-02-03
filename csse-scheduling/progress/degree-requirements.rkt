@@ -18,8 +18,7 @@
          pass-requirement
          pass-in-qtr-requirement
          pass-with-c-in-qtr-requirement
-         missing-requirements
-         requirement-work)
+         missing-requirements)
 
 ;; for now, pin the catalog cycle:
 (define current-catalog-cycle "2017-2019")
@@ -400,26 +399,6 @@
         [ways (values ways missing)])))
   (reverse missing))
 
-;; a work-piece
-(define-type WorkPiece (List WorkKind Units))
-(define-type WorkKind (U 'ugrad 'grad
-                         'csse-senior-project
-                         'cpe-senior-project
-                         'masters-thesis))
-
-;; what work-piece is required to help a student fill a requirement?
-(define (requirement-work [req : String])
-  (match req
-    [(or "csc491" "csc492") (list 'csse-senior-project 2)]
-    [(or "cpe461" "cpe462") (list 'cpe-senior-project 2)]
-    ;; we don't have masters' requirements in here yet... :(
-    ;; no work is required from us for these, taught by EE:
-    [(or "cpe233" "cpe133" "cpe329") (list 'ugrad 0)]
-    ["cpe350" (list 'cpe-capstone 4)]
-    ["cpe450" (list 'cpe-capstone 3)]
-    [else (list 'ugrad 4)]))
-
-
 (module+ test
   (require typed/rackunit)
 
@@ -560,7 +539,8 @@
       (2178 "csc101" 4 "A")
       (2178 "csc100" 4 "A"))))
 
-  (check-equal? (apply
+  ;; not a part of this file any more...
+  #;((check-equal? (apply
                  +
                  (map
                   (inst second Any Real Any)
@@ -577,7 +557,7 @@
                    requirement-work
                    (map (inst first String Any) cpe-requirements))))
                 ;; REGRESSION:
-                55)
+                55))
 
   (check-equal? (missing-requirements csc-requirements '())
                 (map (inst first String Any) csc-requirements))
