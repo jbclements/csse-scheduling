@@ -67,9 +67,11 @@
 ;; There are eligible EE courses, as well, but they don't
 ;; appear in our database.
 ;; this includes a bunch of required courses, too, which is weird.
+;; as with above, 123 is basically treated as a TE for the program requirements
 (define 2017-cpe-te-courses
   (append
-   '("csc405"
+   '("csc123"
+     "csc405"
     "csc493" "csc486" "csc454" "csc476" "csc409" "csc581" "cpe479"
     "csc521" "cpe522" "csc406" "csc469" "csc466" "csc471" "cpe461"
     "csc437" "csc530" "cpe441" "csc429" "cpe432" "cpe493" "csc481"

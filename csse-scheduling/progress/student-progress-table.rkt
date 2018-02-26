@@ -11,7 +11,8 @@
 
 (provide major-requirements
          major-requirement-names
-         #;student->bools
+         max-num-requirements
+         student->bools
          first-has-earlier-false?
          grad-years-possible
 
@@ -29,19 +30,26 @@
     ["CPE" cpe-requirements]
     ["SE"  se-requirements]))
 
+(define max-num-requirements
+  (apply max (map (inst length Requirement)
+                  (list csc-requirements
+                        se-requirements
+                        cpe-requirements))))
+
 ;; given a major, return the names of the requirements
 (define (major-requirement-names [major : String]) : (Listof String)
   (map (inst first String Any) (major-requirements major)))
 
 
 ;; requirements no longer produce booleans, so this is all commented out for now:
-#;(
+
 ;; given a student, produce a list of booleans representing their
 ;; satisfaction of the requirements. A #t indicates the requirement has been met.
-(define (student->bools [major : String] [student : Student]) : (Listof Boolean)
-  (define requirements (major-requirements major))
-  (for/list ([requirement (in-list requirements)])
-    ((second requirement) (student-grades student)))))
+(define (student->bools [student : Student]) : (Listof Boolean)
+  (define requirements (major-requirements (Student-major student)))
+  (define needed (missing-requirements requirements (Student-grades student)))
+  (for/list ([req-name (in-list (map (inst first String) requirements))])
+    (not (member req-name needed))))
 
 (define (first-has-earlier-false? [lob1 : (Listof Boolean)]
                                   [lob2 : (Listof Boolean)]) : Boolean

@@ -66,7 +66,7 @@
                           0 course-id))
   (void))
 
-(define better-than-d-grades : (Listof String)
+(define c-passing-grades : (Listof String)
   '("A" "A-" "B+" "B" "B-" "C+" "C" "C-"))
 
 (define passing-grades : (Listof String)
@@ -79,8 +79,8 @@
 (define passing-grade?
   (grade-names->pred passing-grades))
 
-(define better-than-d-grade?
-  (grade-names->pred better-than-d-grades))
+(define c-passing-grade?
+  (grade-names->pred c-passing-grades))
 
 ;; Requirements are interesting; for most requirements, students
 ;; cannot fulfill multiple requirements using the same course.
@@ -89,12 +89,18 @@
 ;; model this, requirements accept a list of grades and return
 ;; a list of possible ways in which the requirement is satisfied,
 ;; where a "way" is represented as a list of the course grades not
-;; yet "used" by the requirement
+;; yet "used" by the requirement.
 
 ;; a ReqFun represents a requirement test; it accepts a list of
 ;; grades, and returns a list of lists of grade-records,
 ;; indicating the ways in which that requirement could "use up"
 ;; the student's grades. The empty list therefore indicates failure.
+
+;; Unsurprisingly, this leads to some pretty catastrophic exponential
+;; blow-up. Accordingly, we use the or!/req function which cuts off
+;; exploration at the first success. I believe this is a reasonable
+;; analog of prolog's "cut" operator.
+
 (define-type ReqFun ((Listof Grade-Record) -> (Listof (Listof Grade-Record))))
 
 (define-type Requirement (List String ReqFun))
@@ -104,7 +110,7 @@
 ;; given a course id,
 ;; did the student pass the given course with a grade of C- or better?
 (define (passc/req [course-id : Course-Id]) : ReqFun
-  (passed-pred course-id better-than-d-grade?))
+  (passed-pred course-id c-passing-grade?))
 
 ;; given a course id,
 ;; did the student pass the given course at all?
@@ -123,7 +129,7 @@
   (pass-with-grade-in-qtr/req course-id qtr passing-grade?))
 
 (define (pass/c-in-qtr/req [course-id : Course-Id] [qtr : Qtr]) : ReqFun
-  (pass-with-grade-in-qtr/req course-id qtr better-than-d-grade?))
+  (pass-with-grade-in-qtr/req course-id qtr c-passing-grade?))
 
 ;; combine two requirement-funs with an 'or'
 (define (or/req [rf1 : ReqFun] [rf2 : ReqFun])
@@ -281,88 +287,98 @@
             ['()]))))
 
 
+;; signal an error if two requirements have the same name
+(define (ensure-distinct-names [reqs : (Listof Requirement)]) : (Listof Requirement)
+  (match (check-duplicates (map (inst first String) reqs))
+    [#f reqs]
+    [other (error 'ensure-distinct
+                  "duplicate requirement name: ~e"
+                  other)]))
 
 ;; CAVEAT: NO WAY TO KNOW IF THE STUDENTS WILL TAKE AN EXTERNAL TE
 
 ;; the master list of requirements
 (define csc-requirements : (Listof Requirement)
-  (let ([req (λ ([course-id : Course-Id]) : Requirement
-               (list course-id (pass/req course-id)))])
-    (append
-     ;; NB: 123 is *actually* treated like a technical elective...
-     (list (list "csc101" passed-101?)
-           (list "csc202" passed-data-structures?)
-           (list "csc203" passed-bigger-projects?)
-           (req  "csc225")
-           (req  "csc300")
-           (list "SE" passed-csc-se-req?)
-           (req  "cpe315")
-           (list "discrete" passed-discrete?)
-           (req  "csc349")
-           (req  "csc357")
-           (req "csc430")
-           (req "csc431")
-           (req "csc445")
-           (req "csc453")
-           (req "csc491")
-           (req "csc492")
+  (ensure-distinct-names
+   (let ([req (λ ([course-id : Course-Id]) : Requirement
+                (list course-id (pass/req course-id)))])
+     (append
+      ;; NB: 123 is *actually* treated like a technical elective...
+      (list (list "csc101" passed-101?)
+            (list "csc202" passed-data-structures?)
+            (list "csc203" passed-bigger-projects?)
+            (req  "csc225")
+            (req  "csc300")
+            (list "SE" passed-csc-se-req?)
+            (req  "cpe315")
+            (list "discrete" passed-discrete?)
+            (req  "csc349")
+            (req  "csc357")
+            (req "csc430")
+            (req "csc431")
+            (req "csc445")
+            (req "csc453")
+            (req "csc491")
+            (req "csc492")
            
-           (list "upper-level-tech-elect" passed-upper-level-technical-elective?)
-           (list "te/special-problems" (or!/req got-special-problems-credit?
-                                                passed-technical-elective?))
+            (list "upper-level-tech-elect" passed-upper-level-technical-elective?)
+            (list "te/special-problems" (or!/req got-special-problems-credit?
+                                                 passed-technical-elective?))
            
-           )
-     ;; 24 TE units minus upper-level (above) minus special-problems plus 123 = 5 courses:
-     (for/list : (Listof Requirement)
-       ([i (in-range 5)])
-       (list (~a "technical-elective-" i) passed-technical-elective?)))))
+            )
+      ;; 24 TE units minus upper-level (above) minus special-problems plus 123 = 5 courses:
+      (for/list : (Listof Requirement)
+        ([i (in-range 5)])
+        (list (~a "technical-elective-" i) passed-technical-elective?))))))
 
 (define se-requirements : (Listof Requirement)
-  (let ([req (λ ([course-id : Course-Id]) : Requirement
-               (list course-id (pass/req course-id)))])
-    (append
-     (list (list "csc101" passed-101?)
-           (list "csc202" passed-data-structures?)
-           (list "csc203" passed-bigger-projects?)
-           (req  "csc225")
-           (req  "csc300")
-           (req  "csc305")
-           (req  "csc308")
-           (req  "csc309")
-           (list "discrete" passed-discrete?)
-           (req "csc349")
-           (req "csc357")
-           (req  "csc402")
-           (req  "csc405")
-           (req  "csc406")
-           (req  "csc430")
-           (req  "csc484")
-           (req "csc491")
-           (req "csc492")
-           (list "se-upper-level-tech-elect"
-                 passed-upper-level-se-technical-elective?)
-           (list "te/special-problems"
-                 (or!/req got-special-problems-credit?
-                          passed-se-technical-elective?)))
-     ;; 20 TE units minus upper-level (above) minus special problems plus 123
-     (for/list : (Listof Requirement)
-       ([i (in-range 4)])
-       (list (~a "SE-technical-elective-" i)
-             passed-se-technical-elective?)))
-    ))
+  (ensure-distinct-names
+   (let ([req (λ ([course-id : Course-Id]) : Requirement
+                (list course-id (pass/req course-id)))])
+     (append
+      (list (list "csc101" passed-101?)
+            (list "csc202" passed-data-structures?)
+            (list "csc203" passed-bigger-projects?)
+            (req  "csc225")
+            (req  "csc300")
+            (req  "csc305")
+            (req  "csc308")
+            (req  "csc309")
+            (list "discrete" passed-discrete?)
+            (req "csc349")
+            (req "csc357")
+            (req  "csc402")
+            (req  "csc405")
+            (req  "csc406")
+            (req  "csc430")
+            (req  "csc484")
+            (req "csc491")
+            (req "csc492")
+            (list "se-upper-level-tech-elect"
+                  passed-upper-level-se-technical-elective?)
+            (list "te/special-problems"
+                  (or!/req got-special-problems-credit?
+                           passed-se-technical-elective?)))
+      ;; 20 TE units minus upper-level (above) minus special problems plus 123
+      (for/list : (Listof Requirement)
+        ([i (in-range 4)])
+        (list (~a "SE-technical-elective-" i)
+              passed-se-technical-elective?)))
+     )))
 
 (define cpe-requirements : (Listof Requirement)
-  (let ([req (λ ([course-id : Course-Id]) : Requirement
+  (ensure-distinct-names
+   (let ([req (λ ([course-id : Course-Id]) : Requirement
                (list course-id (pass/req course-id)))])
     (list
      ; (req "cpe100") not useful for planning?
      (list "csc101" passed-101?)
      (list "csc202" passed-data-structures?)
      (list "csc203" passed-bigger-projects?)
-     (req "cpe133")
-     (req "cpe233")
+     (req "cpe133") ;; no work for us
+     (req "cpe233") ;; no work for us
      (req "cpe315")
-     (req "cpe329")
+     (req "cpe329") ;; no work for us
      (req "csc357")
      (req "cpe350") ;; limited work for us
      (req "cpe450") ;; limited work for us
@@ -374,8 +390,9 @@
      (list "cpe-te/400" (or!/req got-4-units-of-400?
                                  passed-cpe-technical-elective?))
      (list "cpe-te1" passed-cpe-technical-elective?)
-     (list "cpe-te2" passed-cpe-technical-elective?))
-    ))
+     (list "cpe-te2" passed-cpe-technical-elective?)
+     (list "cpe-te/123" passed-cpe-technical-elective?))
+    )))
 
 ;; for use in checking for specific courses:
 (define pass-requirement pass/req)
