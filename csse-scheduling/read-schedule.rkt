@@ -1,6 +1,6 @@
 #lang typed/racket
 
-;; this file parses the schedule-FALLQTR.rktd file, and rearranges
+;; this file parses the content of the schedule file, and rearranges
 ;; the data to show what's happening by quarter by course.
 
 (require racket/runtime-path
