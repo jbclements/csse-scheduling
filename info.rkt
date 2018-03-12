@@ -7,7 +7,8 @@
     "db-lib"
     "typed-racket-lib"
     "with-cache"
-    "csv-reading"))
+    "csv-reading"
+    "sha"))
 
 (define build-deps
   '("rackunit-lib"
