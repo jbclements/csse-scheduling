@@ -14,6 +14,8 @@
 
 (define current-catalog : CatalogCycle "2017-2019")
 
+;; a mapping from canonical course name to the last names of the
+;; instructors that are the coordinators for that course
 (provide coordinators)
 
 (define-type CoordinatorRecord (List String (Listof String)))
