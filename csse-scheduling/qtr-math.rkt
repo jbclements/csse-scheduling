@@ -11,7 +11,7 @@
          catalog-cycle->fall-years
          fall-year->base-qtr
          qtr->fall-year
-         qtr->cycle
+         qtr->catalog-cycle
          qtrs-in-range
          qtr->season
          qtr->year
@@ -90,7 +90,7 @@
     [_ base-year]))
 
 ;; map a qtr to the cycle that it occurs in
-(define (qtr->cycle [qtr : Natural]) : CatalogCycle
+(define (qtr->catalog-cycle [qtr : Natural]) : CatalogCycle
   (fall-year->catalog-cycle (qtr->fall-year qtr)))
 
 ;; given a string or symbol, coerce it to a season if possible
@@ -214,8 +214,8 @@
   (check-equal? (qtr->fall-year 2174) 2016)
   (check-equal? (qtr->fall-year 788) 1978)
   
-  (check-equal? (qtr->cycle 2178) "2017-2019")
-  (check-equal? (qtr->cycle 964)  "1994-1997")
+  (check-equal? (qtr->catalog-cycle 2178) "2017-2019")
+  (check-equal? (qtr->catalog-cycle 964)  "1994-1997")
   
   (check-equal? (fall-year->catalog-cycle 2006) "2005-2007")
   (check-equal? (fall-year->catalog-cycle 2000) "2000-2001")

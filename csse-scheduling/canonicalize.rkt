@@ -164,13 +164,13 @@
 ;; like canonicalize, but accepts qtr rather than catalog cycle
 (: canonicalize/qtr (Natural (U Symbol String) (U Natural String) -> CourseID))
 (define (canonicalize/qtr qtr subject number)
-  (canonicalize (qtr->cycle qtr) subject number))
+  (canonicalize (qtr->catalog-cycle qtr) subject number))
 
 
 ;; like canonicalize, but accepts qtr rather than catalog cycle
 (: canonicalize/qtr/noerr (Natural (U Symbol String) (U Natural String) -> (U False CourseID)))
 (define (canonicalize/qtr/noerr qtr subject number)
-  (canonicalize/noerr (qtr->cycle qtr) subject number))
+  (canonicalize/noerr (qtr->catalog-cycle qtr) subject number))
 
 ;; this one returns #f when it can't find a mapping
 (: canonicalize/noerr (CatalogCycle (U Symbol String) (U Natural CourseNum) -> (U CourseID False)))
