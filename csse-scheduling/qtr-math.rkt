@@ -19,6 +19,7 @@
          year->qtrs
          catalog-cycle->qtrs
          encode-qtr
+         season-after-qtr
          Season)
 
 (define first-encodable-year : Natural 1900)
@@ -192,10 +193,15 @@
 (define (catalog-cycle->qtrs [cycle : CatalogCycle]) : (Listof Natural)
   (apply append (map year->qtrs (catalog-cycle->fall-years cycle))))
 
-
+(define (season-after-qtr [season : Season] [qtr : Natural]) : Natural
+  (define desired-offset (season->qtr-offset season))
+  (define qtr-offset (modulo qtr 10))
+  (cond [(<= qtr-offset desired-offset) (encode-qtr (qtr->year qtr) season)]
+        [else (encode-qtr (add1 (qtr->year qtr)) season)]))
 
 (module+ test
   (require typed/rackunit)
+
 
   
   (check-equal? (catalog-cycle->fall-years "1994-1997") '(1994 1995 1996))
@@ -240,4 +246,8 @@
   (check-equal? (encode-qtr 1984 "Winter") 842)
   (check-equal? (encode-qtr 1984 "winter") 842)
   (check-equal? (encode-qtr 1984 'winter) 842)
+
+  (check-equal? (season-after-qtr "Fall" 2188) 2188)
+  (check-equal? (season-after-qtr "Spring" 2188) 2194)
+  (check-equal? (season-after-qtr "Fall" 2184) 2188)
 )

@@ -5,7 +5,7 @@
 (define compile-omit-paths (list "scripts"))
 
 ;(define test-omit-paths '("experimental" "paper" "soups-paper" "user-study-2016"))
-;(define scribblings '(("molis-hai.scrbl" () (tool))))
+(define scribblings '(("csse-scheduling.scrbl" () (interop))))
 
 #;(define raco-commands
   (list

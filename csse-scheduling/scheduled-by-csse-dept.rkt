@@ -1,4 +1,4 @@
-#lang typed/racket
+#lang typed/racket/base
 
 ;; this file lists all of the courses that we schedule.
 
@@ -18,7 +18,10 @@
 
 (require "canonicalize.rkt"
          "qtr-math.rkt"
-         "credentials.rkt")
+         "credentials.rkt"
+         racket/set
+         racket/list
+         racket/match)
 
 (require/typed "fetch-mapping.rkt"
                [courses-we-schedule/db
