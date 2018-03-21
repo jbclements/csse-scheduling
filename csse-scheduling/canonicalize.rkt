@@ -259,13 +259,15 @@
 ;; come later
 (define (course-key [course : String]) : String
   (match course
-    [(regexp #px"^[a-zA-Z]+([0-9]+)" (list _ num))
+    [(regexp #px"^(csc|cpe)([0-9]+)" (list _ _ num))
      (string-append (cast num String) "-" course)]
     [other
      (string-append "UNK-" course)]))
 
 (module+ test
   (require typed/rackunit)
+
+  
 
   (check-equal? (canonicalize "2015-2017" "CPE" "430") "csc430")
 
@@ -279,5 +281,8 @@
 
   (check-equal? (canonicalize/qtr 2158 'CPE 430) "csc430")
 
+  (check-true (string<? (course-key "cpe100") (course-key "csc300")))
+  (check-true (string<? (course-key "csc123") (course-key "cpe450")))
+  (check-true (string<? (course-key "csc590") (course-key "data301")))
   (check-equal? (course-key "csc243") "243-csc243"))
 
