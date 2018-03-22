@@ -18,7 +18,7 @@
     "csc436" "csc437" "csc448" "csc454" "csc458" "csc466" "csc468"
     "csc471" "csc473" "csc474" "csc476" "csc477" "csc478" "csc480"
     ;; 496 should be binned with 400/400/490
-    "csc481" "csc483" "csc484" "csc486" "csc489" "csc490" #;"csc496"
+    "csc481" "csc483" "csc484" "csc486" "csc489" #;"csc496"
     "csc508" "csc509" "csc515" "csc521" "csc530" "csc540" "csc550"
     "csc560" "csc564" "csc566" "csc569" "csc570" "csc572" "csc580"
     "csc581" "csc582" "cpe400" "cpe416" "cpe419" "cpe428" "cpe464"
@@ -92,6 +92,23 @@
      "csc349" "csc350" "csc357" "csc365" "csc366" "csc369" "csc371"
      "csc378")))
 
+(define 2017-cs-minor-courses
+  '("cpe315" "cpe416" "cpe419" "cpe464" "cpe465" "cpe482" "cpe485"
+             "csc300" "csc301" "csc305" "csc307" "csc308" "csc309"
+             "csc321" "csc323" "csc325" "csc344" "csc348" "csc349"
+             "csc365" "csc366" "csc369" "csc371" "csc378" "csc400"
+             "csc402" "csc405" "csc406" "csc409" "csc410" "csc422"
+             "csc424" "csc429" "csc430" "csc431" "csc435" "csc436"
+             "csc437" "csc445" "csc448" "csc453" "csc454" "csc458"
+             "csc466" "csc468" "csc471" "csc473" "csc474" "csc476"
+             "csc477" "csc478" "csc480" "csc481" "csc483" "csc484"
+             "csc486" "csc489" "csc490" "csc508" "csc509" "csc515"
+             "csc521" "csc530" "csc540" "csc550" "csc560" "csc564"
+             "csc566" "csc569" "csc570" "csc572" "csc580" "csc581"
+             "csc582" "data301"))
+
+
+
 
 
 (define csc-te-course-table : (Immutable-HashTable String (Listof String))
@@ -119,3 +136,18 @@
 (define cpe-te-course-table : (Immutable-HashTable String (Listof String))
   (make-immutable-hash
    `(("2017-2019" . ,2017-cpe-te-courses))))
+
+(define csc-ms-500-level-course-table : (Immutable-HashTable String (Listof String))
+  (make-immutable-hash
+   `(("2017-2019" . ,2017-csc-grad-courses))))
+
+(define csc-ms-open-level-course-table : (Immutable-HashTable String (Listof String))
+  (make-immutable-hash
+   ;; this is a pretty good proxy; it's not written down in the catalog, and
+   ;; it's technically up to the advisor, I believe
+   `(("2017-2019" . ,2017-cpe-te-courses))))
+
+(define cs-minor-course-table  : (Immutable-HashTable String (Listof String))
+  (make-immutable-hash
+   `(("2017-2019" . ,2017-cs-minor-courses))))
+
