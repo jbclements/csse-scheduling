@@ -30,6 +30,7 @@
          "qtr-math.rkt"
          (only-in racket/list remove-duplicates))
 
+;; NOTE: this list is known to be incomplete...
 (define-type Subject (U "CPE" "CSC" "HNRS" "ART" "EE" "IME" "MATE"
                         "DATA"
 
@@ -109,7 +110,10 @@
                         
                         "CD"
                         "ITP"
-                        "CRP"))
+                        "CRP"
+                        "AGB"
+                        "HLTH"
+                        "AG"))
 (define-type CourseNum String) ;; such as "123" or "0123"
 
 
