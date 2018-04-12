@@ -189,14 +189,55 @@
 (: record-size (Record -> CourseSize))
 (define record-size third)
 
+
+
 ;; validate that this is a legal schedule sexp
-(define (validate-schedule [schedule-sexp : Sexp]) : Schedule
+(define (validate-schedule [schedule-sexp : Sexp]
+                           [instructors-to-omit : (Listof Symbol)])
+  : Schedule
   (match schedule-sexp
-    [(cons (? natural? fall-qtr) (? list? instructors))
-     (cons fall-qtr (map sexp->instructor instructors))]
+    [(cons (? natural? fall-qtr) (? list? instructor-sexps))
+     (define instructors (map sexp->instructor instructor-sexps))
+     (define non-omitted (subtract-instructors instructors instructors-to-omit))
+     (cons fall-qtr non-omitted)]
     [other (raise-argument-error 'validate-schedule
                                  "list containing fall qtr and list of instructors"
                                  0 schedule-sexp)]))
+
+;; remove records corresponding to the named instructors.
+;; signal an error if these instructors don't appear in the list.
+(define (subtract-instructors [instructors : (Listof Instructor)]
+                              [to-omit : (Listof Symbol)])
+  (for ([i (in-list to-omit)])
+    (unless (assoc i instructors)
+      (error 'subtract-instructors
+             "can't omit non-existent instructor: ~e"
+             i)))
+  (filter (λ ([i : Instructor]) (not (member (first i) to-omit)))
+          instructors))
+
+
+(module+ test
+  (require typed/rackunit)
+
+  (check-equal? (subtract-instructors '((a (f) (w) (s))
+                                        (b (f) (w) (s))
+                                        (c (f) (w) (s))
+                                        (d (f) (w) (s))
+                                        (e (f) (w) (s)))
+                                      '(d b))
+                '((a (f) (w) (s))
+                  (c (f) (w) (s))
+                  (e (f) (w) (s))))
+
+  (check-exn #px"non-existent instructor"
+             (λ ()
+               (subtract-instructors '((a (f) (w) (s))
+                                       (b (f) (w) (s))
+                                       (c (f) (w) (s))
+                                       (d (f) (w) (s))
+                                       (e (f) (w) (s)))
+                                     '(d q)))))
 
 
 ;; given a list of records, return the # of sections of each course

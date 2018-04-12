@@ -76,7 +76,7 @@
 (define (fall-year->base-qtr [year : Natural]) : Natural
   (encode-qtr year "Fall"))
 
-;; map a qtr to the fall year (summer goes back...)
+;; map a qtr to the fall year (summer goes forward...)
 (define (qtr->fall-year [qtr : Natural]) : Natural
   (define base-year (qtr->year qtr))
   ;; winter/spring go backward
