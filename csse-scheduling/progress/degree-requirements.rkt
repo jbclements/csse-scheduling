@@ -18,6 +18,7 @@
          pass-requirement
          pass-in-qtr-requirement
          pass-with-c-in-qtr-requirement
+         took-in-qtr-requirement
          missing-requirements)
 
 ;; for now, pin the catalog cycle:
@@ -130,6 +131,10 @@
 
 (define (pass/c-in-qtr/req [course-id : Course-Id] [qtr : Qtr]) : ReqFun
   (pass-with-grade-in-qtr/req course-id qtr c-passing-grade?))
+
+;; given a course id, did the student take the course?
+(define (took-in-qtr/req [course-id : Course-Id] [qtr : Qtr]) : ReqFun
+  (pass-with-grade-in-qtr/req course-id qtr (λ (x) #t)))
 
 ;; combine two requirement-funs with an 'or'
 (define (or/req [rf1 : ReqFun] [rf2 : ReqFun])
@@ -398,6 +403,7 @@
 (define pass-requirement pass/req)
 (define pass-in-qtr-requirement pass-in-qtr/req)
 (define pass-with-c-in-qtr-requirement pass/c-in-qtr/req)
+(define took-in-qtr-requirement took-in-qtr/req)
 
 ;; return a list of the names of the student's unsatisfied requirements
 (define (missing-requirements [rs : (Listof Requirement)]
