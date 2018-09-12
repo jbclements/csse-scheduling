@@ -13,6 +13,7 @@
          major-requirement-names
          max-num-requirements
          student->bools
+         student->unmet-requirements
          first-has-earlier-false?
          grad-years-possible
 
@@ -28,7 +29,10 @@
   (match major
     ["CSC" csc-requirements]
     ["CPE" cpe-requirements]
-    ["SE"  se-requirements]))
+    ["SE"  se-requirements]
+    [other (raise-argument-error 'major-requirements
+                                 "string that's one of: CSC, CPE, or SE"
+                                 0 major)]))
 
 (define max-num-requirements
   (apply max (map (inst length Requirement)
@@ -47,9 +51,14 @@
 ;; satisfaction of the requirements. A #t indicates the requirement has been met.
 (define (student->bools [student : Student]) : (Listof Boolean)
   (define requirements (major-requirements (Student-major student)))
-  (define needed (missing-requirements requirements (Student-grades student)))
+  (define needed (student->unmet-requirements student))
   (for/list ([req-name (in-list (map (inst first String) requirements))])
     (not (member req-name needed))))
+
+;; given a student, produce a list of their unmet requirement names
+(define (student->unmet-requirements [student : Student]) : (Listof String)
+  (define requirements (major-requirements (Student-major student)))
+  (missing-requirements requirements (Student-grades student)))
 
 (define (first-has-earlier-false? [lob1 : (Listof Boolean)]
                                   [lob2 : (Listof Boolean)]) : Boolean
