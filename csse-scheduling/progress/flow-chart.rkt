@@ -21,6 +21,9 @@
 ;; for each requirement, in which quarters are they expected to
 ;; take it? quarters are numbered starting at 1 to reduce the likelihood
 ;; of accidental error
+
+;; note that the ordering of the requirements is not entirely unimportant,
+;; as it can affect which courses are chosen (but only on the very edge)
 (define csc-2017-2019-flowchart
   '(("csc-TE/123" 1)
     ("csc101" 2)
@@ -93,18 +96,25 @@
     ("cpe-TE-1" 10)
     ("cpe-TE-2" 11)))
 
+;; given a flowchart, split it into a list of tuples
+;; of the form requirement name x qtr x fraction,
+;; sorted by qtr.
+(define (flow-chart->tuple-style flowchart)
+  (sort
+   (apply
+    append
+    (for/list ([req-qtr-list (in-list flowchart)])
+      (define qtr-list (rest req-qtr-list))
+      (define l (length qtr-list))
+      (for/list ([qtr (in-list qtr-list)])
+        (list (first req-qtr-list)
+              qtr
+              (/ 1 l)))))
+   <
+   #:key second))
+
 (define (flow-chart->qtr-load flowchart)
-  ;; split out into db-row-style of requirement-qtr-frac
-  (define split-flowchart
-    (apply
-     append
-     (for/list ([req-qtr-list (in-list flowchart)])
-       (define qtr-list (rest req-qtr-list))
-       (define l (length qtr-list))
-       (for/list ([qtr (in-list qtr-list)])
-         (list (first req-qtr-list)
-               qtr
-               (/ 1 l))))))
+  (define split-flowchart (flow-chart->tuple-style ))
 
   (define table (map (λ (grp)
                        (cons (second (first grp))
@@ -129,6 +139,11 @@
           [else (loop (sub1 qtrs-done)
                       (- reqs-left (first qtr-loads))
                       (rest qtr-loads))])))
+
+;; given a flowchart and a list of requirements remaining, return
+;; a sorted list of req-qtr-load tuples
+(define (filter-flow-chart flow-chart reqs-left)
+  )
 
 
 (module+ test
