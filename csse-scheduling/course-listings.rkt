@@ -8,10 +8,8 @@
          cpe-te-course-table)
 
 ;; these classes may be used as technical electives in the 2017-2019 catalog
-;; NB: for accounting purposes, 123 is basically a technical elective:
 (define 2017-csc-te-courses
-  '("csc123"
-    "csc301"
+  '("csc301"
     "csc305" "csc309" "csc321" "csc323" "csc325" "csc344" "csc365"
     "csc366" "csc369" "csc371" "csc378" "csc400" "csc402" "csc405"
     "csc406" "csc409" "csc410" "csc422" "csc424" "csc429" "csc435"
@@ -25,8 +23,7 @@
     "cpe465" "cpe482" "cpe485" "cpe488" "data301"))
  
 (define 2017-se-te-courses : (Listof String)
-  '("csc123"
-    "csc301" "csc321" "csc323" "csc325" "csc344" "csc365" "csc366"
+  '("csc301" "csc321" "csc323" "csc325" "csc344" "csc365" "csc366"
     "csc369" "csc371" "csc378" "csc400" "csc409" "csc410" "csc422"
     "csc424" "csc429" "csc431" "csc435" "csc436" "csc437" "csc445"
     "csc448" "csc453" "csc454" "csc458" "csc466" "csc468" "csc471"
@@ -70,8 +67,7 @@
 ;; as with above, 123 is basically treated as a TE for the program requirements
 (define 2017-cpe-te-courses
   (append
-   '("csc123"
-     "csc405"
+   '("csc405"
     "csc493" "csc486" "csc454" "csc476" "csc409" "csc581" "cpe479"
     "csc521" "cpe522" "csc406" "csc469" "csc466" "csc471" "cpe461"
     "csc437" "csc530" "cpe441" "csc429" "cpe432" "cpe493" "csc481"

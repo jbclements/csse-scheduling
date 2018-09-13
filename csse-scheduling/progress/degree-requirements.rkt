@@ -205,6 +205,8 @@
             (or!/req passed-bigger-projects?
                      passed-data-structures?))))
 
+(define passed-123? (pass/req "csc123"))
+
 ;; did this csc student pass the SE requirement? (307 OR 308+309)
 (define passed-csc-se-req? : ReqFun
   (or!/req (pass/req "csc307")
@@ -239,10 +241,12 @@
     (define special-problems-courses '("cpe400"))
     (for-each check-course special-problems-courses)
     (define-values (special-topics-grades other-grades)
-      (partition (λ ([g : Grade-Record]) (member (gr-course g)
-                                                 special-problems-courses))
+      (partition (λ ([g : Grade-Record])
+                   (member (gr-course g)
+                           special-problems-courses))
                  g))
-    (define special-topics-units (apply + (map gr-units special-topics-grades)))
+    (define special-topics-units
+      (apply + (map gr-units special-topics-grades)))
     (cond [(<= 4 special-topics-units)
            ;; yay, they get credit for them, take them out of the pool
            (list other-grades)]
@@ -326,15 +330,20 @@
             (req "csc491")
             (req "csc492")
            
-            (list "upper-level-tech-elect" passed-upper-level-technical-elective?)
-            (list "te/special-problems" (or!/req got-special-problems-credit?
-                                                 passed-technical-elective?))
+            (list "upper-level-csc-TE"
+                  passed-upper-level-technical-elective?)
+            (list "csc-TE/special-problems"
+                  (or!/req got-special-problems-credit?
+                           passed-technical-elective?))
+
+            (list "csc-TE/123" (or!/req passed-123?
+                                    passed-technical-elective?))
            
             )
       ;; 24 TE units minus upper-level (above) minus special-problems plus 123 = 5 courses:
       (for/list : (Listof Requirement)
-        ([i (in-range 5)])
-        (list (~a "technical-elective-" i) passed-technical-elective?))))))
+        ([i (in-range 4)])
+        (list (~a "csc-TE-" i) passed-technical-elective?))))))
 
 (define se-requirements : (Listof Requirement)
   (ensure-distinct-names
@@ -359,15 +368,18 @@
             (req  "csc484")
             (req "csc491")
             (req "csc492")
-            (list "se-upper-level-tech-elect"
+            (list "upper-level-se-TE"
                   passed-upper-level-se-technical-elective?)
-            (list "te/special-problems"
+            (list "special-problems/se-TE"
                   (or!/req got-special-problems-credit?
+                           passed-se-technical-elective?))
+            (list "se-TE/123"
+                  (or!/req passed-123?
                            passed-se-technical-elective?)))
       ;; 20 TE units minus upper-level (above) minus special problems plus 123
       (for/list : (Listof Requirement)
-        ([i (in-range 4)])
-        (list (~a "SE-technical-elective-" i)
+        ([i (in-range 3)])
+        (list (~a "se-TE-" i)
               passed-se-technical-elective?)))
      )))
 
@@ -391,12 +403,13 @@
      (req "cpe461")
      (req "cpe462")
      (req "cpe464")
-     (req "csc348")
-     (list "cpe-te/400" (or!/req got-4-units-of-400?
+     (list "discrete" passed-discrete?)
+     (list "cpe-TE/400" (or!/req got-4-units-of-400?
                                  passed-cpe-technical-elective?))
-     (list "cpe-te1" passed-cpe-technical-elective?)
-     (list "cpe-te2" passed-cpe-technical-elective?)
-     (list "cpe-te/123" passed-cpe-technical-elective?))
+     (list "cpe-TE/123" (or!/req passed-123?
+                              passed-cpe-technical-elective?))
+     (list "cpe-TE-1" passed-cpe-technical-elective?)
+     (list "cpe-TE-2" passed-cpe-technical-elective?))
     )))
 
 ;; for use in checking for specific courses:
