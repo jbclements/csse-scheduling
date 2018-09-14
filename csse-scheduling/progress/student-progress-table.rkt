@@ -139,3 +139,16 @@
                                           '(#t #t #f #t #t))
                 #f)
   )
+
+(module+ main
+
+  (define students (get-students "2184-1"))
+  (define blork
+    (write-to-file
+     #:exists 'truncate
+     (map (λ ([s : Student])
+            (list (Student-id s) (student->unmet-requirements s)))
+          students)
+                   "/tmp/abc.rktd"))
+
+  )
