@@ -318,7 +318,7 @@
             (list "csc203" passed-bigger-projects?)
             (req  "csc225")
             (req  "csc300")
-            (list "SE" passed-csc-se-req?)
+            (list "csc-SE" passed-csc-se-req?)
             (req  "cpe315")
             (list "discrete" passed-discrete?)
             (req  "csc349")
