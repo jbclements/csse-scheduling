@@ -2,6 +2,7 @@
 
 
 ;; this file provides a list of all the students, using data from the ad-hoc progress report.
+;; UPDATE: as of 2018-09-14, it omits grad students
 
 (provide (struct-out Student)
          get-students)
@@ -86,7 +87,8 @@
      (~a "SELECT m.id,major,e.qtr,g.qtr"
          " FROM ((majors m LEFT JOIN entry_qtr e ON m.id=e.id AND m.version=e.version)"
          "       LEFT JOIN grad_qtr g ON m.id = g.id AND m.version = g.version)"
-         " WHERE m.version=$1")
+         " WHERE m.version=$1"
+         " and (m.id, m.version) NOT IN (SELECT id,version FROM postbaccalaureate);")
      version))
 
   (define students : (Listof Student)
