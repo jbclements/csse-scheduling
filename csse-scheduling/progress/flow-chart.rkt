@@ -181,10 +181,10 @@
 
 
 ;; given a list of requirements remaining (as a list of strings)
-;; and a major, compute the set of
-;; estimated requirements to be satisfied in the coming year
-;; (as a list of tuples)
-(define (student-to-take unmet-reqs major)
+;; and a major and a number of quarters, compute the set of
+;; estimated requirements to be satisfied in the coming 'qtr-count'
+;; quarters (as a list of tuples)
+(define (student-to-take unmet-reqs major qtr-count)
   (define flow-chart
     (match major
       ["CSC" csc-2017-2019-flowchart]
@@ -197,7 +197,7 @@
   (define qtr-load (flow-chart->qtr-load flow-chart))
   ;; this helps us decide how many requirements they're likely to
   ;; want to satisfy in the coming year:
-  (define req-count (student-req-count unmet-reqs qtr-load))
+  (define req-count (student-req-count unmet-reqs qtr-load qtr-count))
   (define ordered-remaining-reqs
     (filter-flow-chart flow-chart unmet-reqs))
   ;; take the shortest prefix that has enough units:
@@ -214,14 +214,16 @@
                       (apply + (map third grp))))
        (group-by first reqs-to-take)))
 
-;; given a list of unmet requirements and a qtr-load,
+;; given a list of unmet requirements and a qtr-load and a number
+;; of quarters 'n',
 ;; return the number of requirements expected to be completed
-;; in the next three quarters
-(define (student-req-count unmet-reqs qtr-load)
+;; in the next 'n' quarters
+(define (student-req-count unmet-reqs qtr-load qtrs)
   (define estimated-qtrs-completed
     (reqs->qtrs-done qtr-load (length unmet-reqs)))
   (define next-qtrs (range estimated-qtrs-completed
-                           (min (+ estimated-qtrs-completed 3)
+                           (min (+ estimated-qtrs-completed
+                                   qtrs)
                                 max-program-qtrs)))
   (define these-qtr-loads
     (for/list ([qtr (in-list next-qtrs)])
@@ -258,14 +260,18 @@
   (check-equal?
    (reqs->qtrs-done cpe-qtr-load (length example-unmet))
    6)
-  (check-= (student-req-count example-unmet cpe-qtr-load)
+  (check-= (student-req-count example-unmet cpe-qtr-load 3)
            3.5 1e-10)
+  (check-= (student-req-count example-unmet cpe-qtr-load 2)
+           1.5 1e-10)
+  (check-= (student-req-count example-unmet cpe-qtr-load 1)
+           1.0 1e-10)
   ;; in the last qtr:
-  (check-= (student-req-count '("cpe461" "cpe462") cpe-qtr-load)
+  (check-= (student-req-count '("cpe461" "cpe462") cpe-qtr-load 3)
            2.5 1e-10)
   (check-equal?
    (list->set
-    (student-to-take example-unmet "CPE"))
+    (student-to-take example-unmet "CPE" 3))
    (list->set
     '(("cpe-TE/123" 1)
       ("cpe315" 1)
@@ -273,9 +279,11 @@
       ("csc453" 1/4)
       ("cpe464" 1/4))))
 
-  (check-equal? (student-to-take '("discrete") "CPE")
+  (check-equal? (student-to-take '("discrete") "CPE" 3)
               '(("discrete" 1)))
-  (check-equal? (student-to-take '() "CSC") '()))
+  (check-equal? (student-to-take '("discrete") "CPE" 0)
+              '())
+  (check-equal? (student-to-take '() "CSC" 3) '()))
 
 
 
