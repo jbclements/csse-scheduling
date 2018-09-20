@@ -7,6 +7,47 @@
          se-ul-te-course-table
          cpe-te-course-table)
 
+;; these classes may be used as technical electives in the 2015-2017 catalog
+(define 2015-csc-te-courses
+  '("csc301"
+    "csc305"  "csc309"  "csc321"  "csc323"  "csc344"  "csc358"  "csc365"  "csc366"
+    "csc369"  "csc371"  "csc378"  "csc400"  "csc402"  "csc405"  "csc406"  "csc409"  "csc410"
+    "cpe416"  "cpe419"  "csc424"  "csc429"  "csc435"  "csc436"  "csc437"  "csc448"  "csc454"
+    "csc458"  "cpe464"  "cpe465"  "csc466"  "csc468"  "csc471"  "csc473"  "csc474"  "csc476"
+    "csc477"  "csc478"  "csc479"  "csc480"  "csc481"  "csc483"  "csc484"  "cpe485"  "csc486"
+    "csc489"  #;"csc490"  #;"csc496"  "csc508"  "csc509"  "csc515"  "csc521"  "csc530"  "csc540"
+    "csc550"  "csc560"  "csc564"  "csc566"  "csc569"  "csc570"  "csc572"  "csc580"  "csc581"
+    "csc582"  "cpe400"  "cpe428"  "cpe482"  "cpe488"  "data301"))
+
+(define 2015-csc-ul-te-courses
+  '("csc366"
+    "csc402"  "csc405"  "csc406"  "csc409"  "csc410"  "cpe416"  "csc424"  "csc429"
+    "csc435"  "csc437"  "csc454"  "cpe465"  "csc466"  "csc468"  "csc473"  "csc474"  "csc476"
+    "csc477"  "csc478"  "csc479"  "csc481"  "csc483"  "csc484"  "csc486"  "csc489"  "csc508"
+    "csc509"  "csc515"  "csc521"  "csc530"  "csc540"  "csc550"  "csc560"  "csc564"  "csc566"
+    "csc572"  "csc580"  "csc581"  "csc582"))
+
+
+(define 2015-se-te-courses
+  '("csc301"
+    "cpe315"  "csc321"  "csc323"  "csc344"  "csc358"  "csc365"  "csc366"  "csc369"
+    "csc371"  "csc378"  "csc400"  "csc409"  "csc410"  "cpe416"  "cpe419"  "csc424"  "csc429"
+    "csc431"  "csc435"  "csc436"  "csc437"  "csc445"  "csc448"  "csc453"  "csc454"  "csc458"
+    "cpe464"  "cpe465"  "csc466"  "csc468"  "csc471"  "csc473"  "csc474"  "csc476"  "csc477"
+    "csc478"  "csc479"  "csc480"  "csc481"  "csc483"  "cpe485"  "csc486"  "csc489"  #;"csc490"
+    "csc508"  "csc509"  "csc515"  "csc521"  "csc530"  "csc540"  "csc550"  "csc560"  "csc564"
+    "csc566"  "csc569"  "csc570"  "csc572"  "csc580"  "csc581"  "csc582"  "cpe400"  "cpe428"
+    "cpe482"  "cpe488"  "data301"))
+
+(define 2015-se-ul-te-courses
+  '("csc366"
+    "csc409"  "csc410"  "cpe416"  "csc424"  "csc429"  "csc431"  "csc435"  "csc437"
+    "csc454"  "cpe465"  "csc466"  "csc468"  "csc473"  "csc474"  "csc476"  "csc477"  "csc478"
+    "csc479"  "csc481"  "csc483"  "csc486"  "csc489"  "csc508"  "csc509"  "csc515"  "csc521"
+    "csc530"  "csc540"  "csc550"  "csc560"  "csc564"  "csc566"  "csc572"  "csc580"  "csc581"
+    "csc582"))
+
+
 ;; these classes may be used as technical electives in the 2017-2019 catalog
 (define 2017-csc-te-courses
   '("csc301"
@@ -21,6 +62,16 @@
     "csc560" "csc564" "csc566" "csc569" "csc570" "csc572" "csc580"
     "csc581" "csc582" "cpe400" "cpe416" "cpe419" "cpe428" "cpe464"
     "cpe465" "cpe482" "cpe485" "cpe488" "data301"))
+
+(define 2017-csc-ul-te-courses : (Listof String)
+  '("csc325"
+    "csc366" "csc402" "csc405" "csc406" "csc409" "csc410"
+    "csc422" "csc424" "csc429" "csc435" "csc437" "csc454"
+    "csc466" "csc468" "csc473" "csc474" "csc476" "csc477"
+    "csc478" "csc481" "csc483" "csc484" "csc486" "csc489"
+    "csc508" "csc509" "csc515" "csc521" "csc530" "csc540"
+    "csc550" "csc560" "csc564" "csc566" "csc572" "csc580"
+    "csc581" "csc582" "cpe416" "cpe465"))
  
 (define 2017-se-te-courses : (Listof String)
   '("csc301" "csc321" "csc323" "csc325" "csc344" "csc365" "csc366"
@@ -43,16 +94,6 @@
     "csc560" "csc564" "csc566" "csc572" "csc580" "csc581" "csc582"
     "cpe416" "cpe465"))
 
-(define 2017-csc-ul-te-courses : (Listof String)
-  '("csc325"
-    "csc366" "csc402" "csc405" "csc406" "csc409" "csc410"
-    "csc422" "csc424" "csc429" "csc435" "csc437" "csc454"
-    "csc466" "csc468" "csc473" "csc474" "csc476" "csc477"
-    "csc478" "csc481" "csc483" "csc484" "csc486" "csc489"
-    "csc508" "csc509" "csc515" "csc521" "csc530" "csc540"
-    "csc550" "csc560" "csc564" "csc566" "csc572" "csc580"
-    "csc581" "csc582" "cpe416" "cpe465"))
-
 (define 2017-csc-grad-courses : (Listof String)
   '("csc508"
     "csc509" "csc515" "csc521" "csc530" "csc540" "csc550" "csc560"
@@ -64,7 +105,6 @@
 ;; There are eligible EE courses, as well, but they don't
 ;; appear in our database.
 ;; this includes a bunch of required courses, too, which is weird.
-;; as with above, 123 is basically treated as a TE for the program requirements
 (define 2017-cpe-te-courses
   (append
    '("csc405"

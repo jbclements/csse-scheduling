@@ -306,13 +306,33 @@
 
 ;; CAVEAT: NO WAY TO KNOW IF THE STUDENTS WILL TAKE AN EXTERNAL TE
 
+;; ouch, ran out of steam here... :(
+#;(
+(define 101-req )
+
+(define 101-req (list "csc101" passed-101?))
+(define 202-req (list "csc202" passed-data-structures?))
+(define 203-req (list "csc203" passed-bigger-projects?))
+(define csc-se-req (list "csc-SE" passed-csc-se-req?))
+(define discrete-req (list "discrete" passed-discrete?))
+(define csc-ul-te-req (list "upper-level-csc-TE"
+                            passed-upper-level-technical-elective?))
+(list "csc-TE/special-problems"
+      (or!/req got-special-problems-credit?
+               passed-technical-elective?))
+
+(list "csc-TE/123" (or!/req passed-123?
+                            passed-technical-elective?)))
+           
+            
+
 ;; the master list of requirements
 (define csc-requirements : (Listof Requirement)
   (ensure-distinct-names
    (let ([req (λ ([course-id : Course-Id]) : Requirement
                 (list course-id (pass/req course-id)))])
      (append
-      ;; NB: 123 is *actually* treated like a technical elective...
+      ;; NB: 123 appears below, it's treated like a TE to allow transfer students not to take it.
       (list (list "csc101" passed-101?)
             (list "csc202" passed-data-structures?)
             (list "csc203" passed-bigger-projects?)
