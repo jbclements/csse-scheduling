@@ -5,9 +5,12 @@
 ;; UPDATE: as of 2018-09-14, it omits grad students
 
 (provide (struct-out Student)
-         get-students)
+         get-students
+         use-localhost?)
 
 (: get-students (String -> (Listof Student)))
+
+(: use-localhost? (Parameterof Boolean))
 
 (require (only-in "degree-requirements.rkt" Grade-Record Qtr)
          "../credentials.rkt")
@@ -23,6 +26,8 @@
 ;; a student is an id plus a list of grade records
 (define-type Id String)
 (define-type MaybeQtr (U Natural False))
+
+(define use-localhost? (make-parameter #f))
 
 (require/typed db/base
                [#:opaque Connection connection?]
@@ -48,7 +53,9 @@
     (postgresql-connect
      #:user db-username
      #:password db-password
-     #:port 13432
+     #:port (let ([ans (if (use-localhost?) 5432 13432)])
+              (printf "~s\n" ans)
+              ans)
      #:database "csseprogress"))
 
 
@@ -114,7 +121,10 @@
 
  
 
-
+  (when (= (length rows) 0)
+    (error 'get-students
+           "no students found for version ~v"
+           version))
   (printf "total rows: ~v\n" (length rows))
 
   students)
