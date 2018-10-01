@@ -50,6 +50,34 @@
     ("csc-TE-2" 9)
     ("csc-TE-3" 10)))
 
+;; there is essentially a different flowchart for
+;; AP students. This flowchart is going to have
+;; a different number of requirements, which worries
+;; me; I feel like this is used as an invariant somewhere
+;; else. Also, I'm really just making this up...
+(define ap-csc-2017-2019-flowchart
+  '(("csc202" 1)
+    ("csc203" 2)
+    ("csc225" 2)
+    ("csc357" 3)
+    ("csc300" 7 8 9 10 11)
+    ("csc-SE" 7)
+    ("cpe315" 4 5 6 7 8 9)
+    ("discrete" 4 5 6)
+    ("csc349" 6 7)
+    ("csc430" 8)
+    ("csc431" 9)
+    ("csc445" 10)
+    ("csc453" 6 7 8 9 10 11 12)
+    ("csc491" 11)
+    ("csc492" 12)
+    ("upper-level-csc-TE" 11)
+    ("csc-TE/special-problems" 11)
+    ("csc-TE-0" 8)
+    ("csc-TE-1" 8)
+    ("csc-TE-2" 9)
+    ("csc-TE-3" 10)))
+
 (define se-2017-2019-flowchart
   '(("se-TE/123" 1)
     ("csc101" 2)
