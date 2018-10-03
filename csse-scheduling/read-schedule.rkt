@@ -11,6 +11,7 @@
 (provide validate-schedule
          schedule->records
          sections-equivalent
+         record->sections-equivalent
          year-sections-equivalent
          join-sections-tables
          course-topic?
@@ -273,10 +274,15 @@
 (: sum-sections ((Listof Record) -> Integer))
 (define (sum-sections i-recs)
   (for/sum ([irec (in-list i-recs)])
-    (match (third irec)
-      ['regular 1]
-      ['mega2 2]
-      ['mega3 3])))
+    (record->sections-equivalent irec)))
+
+;; how many sections-worth of students will this course accommodate?
+(: record->sections-equivalent (Record -> Integer))
+(define (record->sections-equivalent rec)
+  (match (third rec)
+    ['regular 1]
+    ['mega2 2]
+    ['mega3 3]))
 
 
 (define (record-course-sort-str [r : (Pair CourseID Any)])
