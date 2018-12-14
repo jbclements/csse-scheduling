@@ -68,6 +68,9 @@
           " WHERE version=$1;")
       version)))
 
+  (when (empty? rows)
+    (error 'get-students "no rows. probably bad version: ~e" version))
+
   (define (row-id [row : (Listof Any)])
     (cast (first row) String))
 
