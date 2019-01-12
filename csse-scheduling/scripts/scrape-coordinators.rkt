@@ -1,8 +1,7 @@
 #lang racket
 
 (require sugar
-         "../canonicalize.rkt"
-         "../csv-writing.rkt"
+         csv-writing
          racket/runtime-path)
 
 (define-runtime-path here ".")
@@ -43,5 +42,5 @@
     ))
 
 (call-with-output-file "/tmp/coordinators.csv"
-  (λ (port) (csv-display cleaned-lines port))
+  (λ (port) (display-table cleaned-lines port))
   #:exists 'truncate)
