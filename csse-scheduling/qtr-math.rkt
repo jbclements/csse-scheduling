@@ -7,6 +7,7 @@
          (only-in racket/list range))
 
 (provide CatalogCycle
+         catalog-cycle?
          fall-year->catalog-cycle
          catalog-cycle->fall-years
          fall-year->base-qtr
