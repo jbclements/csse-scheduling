@@ -98,7 +98,7 @@
          " FROM ((majors m LEFT JOIN entry_qtr e ON m.id=e.id AND m.version=e.version)"
          "       LEFT JOIN grad_qtr g ON m.id = g.id AND m.version = g.version)"
          " WHERE m.version=$1"
-         " and (m.id, m.version) NOT IN (SELECT id,version FROM postbaccalaureate);")
+         " and (m.id, m.version) NOT IN (SELECT id,version FROM csgrad);")
      version))
 
   (define students : (Listof Student)

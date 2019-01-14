@@ -16,10 +16,14 @@
          cpe-requirements
          se-requirements
          pass-requirement
+         pass-with-c-requirement
          pass-in-qtr-requirement
          pass-with-c-in-qtr-requirement
          took-in-qtr-requirement
-         missing-requirements)
+         missing-requirements
+
+         passed-data-structures?
+         passed-bigger-projects?)
 
 ;; for now, pin the catalog cycle:
 (define current-catalog-cycle "2017-2019")
@@ -340,7 +344,7 @@
             (req  "csc300")
             (list "csc-SE" passed-csc-se-req?)
             (req  "cpe315")
-            (list "discrete" passed-discrete?)
+            (list "csc348" passed-discrete?)
             (req  "csc349")
             (req  "csc357")
             (req "csc430")
@@ -378,7 +382,7 @@
             (req  "csc305")
             (req  "csc308")
             (req  "csc309")
-            (list "discrete" passed-discrete?)
+            (list "csc348" passed-discrete?)
             (req "csc349")
             (req "csc357")
             (req  "csc402")
@@ -423,7 +427,7 @@
      (req "cpe461")
      (req "cpe462")
      (req "cpe464")
-     (list "discrete" passed-discrete?)
+     (list "csc348" passed-discrete?)
      (list "cpe-TE/400" (or!/req got-4-units-of-400?
                                  passed-cpe-technical-elective?))
      (list "cpe-TE/123" (or!/req passed-123?
@@ -434,6 +438,7 @@
 
 ;; for use in checking for specific courses:
 (define pass-requirement pass/req)
+(define pass-with-c-requirement passc/req)
 (define pass-in-qtr-requirement pass-in-qtr/req)
 (define pass-with-c-in-qtr-requirement pass/c-in-qtr/req)
 (define took-in-qtr-requirement took-in-qtr/req)

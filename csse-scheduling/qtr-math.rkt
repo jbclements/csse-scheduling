@@ -181,8 +181,9 @@
                  [else '(2 4 8)]))
          (for/list ([qtr : Natural (in-range min max)]
                     #:when (member (modulo qtr 10) qtr-digits))
-           qtr)]
-  ))
+           qtr)]))
+
+
 
 ;; given a year, return the quarters of the academic year beginning in
 ;; the fall of the given year.
