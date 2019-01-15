@@ -14,7 +14,8 @@
          record->sections-equivalent
          year-sections-equivalent
          join-sections-tables
-         course-topic?
+         course-topic
+         topic?
          canonicalize-topic
          record-instructor
          record-course
@@ -24,7 +25,8 @@
          compress-irec
          record-course-sort-str
          by-num-by-season
-         requirement->name)
+         requirement->name
+         Schedule)
 
 
 
@@ -57,7 +59,7 @@
 ;; represents a course's canonical name
 (define-type CourseID String)
 
-(define-predicate course-topic? CourseTopic)
+(define-predicate topic? CourseTopic)
 
 ;; represents the data in the style of a database:
 ;; instructor quarter size courseID
