@@ -3,7 +3,8 @@
 ;; looks like this file is where requirements and students come together.
 
 
-(require "student-progress.rkt"
+(require "../types.rkt"
+         "student-progress.rkt"
          csse-scheduling/qtr-math
          "degree-requirements.rkt")
 

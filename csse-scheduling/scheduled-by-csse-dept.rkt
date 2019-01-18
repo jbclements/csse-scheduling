@@ -4,7 +4,7 @@
 
 ;; when we add new courses, we need to also add them to this
 ;; file. We'll probably notice, though, because attempts to
-;; schedule them will fail.
+;; schedule them will fail. (How?)
 
 
 (provide
@@ -16,7 +16,8 @@
 
 (define-type Configuration String)
 
-(require "canonicalize.rkt"
+(require "types.rkt"
+         "canonicalize.rkt"
          "qtr-math.rkt"
          "credentials.rkt"
          racket/set
@@ -25,9 +26,9 @@
 
 (require/typed "fetch-mapping.rkt"
                [courses-we-schedule/db
-                (Setof CourseID)]
+                (Setof Course-Id)]
                [2017-course-configurations
-                (Listof (Pair CourseID Configuration))])
+                (Listof (Pair Course-Id Configuration))])
 
 
 (define current-catalog : CatalogCycle "2017-2019")
@@ -252,7 +253,7 @@
 
 ;; given a course, return its 2017 configuration string, or
 ;; #f it doesn't appear in the current catalog
-(define (2017-course-configuration [course : CourseID]) : (U False Configuration)
+(define (2017-course-configuration [course : Course-Id]) : (U False Configuration)
   (match (assoc course 2017-course-configurations)
     [#f #f]
     [(cons id configuration) configuration]))

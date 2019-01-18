@@ -16,7 +16,7 @@
          id-mappings
          Subject
          CourseNum
-         CourseID
+         Course-Id
          subject?
          mappings
          MappingRow
@@ -27,6 +27,7 @@
 
 (require racket/match
          racket/set
+         "types.rkt"
          "qtr-math.rkt"
          (only-in racket/list remove-duplicates))
 
@@ -42,14 +43,11 @@
 
 (define-type CourseNum String) ;; such as "123" or "0123"
 
-
-(define-type CourseID String) ;; such as "csc123"
-
-(define-type MappingRow (Vector CatalogCycle Subject CourseNum CourseID))
+(define-type MappingRow (Vector CatalogCycle Subject CourseNum Course-Id))
 
 (define-predicate subject? Subject)
 
-(: mapping-row-id (MappingRow -> CourseID))
+(: mapping-row-id (MappingRow -> Course-Id))
 (define (mapping-row-id r)
   (vector-ref r 3))
 
@@ -70,7 +68,7 @@
 ;; specifiye
 (define mapping-hash
   (for/hash : (Immutable-HashTable (Vector CatalogCycle Subject CourseNum)
-                                   CourseID)
+                                   Course-Id)
     ([v (in-list mappings)])
     (match-define (vector cycle subject coursenum name) v)
     (unless (coursenum? coursenum)
@@ -81,7 +79,7 @@
 
 ;; given catalog cycle, subject, and number, return a string
 ;; representing the canonical course name
-(: canonicalize (CatalogCycle (U Symbol String) (U Natural CourseNum) -> CourseID))
+(: canonicalize (CatalogCycle (U Symbol String) (U Natural CourseNum) -> Course-Id))
 (define (canonicalize cycle subject-input number-input)
   (define try-canonicalize (canonicalize/noerr cycle subject-input number-input))
   (cond [(not try-canonicalize)
@@ -92,18 +90,18 @@
 
 
 ;; like canonicalize, but accepts qtr rather than catalog cycle
-(: canonicalize/qtr (Natural (U Symbol String) (U Natural String) -> CourseID))
+(: canonicalize/qtr (Natural (U Symbol String) (U Natural String) -> Course-Id))
 (define (canonicalize/qtr qtr subject number)
   (canonicalize (qtr->catalog-cycle qtr) subject number))
 
 
 ;; like canonicalize, but accepts qtr rather than catalog cycle
-(: canonicalize/qtr/noerr (Natural (U Symbol String) (U Natural String) -> (U False CourseID)))
+(: canonicalize/qtr/noerr (Natural (U Symbol String) (U Natural String) -> (U False Course-Id)))
 (define (canonicalize/qtr/noerr qtr subject number)
   (canonicalize/noerr (qtr->catalog-cycle qtr) subject number))
 
 ;; this one returns #f when it can't find a mapping
-(: canonicalize/noerr (CatalogCycle (U Symbol String) (U Natural CourseNum) -> (U CourseID False)))
+(: canonicalize/noerr (CatalogCycle (U Symbol String) (U Natural CourseNum) -> (U Course-Id False)))
 (define (canonicalize/noerr cycle subject-input number-input)
   (define (check-subject [maybe-subject : String]) : Subject
     (cond [(subject? maybe-subject) maybe-subject]
@@ -135,10 +133,10 @@
 
 
 ;; is this string the canonical id of some course?
-(define (canonical-id? [n : CourseID]) : Boolean
+(define (canonical-id? [n : Course-Id]) : Boolean
   (set-member? canonical-ids n))
 
-(define canonical-ids : (Setof CourseID)
+(define canonical-ids : (Setof Course-Id)
   (list->set (hash-values mapping-hash)))
 
 (define (row-name [r : MappingRow]) : String
@@ -160,7 +158,7 @@
 
 ;; return the canonical names of all classes in the given catalog offered
 ;; with the given subject
-(: courses-in-subject (CatalogCycle Subject -> (Listof CourseID)))
+(: courses-in-subject (CatalogCycle Subject -> (Listof Course-Id)))
 (define (courses-in-subject cycle subject)
   (remove-duplicates
    (map row-name
@@ -170,7 +168,7 @@
                 mappings))))
 
 ;; return all of the mappings for a given class id
-(: id-mappings (CourseID -> (Listof (List CatalogCycle Subject CourseNum))))
+(: id-mappings (Course-Id -> (Listof (List CatalogCycle Subject CourseNum))))
 (define (id-mappings id)
   (ensure-canonical id)
   (define rows

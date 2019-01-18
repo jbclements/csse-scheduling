@@ -6,13 +6,14 @@
 
 (provide (struct-out Student)
          get-students
-         use-localhost?)
+         use-localhost?
+         student-grades-in-course)
 
 (: get-students (String -> (Listof Student)))
 
 (: use-localhost? (Parameterof Boolean))
 
-(require (only-in "degree-requirements.rkt" Grade-Record Qtr)
+(require "../types.rkt"
          "../credentials.rkt")
 
 ;; represents a student
@@ -131,6 +132,10 @@
   (printf "total rows: ~v\n" (length rows))
 
   students)
+
+;; given a student and a course, return a list of their grades in that course
+(define (student-grades-in-course [s : Student] [c : Course-Id]) : (Listof Grade-Record)
+  (filter (λ ([r : Grade-Record]) (equal? (gr-course r) c)) (Student-grades s)))
 
 
 

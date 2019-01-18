@@ -4,13 +4,10 @@
 ;; for graduation
 
 (require "../canonicalize.rkt"
-         "../course-listings.rkt")
+         "../course-listings.rkt"
+         "../types.rkt")
 
-(provide Qtr
-         Course-Id
-         Grade
-         Grade-Record
-         Requirement
+(provide Requirement
          ReqFun
          csc-requirements
          cpe-requirements
@@ -23,21 +20,14 @@
          missing-requirements
 
          passed-data-structures?
-         passed-bigger-projects?)
+         passed-bigger-projects?
+
+         passing-grade?
+         c-passing-grade?)
 
 ;; for now, pin the catalog cycle:
 (define current-catalog-cycle "2017-2019")
 
-(define-type Qtr Natural)
-(define-type Course-Id String)
-(define-type Grade String)
-(define-type Units Real)
-(define-type Grade-Record (List Qtr Course-Id Units Grade))
-
-(define gr-qtr : (Grade-Record -> Qtr) first)
-(define gr-course : (Grade-Record -> Course-Id) second)
-(define gr-units : (Grade-Record -> Units) third)
-(define gr-grade : (Grade-Record -> String) fourth)
 
 ;; given a list of grades, a course id, and a predicate mapping a grade to
 ;; a boolean, return a list of lists of grade-records indicating the

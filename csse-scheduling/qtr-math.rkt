@@ -4,6 +4,7 @@
 ;; fall years, and catalog cycles
 
 (require racket/match
+         "./types.rkt"
          (only-in racket/list range))
 
 (provide CatalogCycle
@@ -74,11 +75,11 @@
 (define natural? exact-nonnegative-integer?)
 
 ;; map a year to the fall qtr that occurs in it (see example below)
-(define (fall-year->base-qtr [year : Natural]) : Natural
+(define (fall-year->base-qtr [year : Natural]) : Qtr
   (encode-qtr year "Fall"))
 
 ;; map a qtr to the fall year (summer goes forward...)
-(define (qtr->fall-year [qtr : Natural]) : Natural
+(define (qtr->fall-year [qtr : Qtr]) : Natural
   (define base-year (qtr->year qtr))
   ;; winter/spring go backward
   (match (qtr->season qtr)
@@ -92,7 +93,7 @@
     [_ base-year]))
 
 ;; map a qtr to the cycle that it occurs in
-(define (qtr->catalog-cycle [qtr : Natural]) : CatalogCycle
+(define (qtr->catalog-cycle [qtr : Qtr]) : CatalogCycle
   (fall-year->catalog-cycle (qtr->fall-year qtr)))
 
 ;; given a string or symbol, coerce it to a season if possible
@@ -108,7 +109,7 @@
                            0 s)]))
 
 ;; given a quarter, return its season: "Fall", "Winter", etc.
-(define (qtr->season [qtr : Natural]) : Season
+(define (qtr->season [qtr : Qtr]) : Season
   (match (modulo qtr 10)
     [2 "Winter"]
     [4 "Spring"]
@@ -124,7 +125,7 @@
     ["Fall" 8]))
 
 ;; return the year in which a quarter number falls
-(define (qtr->year [qtr : Natural]) : Natural
+(define (qtr->year [qtr : Qtr]) : Natural
   (define century-code (floor (/ qtr 1000)))
   (define year-code (modulo (floor (/ qtr 10)) 100))
   (define century-offset
@@ -140,7 +141,7 @@
   (+ century-offset year-code))
 
 ;; given a year and a season, return the qtr number
-(define (encode-qtr [year : Natural] [season : (U Symbol String)]) : Natural
+(define (encode-qtr [year : Natural] [season : (U Symbol String)]) : Qtr
   (define century-code
     (cond [(<= 1900 year 1999) 0]
           [(<= 2000 year 2099) 2]
@@ -187,15 +188,15 @@
 
 ;; given a year, return the quarters of the academic year beginning in
 ;; the fall of the given year.
-(define (year->qtrs [year : Natural]) : (Listof Natural)
+(define (year->qtrs [year : Qtr]) : (Listof Natural)
   (qtrs-in-range (fall-year->base-qtr year)
                  (fall-year->base-qtr (add1 year))))
 
 ;; given a catalog cycle, return the quarters that fall into it.
-(define (catalog-cycle->qtrs [cycle : CatalogCycle]) : (Listof Natural)
+(define (catalog-cycle->qtrs [cycle : CatalogCycle]) : (Listof Qtr)
   (apply append (map year->qtrs (catalog-cycle->fall-years cycle))))
 
-(define (season-after-qtr [season : Season] [qtr : Natural]) : Natural
+(define (season-after-qtr [season : Season] [qtr : Qtr]) : Qtr
   (define desired-offset (season->qtr-offset season))
   (define qtr-offset (modulo qtr 10))
   (cond [(<= qtr-offset desired-offset) (encode-qtr (qtr->year qtr) season)]
