@@ -55,7 +55,7 @@
 (: coursenum? (String -> Boolean))
 (define (coursenum? s)
   ;; turns out there are two-digit course numbers.
-  (regexp-match? #px"^0?[0-9]{2,3}( +X)?$" s))
+  (regexp-match? #px"^[0P]?[0-9]{2,3}( +X)?$" s))
 
 ;; the rows in the table, representing mappings from offering
 ;; to canonical name

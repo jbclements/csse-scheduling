@@ -54,9 +54,7 @@
     (postgresql-connect
      #:user db-username
      #:password db-password
-     #:port (let ([ans (if (use-localhost?) 5432 13432)])
-              (printf "~s\n" ans)
-              ans)
+     #:port (if (use-localhost?) 5432 13432)
      #:database "csseprogress"))
 
 
