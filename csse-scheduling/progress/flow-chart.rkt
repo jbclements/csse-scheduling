@@ -24,6 +24,10 @@
 (define-type Flowchart-Spec
   (Listof (Pairof Requirement
                   (Listof Natural))))
+
+(define-type Seats-By-Requirement
+  (Listof (List Requirement Nonnegative-Real)))
+
 ;; note that the ordering of the requirements within a quarter
 ;; is not entirely unimportant,
 ;; as it can affect which courses are chosen (but only on the very edge)
@@ -265,9 +269,10 @@
 ;; quarters (as a list of tuples)
 (define (student-to-take [unmet-reqs : (Listof Requirement)]
                          [major : (U "CSC" "CPE" "SE")]
-                         [qtr-count : Natural]
+                         [start-qtr : Natural]
+                         [stop-qtr : Natural]
                          [first-time-first-year? : Boolean])
-  : (Listof (List Requirement Nonnegative-Real))
+  : Seats-By-Requirement
   (define flow-chart
     (match major
       ["CSC" (if first-time-first-year?
@@ -284,27 +289,60 @@
           "major string (\"CSC\",\"SE\",\"CPE\")"
           1 unmet-reqs major)]))
   (define qtr-load (major->qtr-load major))
-  ;; this helps us decide how many requirements they're likely to
-  ;; want to satisfy in the coming year:
-  (define req-count (student-req-count unmet-reqs qtr-load qtr-count))
-  (define ordered-remaining-reqs
-    (filter-flow-chart flow-chart unmet-reqs))
-  ;; take the shortest prefix that has enough units:
-  (define reqs-to-take
-    (let loop : (Listof Flowchart-Tup)
-      ([reqs : (Listof Flowchart-Tup) ordered-remaining-reqs]
-       [total-needed : Real req-count])
-      (cond [(<= total-needed 0) '()]
-            [(empty? reqs) '()]
-            [else (cons (first reqs)
-                        (loop (rest reqs)
-                              (- total-needed
-                                 (tup-seats (first reqs)))))])))
-  (map (λ ([grp : (Listof Flowchart-Tup)])
-         : (List Requirement Nonnegative-Real)
-         (list (first (first grp))
-               (apply + (map tup-seats grp))))
-       (group-by (inst first Requirement) reqs-to-take)))
+  (define (helper [qtr-count : Natural]) : Seats-By-Requirement
+    ;; this helps us decide how many requirements they're likely to
+    ;; want to satisfy in the specified period
+    (define req-count (student-req-count unmet-reqs qtr-load qtr-count))
+    (define ordered-remaining-reqs
+      (filter-flow-chart flow-chart unmet-reqs))
+    ;; take the shortest prefix that has enough units:
+    (define reqs-to-take
+      (let loop : (Listof Flowchart-Tup)
+        ([reqs : (Listof Flowchart-Tup) ordered-remaining-reqs]
+         [total-needed : Real req-count])
+        (cond [(<= total-needed 0) '()]
+              [(empty? reqs) '()]
+              [else (cons (first reqs)
+                          (loop (rest reqs)
+                                (- total-needed
+                                   (tup-seats (first reqs)))))])))
+    (map (λ ([grp : (Listof Flowchart-Tup)])
+           : (List Requirement Nonnegative-Real)
+           (list (first (first grp))
+                 (apply + (map tup-seats grp))))
+         (group-by (inst first Requirement) reqs-to-take)))
+  (define by-end-requirements (helper stop-qtr))
+  (define before-start-requirements (helper start-qtr))
+  (seats-subtract by-end-requirements before-start-requirements))
+
+(require/typed racket/dict
+               [dict-ref (-> Seats-By-Requirement
+                             Requirement
+                             (List Nonnegative-Real)
+                             (List Nonnegative-Real))])
+
+;; given two sets of requirement-seats, subtract the second from the first.
+;; signal an error if a requirement would have a negative number of seats
+(define (seats-subtract [req-set-a : Seats-By-Requirement]
+                        [req-set-b : Seats-By-Requirement])
+  : (Listof (List Requirement Nonnegative-Real))
+  (define all-requirements
+    (remove-duplicates
+     (append (map (inst first Requirement) req-set-a)
+             (map (inst first Requirement) req-set-b))))
+  (define sbr : Seats-By-Requirement
+    (for/list ([r (in-list all-requirements)])
+      (define seats
+        (- (first (dict-ref req-set-a r '(0)))
+           (first (dict-ref req-set-b r '(0)))))
+      (when (< seats 0)
+        (error 'seats-subtract "negative seats required for requirement: ~v" r))
+      (list r seats)))
+  ;; filter out the ones with zero seats
+  (filter (λ ([tup : (List Requirement Nonnegative-Real)])
+            (< 0 (second tup)))
+          sbr))
+
 
 ;; given a list of unmet requirements and a qtr-load and a number
 ;; of quarters 'n',
@@ -366,7 +404,7 @@
            2.5 1e-10)
   (check-equal?
    (list->set
-    (student-to-take example-unmet "CPE" 3 #f))
+    (student-to-take example-unmet "CPE" 0 3 #f))
    (list->set
     '(("cpe315" 1)
       ("cpe329" 1)
@@ -375,11 +413,26 @@
       ("cpe350" 1)
       )))
 
-  (check-equal? (student-to-take '("csc348") "CPE" 3 #f)
+  (check-equal?
+   (list->set
+    (student-to-take example-unmet "CPE" 1 3 #f))
+   (list->set
+    '(("cpe329" 1)
+      ("csc453" 1/4)
+      ("cpe464" 1/4)
+      ("cpe350" 1)
+      )))
+
+  (check-equal?
+   (list->set
+    (student-to-take example-unmet "CPE" 3 3 #f))
+   (set))
+
+  (check-equal? (student-to-take '("csc348") "CPE" 0 3 #f)
               '(("csc348" 1)))
-  (check-equal? (student-to-take '("csc348") "CPE" 0 #f)
+  (check-equal? (student-to-take '("csc348") "CPE" 0 0 #f)
               '())
-  (check-equal? (student-to-take '() "CSC" 3 #f) '()))
+  (check-equal? (student-to-take '() "CSC" 0 3 #f) '()))
 
 
 
