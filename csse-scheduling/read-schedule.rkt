@@ -26,7 +26,8 @@
          record-course-sort-str
          by-num-by-season
          requirement->name
-         Schedule)
+         Schedule
+         availability->total-classroom-wtus)
 
 
 
@@ -310,3 +311,20 @@
     [else (csc-or-cpe r)]))
 
 
+
+(define-predicate nn-real? Nonnegative-Real)
+
+;; given an availability record, return a total number of wtus
+(define (availability->total-classroom-wtus [availability : Sexp]) : Nonnegative-Real
+  (match availability
+    ['tt-standard 30]
+    ['lec-standard 45]
+    ['absent 0]
+    [(list 'fw (? nn-real? fwwtu)) fwwtu]
+    [(list 'total (? nn-real? wtu)) wtu]
+    [(list (list 'f (? nn-real? fwtu)) (list 'w (? nn-real? wwtu)) (list 's (? nn-real? swtu)))
+     (+ fwtu wwtu swtu)]
+    [else
+     (raise-argument-error 'availability->total-wtus
+                           "known availability format"
+                           0 availability)]))

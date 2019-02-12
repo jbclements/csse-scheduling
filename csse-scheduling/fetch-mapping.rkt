@@ -2,11 +2,13 @@
 
 (provide course-mappings
          courses-we-schedule/db
-         2017-course-configurations)
+         2017-course-configurations
+         2019-course-configurations)
 
 (require db
          with-cache
          "credentials.rkt"
+         "qtr-math.rkt"
          racket/runtime-path)
 
 (define-runtime-path here-path ".")
@@ -54,16 +56,18 @@
         (~a "SELECT id FROM our_courses")))
      (list->set ids))))
 
-(define 2017-course-configurations
+(define (configurations-cache base-year)
   (cache-query
-   "2017-course-configurations.withcache"
+   (~a base-year"-course-configurations.withcache")
    (λ (conn)
      (map
       (λ (v) (cons (vector-ref v 0) (vector-ref v 1)))
       (query-rows
        conn
        "SELECT ci.id, ci.configuration
- FROM (our_courses oc INNER JOIN course_info ci
-       ON oc.id = ci.id)
+ FROM course_info ci
  WHERE ci.cycle = $1"
-       "2017-2019")))))
+       (fall-year->catalog-cycle base-year))))))
+
+(define 2017-course-configurations (configurations-cache 2017))
+(define 2019-course-configurations (configurations-cache 2019))

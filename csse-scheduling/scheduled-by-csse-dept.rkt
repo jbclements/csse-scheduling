@@ -12,7 +12,8 @@
  ee-scheduled-courses
  supervisory-courses
  csc-or-cpe
- 2017-course-configuration)
+ 2017-course-configuration
+ 2019-course-wtus)
 
 (define-type Configuration String)
 
@@ -28,10 +29,11 @@
                [courses-we-schedule/db
                 (Setof Course-Id)]
                [2017-course-configurations
+                (Listof (Pair Course-Id Configuration))]
+               [2019-course-configurations
                 (Listof (Pair Course-Id Configuration))])
 
-
-(define current-catalog : CatalogCycle "2017-2019")
+(define current-catalog : CatalogCycle "2019-2021")
 
 ;; NOTE: it would probably be much more robust to list the ones
 ;; that we *don't* schedule. That way, new courses will by default
@@ -267,6 +269,32 @@
              (λ () (csc-or-cpe 290)))
   (check-equal? (csc-or-cpe 431) "csc431")
   (check-equal? (csc-or-cpe 315) "cpe315"))
+
+;; given a course, return the number of WTUs required to teach it
+;; in the 2019-2021 catalog
+(define (2019-course-wtus [course : Course-Id]) : (U False Nonnegative-Real)
+  (match (assoc course 2019-course-configurations)
+    [#f #f]
+    [(cons id configuration) (configuration->wtus configuration)]))
+
+(define lecture-unit-wtus 1.0)
+(define lab-unit-wtus 2.0)
+(define activity-unit-wtus 1.3)
+(define (configuration->wtus [c : Configuration]) : (U False Nonnegative-Real)
+  (match c
+    [(regexp #px"^([0-9]+)-([0-9]+)-([0-9]+)$"
+             (list _ lectures labs activities))
+     ;; casts should all succeed by regexps in pattern
+     (+ (* lecture-unit-wtus  (cast (string->number (cast lectures String))   Nonnegative-Real))
+        (* lab-unit-wtus      (cast (string->number (cast labs String))       Nonnegative-Real))
+        (* activity-unit-wtus (cast (string->number (cast activities String)) Nonnegative-Real)))]
+    [other
+     (printf "uh oh: ~e\n" c)
+     #f]))
+
+(module+ test
+  (check-equal? (2019-course-wtus "csc101") 5.0)
+  (check-equal? (2019-course-wtus "csc232") 3.3))
 
 
 
