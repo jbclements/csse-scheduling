@@ -272,22 +272,25 @@
 
 ;; given a course, return the number of WTUs required to teach it
 ;; in the 2019-2021 catalog
-(define (2019-course-wtus [course : Course-Id]) : (U False Nonnegative-Real)
+(define (2019-course-wtus [course : Course-Id] [lab-mult : Natural 1]) : (U False Nonnegative-Real)
   (match (assoc course 2019-course-configurations)
     [#f #f]
-    [(cons id configuration) (configuration->wtus configuration)]))
+    [(cons id configuration) (configuration->wtus configuration lab-mult)]))
 
 (define lecture-unit-wtus 1.0)
 (define lab-unit-wtus 2.0)
 (define activity-unit-wtus 1.3)
-(define (configuration->wtus [c : Configuration]) : (U False Nonnegative-Real)
+
+;; return the number of wtus associated with a course. For mega-sections, we multiply
+;; the lab WTUs, on the assumption that mega-sections still have normal-sized labs
+(define (configuration->wtus [c : Configuration] [lab-mult : Natural]) : (U False Nonnegative-Real)
   (match c
     [(regexp #px"^([0-9]+)-([0-9]+)-([0-9]+)$"
              (list _ lectures labs activities))
      ;; casts should all succeed by regexps in pattern
-     (+ (* lecture-unit-wtus  (cast (string->number (cast lectures String))   Nonnegative-Real))
-        (* lab-unit-wtus      (cast (string->number (cast labs String))       Nonnegative-Real))
-        (* activity-unit-wtus (cast (string->number (cast activities String)) Nonnegative-Real)))]
+     (+ (* lecture-unit-wtus      (cast (string->number (cast lectures String))   Nonnegative-Real))
+        (* lab-unit-wtus lab-mult (cast (string->number (cast labs String))       Nonnegative-Real))
+        (* activity-unit-wtus     (cast (string->number (cast activities String)) Nonnegative-Real)))]
     [other
      (printf "uh oh: ~e\n" c)
      #f]))
