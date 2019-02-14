@@ -16,6 +16,8 @@
 (require "../types.rkt"
          "../credentials.rkt")
 
+(define-predicate nn-real? Nonnegative-Real)
+
 ;; represents a student
 (struct Student ([id : Id]
                  [major : String]
@@ -31,78 +33,42 @@
 (define use-localhost? (make-parameter #f))
 
 (require/typed db/base
-               [#:opaque Connection connection?]
-               [#:opaque SqlNull sql-null?]
-               [query-rows
-                (Connection String Any * -> (Listof (Vectorof
-                                                     (U String
-                                                        Natural
-                                                        SqlNull))))])
+               [#:opaque SqlNull sql-null?])
 
-(require/typed db/postgresql
-               [postgresql-connect
-                (#:user String #:password String #:port Natural
-                 #:database String -> Connection)])
-
-
+(require/typed "../fetch-mapping.rkt"
+               [student-grades-cache
+                (String -> (Listof (Pairof String Grade-Record)))]
+               [majors-cache
+                (String -> (Listof (Vector String String
+                                           (U SqlNull Qtr)
+                                           String)))])
 
 (define-predicate lolostring? (Listof (Listof String)))
 
 ;; given a version, get the data.
 (define (get-students [version : String]) : (Listof Student)
-  (define conn
-    (postgresql-connect
-     #:user db-username
-     #:password db-password
-     #:port (if (use-localhost?) 5432 13432)
-     #:database "csseprogress"))
 
-
-  (define rows : (Listof (Listof (U SqlNull String Natural)))
-    (map
-     (inst vector->list (U SqlNull String Natural))
-     (query-rows
-      conn
-      (~a "SELECT id,qtr,course,units_earned,grade FROM course_grade"
-          " WHERE version=$1;")
-      version)))
+  (define rows (student-grades-cache version))
 
   (when (empty? rows)
     (error 'get-students "no rows. probably bad version: ~e" version))
 
-  (define (row-id [row : (Listof Any)])
-    (cast (first row) String))
+  
 
   (define student-grades-table : (Immutable-HashTable Id (Listof Grade-Record))
     (make-immutable-hash
-     (map (λ ([g : (Listof (Listof Any))]) : (Pairof Id (Listof Grade-Record))
-            (define pre-grade-records : (Listof (Listof Any))
-              (map (inst rest Any Any) g))
-            (define grade-records
-              (for/list : (Listof Grade-Record)
-                ([pre-rec (in-list pre-grade-records)])
-                (list (assert (first pre-rec) natural?)
-                      (assert (second pre-rec) string?)
-                      (/ (assert (third pre-rec) real?) 1000)
-                      (assert (fourth pre-rec) string?))))
-            (cons (row-id (first g)) ; id
-                  grade-records ; grades
+     (map (λ ([g : (Listof (Pairof String Grade-Record))]) : (Pairof Id (Listof Grade-Record))
+            (cons ((inst first String) (first g)) ; id
+                  (map (inst cdr Any Grade-Record) g) ; grades
                   ))
-          (group-by row-id rows))))
+          (group-by (inst first String) rows))))
 
   (define major-table-query-result
-    (query-rows
-     conn
-     (~a "SELECT m.id,major,e.qtr,g.qtr"
-         " FROM ((majors m LEFT JOIN entry_qtr e ON m.id=e.id AND m.version=e.version)"
-         "       LEFT JOIN grad_qtr g ON m.id = g.id AND m.version = g.version)"
-         " WHERE m.version=$1"
-         " and (m.id, m.version) NOT IN (SELECT id,version FROM csgrad);")
-     version))
+    (majors-cache version))
 
   (define students : (Listof Student)
     (map
-     (λ ([l : (Vectorof (U String Natural SqlNull))]) : Student
+     (λ ([l : (Vector String String (U SqlNull Qtr) String)]) : Student
        (define expected-grad
          (cond [(equal? version "2176-1") 'no-data]
                [else
