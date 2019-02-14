@@ -100,6 +100,7 @@
        ("csc309" "Software Engineering II")
        ("csc310" "Computers for Poets")
        ("csc311" "Computational Art")
+       ("csc313" "Teaching Computing")
        ("csc320" "Practical Computer Security for Everyone")
        ("csc321" "Introduction to Computer Security")
        ("csc323" "Cryptography Engineering")
@@ -113,6 +114,7 @@
        ("csc366" "Database Modeling, Design and Implementation")
        ("csc369" "Introduction to Distributed Computing")
        ("csc371" "Game Design")
+       ("csc377" "Introduction to Mixed Reality")
        ("csc378" "Interactive Entertainment Engineering")
        ("csc402" "Software Requirements Engineering")
        ("csc405" "Software Construction")
@@ -145,9 +147,11 @@
        ("csc478" "Current Topics in Computer Graphics")
        ("csc480" "Artificial Intelligence")
        ("csc481" "Knowledge Based Systems")
+       ("csc482" "Speech and Language Processing")
        ("csc483" "Current Topics in Human-Computer Interaction")
        ("csc484" "User-Centered Interface Design and Development")
        ("csc486" "Human-Computer Interaction Theory and Design")
+       ("csc487" "Deep Learning")
        ("csc489" "Current Topics in Artificial Intelligence")
        ("csc490" "Selected Advanced Topics")
        ("csc496" "Selected Advanced Laboratory")
@@ -291,9 +295,7 @@
      (+ (* lecture-unit-wtus      (cast (string->number (cast lectures String))   Nonnegative-Real))
         (* lab-unit-wtus lab-mult (cast (string->number (cast labs String))       Nonnegative-Real))
         (* activity-unit-wtus     (cast (string->number (cast activities String)) Nonnegative-Real)))]
-    [other
-     (printf "uh oh: ~e\n" c)
-     #f]))
+    [other #f]))
 
 (module+ test
   (check-equal? (2019-course-wtus "csc101") 5.0)

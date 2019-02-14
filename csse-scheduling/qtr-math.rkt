@@ -188,7 +188,7 @@
 
 ;; given a year, return the quarters of the academic year beginning in
 ;; the fall of the given year.
-(define (year->qtrs [year : Qtr]) : (Listof Natural)
+(define (year->qtrs [year : Natural]) : (Listof Qtr)
   (qtrs-in-range (fall-year->base-qtr year)
                  (fall-year->base-qtr (add1 year))))
 
