@@ -13,6 +13,7 @@
  supervisory-courses
  csc-or-cpe
  2017-course-configuration
+ cycle-course-configuration
  2019-course-wtus)
 
 (define-type Configuration String)
@@ -59,6 +60,8 @@
       "cpe522" ; "Advanced Real-Time Operating Systems Design"
       "cpe523" ; "Digital Systems Design"
       ))))
+
+;; should this be parameterized by the catalog cycle? sigh...
 
 ;; NOTE: THIS LIST MUST BE IN SYNC WITH THE ONE IN THE DATABASE.
 ;; (you should get an error message if it's not...)
@@ -255,14 +258,22 @@
                         "more than one hit (~e) for course number: ~e"
                         hits coursenum)])]))
 
+;; given a course and a catalog cycle, return its configuration string
+(define (cycle-course-configuration [course : Course-Id] [cycle : CatalogCycle]) : (U False Configuration)
+  (define configurations
+    (match cycle
+      ["2017-2019" 2017-course-configurations]
+      ["2019-2021" 2019-course-configurations]
+      [other (error 'cycle-course-configuration "unexpected cycle: ~e" cycle)]))
+  (match (assoc course configurations)
+    [#f #f]
+    [(cons id configuration) configuration]))
 
 
 ;; given a course, return its 2017 configuration string, or
 ;; #f it doesn't appear in the current catalog
-(define (2017-course-configuration [course : Course-Id]) : (U False Configuration)
-  (match (assoc course 2017-course-configurations)
-    [#f #f]
-    [(cons id configuration) configuration]))
+(define (2017-course-configuration [course : Course-Id])
+  (cycle-course-configuration course "2017-2019"))
 
 (module+ test
   (require typed/rackunit)
@@ -274,12 +285,19 @@
   (check-equal? (csc-or-cpe 431) "csc431")
   (check-equal? (csc-or-cpe 315) "cpe315"))
 
+(define-predicate false? False)
+
 ;; given a course, return the number of WTUs required to teach it
 ;; in the 2019-2021 catalog
-(define (2019-course-wtus [course : Course-Id] [lab-mult : Natural 1]) : (U False Nonnegative-Real)
+(define (2019-course-wtus [course : Course-Id] [lab-mult : Natural 1]) : Nonnegative-Real
   (match (assoc course 2019-course-configurations)
-    [#f #f]
-    [(cons id configuration) (configuration->wtus configuration lab-mult)]))
+    [#f (error '2019-course-wtus "no mapping found for course: ~e" course)]
+    [(cons id configuration)
+     (define maybe-wtus (configuration->wtus configuration lab-mult))
+     (cond [maybe-wtus maybe-wtus]
+           [else (error '2019-course-wtus
+                        "nonstandard configuration for course: ~e"
+                        course)])]))
 
 (define lecture-unit-wtus 1.0)
 (define lab-unit-wtus 2.0)
