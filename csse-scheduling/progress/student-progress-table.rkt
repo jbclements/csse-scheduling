@@ -26,14 +26,16 @@
          has-major-in
          satisfies)
 
+
 (define (major-requirements [major : String]) : (Listof Requirement)
-  (match major
+  (ann (match major
     ["CSC" csc-requirements]
     ["CPE" cpe-requirements]
     ["SE"  se-requirements]
     [other (raise-argument-error 'major-requirements
                                  "string that's one of: CSC, CPE, or SE"
-                                 0 major)]))
+                                 0 major)])
+       (Listof Requirement)))
 
 (define max-num-requirements
   (apply max (map (inst length Requirement)
@@ -42,8 +44,8 @@
                         cpe-requirements))))
 
 ;; given a major, return the names of the requirements
-(define (major-requirement-names [major : String]) : (Listof String)
-  (map (inst first String Any) (major-requirements major)))
+(define (major-requirement-names [major : String]) : (Listof ReqName)
+  (map (inst first ReqName Any) (major-requirements major)))
 
 
 ;; requirements no longer produce booleans, so this is all commented out for now:
@@ -53,11 +55,11 @@
 (define (student->bools [student : Student]) : (Listof Boolean)
   (define requirements (major-requirements (Student-major student)))
   (define needed (student->unmet-requirements student))
-  (for/list ([req-name (in-list (map (inst first String) requirements))])
+  (for/list ([req-name (in-list (map (inst first ReqName) requirements))])
     (not (member req-name needed))))
 
 ;; given a student, produce a list of their unmet requirement names
-(define (student->unmet-requirements [student : Student]) : (Listof String)
+(define (student->unmet-requirements [student : Student]) : (Listof ReqName)
   (define requirements (major-requirements (Student-major student)))
   (missing-requirements requirements (Student-grades student)))
 

@@ -98,7 +98,7 @@
 
 (define-type ReqFun ((Listof Grade-Record) -> (Listof (Listof Grade-Record))))
 
-(define-type Requirement (List String ReqFun))
+(define-type Requirement (List ReqName ReqFun))
 
 ;; time for some combinators:
 
@@ -292,7 +292,7 @@
 
 ;; signal an error if two requirements have the same name
 (define (ensure-distinct-names [reqs : (Listof Requirement)]) : (Listof Requirement)
-  (match (check-duplicates (map (inst first String) reqs))
+  (match (check-duplicates (map (inst first ReqName) reqs))
     [#f reqs]
     [other (error 'ensure-distinct
                   "duplicate requirement name: ~e"
@@ -311,11 +311,11 @@
 (define discrete-req (list "discrete" passed-discrete?))
 (define csc-ul-te-req (list "upper-level-csc-TE"
                             passed-upper-level-technical-elective?))
-(list "csc-TE/special-problems"
+(list '(csc-TE/special-problems)
       (or!/req got-special-problems-credit?
                passed-technical-elective?))
 
-(list "csc-TE/123" (or!/req passed-123?
+(list '(csc-TE/123) (or!/req passed-123?
                             passed-technical-elective?)))
            
             
@@ -332,7 +332,7 @@
             (list "csc203" passed-bigger-projects?)
             (req  "csc225")
             (req  "csc300")
-            (list "csc-SE" passed-csc-se-req?)
+            (list '(csc-SE) passed-csc-se-req?)
             (req  "cpe315")
             (list "csc348" passed-discrete?)
             (req  "csc349")
@@ -344,20 +344,20 @@
             (req "csc491")
             (req "csc492")
            
-            (list "upper-level-csc-TE"
+            (list '(upper-level-csc-TE)
                   passed-upper-level-technical-elective?)
-            (list "csc-TE/special-problems"
+            (list '(csc-TE/special-problems)
                   (or!/req got-special-problems-credit?
                            passed-technical-elective?))
 
-            (list "csc-TE/123" (or!/req passed-123?
+            (list '(csc-TE/123) (or!/req passed-123?
                                     passed-technical-elective?))
            
             )
       ;; 24 TE units minus upper-level (above) minus special-problems plus 123 = 5 courses:
       (for/list : (Listof Requirement)
         ([i (in-range 4)])
-        (list (~a "csc-TE-" i) passed-technical-elective?))))))
+        (list (list (string->symbol (~a "csc-TE-" i))) passed-technical-elective?))))))
 
 (define se-requirements : (Listof Requirement)
   (ensure-distinct-names
@@ -382,18 +382,18 @@
             (req  "csc484")
             (req "csc491")
             (req "csc492")
-            (list "upper-level-se-TE"
+            (list '(upper-level-se-TE)
                   passed-upper-level-se-technical-elective?)
-            (list "special-problems/se-TE"
+            (list '(special-problems/se-TE)
                   (or!/req got-special-problems-credit?
                            passed-se-technical-elective?))
-            (list "se-TE/123"
+            (list '(se-TE/123)
                   (or!/req passed-123?
                            passed-se-technical-elective?)))
       ;; 20 TE units minus upper-level (above) minus special problems plus 123
       (for/list : (Listof Requirement)
         ([i (in-range 3)])
-        (list (~a "se-TE-" i)
+        (list (list (string->symbol (~a "se-TE-" i)))
               passed-se-technical-elective?)))
      )))
 
@@ -418,12 +418,12 @@
      (req "cpe462")
      (req "cpe464")
      (list "csc348" passed-discrete?)
-     (list "cpe-TE/400" (or!/req got-4-units-of-400?
+     (list '(cpe-TE/400) (or!/req got-4-units-of-400?
                                  passed-cpe-technical-elective?))
-     (list "cpe-TE/123" (or!/req passed-123?
+     (list '(cpe-TE/123) (or!/req passed-123?
                               passed-cpe-technical-elective?))
-     (list "cpe-TE-1" passed-cpe-technical-elective?)
-     (list "cpe-TE-2" passed-cpe-technical-elective?))
+     (list '(cpe-TE-1) passed-cpe-technical-elective?)
+     (list '(cpe-TE-2) passed-cpe-technical-elective?))
     )))
 
 ;; for use in checking for specific courses:
@@ -435,12 +435,12 @@
 
 ;; return a list of the names of the student's unsatisfied requirements
 (define (missing-requirements [rs : (Listof Requirement)]
-                              [gr : (Listof Grade-Record)]) : (Listof String)
+                              [gr : (Listof Grade-Record)]) : (Listof ReqName)
   (define-values (_ missing)
     (for/fold : (values (Listof (Listof Grade-Record))
-                        (Listof String))
+                        (Listof ReqName))
       ([grs : (Listof (Listof Grade-Record)) (list gr)]
-       [missing : (Listof String) '()])
+       [missing : (Listof ReqName) '()])
       ([requirement (in-list rs)])
       (define ways-of-satisfying-req
         (remove-duplicates (apply append (map (second requirement) grs))))
@@ -611,12 +611,12 @@
                 55))
 
   (check-equal? (missing-requirements csc-requirements '())
-                (map (inst first String Any) csc-requirements))
+                (map (inst first ReqName Any) csc-requirements))
 
   (check-equal? (missing-requirements cpe-requirements '())
-                (map (inst first String Any) cpe-requirements))
+                (map (inst first ReqName Any) cpe-requirements))
 
   (check-equal? (missing-requirements csc-requirements
                                       '((2178 "csc202" 4 "A")))
                 (remove* '("csc101" "csc202")
-                         (map (inst first String Any) csc-requirements))))
+                         (map (inst first ReqName Any) csc-requirements))))

@@ -4,15 +4,17 @@
 ;; many courses are suggested for multiple quarters, so for each course,
 ;; we indicate a *list* of the quarters in which it's suggested.
 
+(require "../types.rkt")
+
 (provide csc-2017-2019-flowchart
          cpe-2017-2019-flowchart
          se-2017-2019-flowchart
          csc-qtr-load
          se-qtr-load
          cpe-qtr-load
-         student-to-take)
+         student-to-take
 
-(define-type Requirement String)
+         Seats-By-Requirement)
 
 ;; important invariant: the strings here must correspond exactly to
 ;; the strings used to describe the requirements...
@@ -22,11 +24,11 @@
 ;; of accidental error
 
 (define-type Flowchart-Spec
-  (Listof (Pairof Requirement
+  (Listof (Pairof ReqName
                   (Listof Natural))))
 
 (define-type Seats-By-Requirement
-  (Listof (List Requirement Nonnegative-Real)))
+  (Listof (List ReqName Real)))
 
 ;; note that the ordering of the requirements within a quarter
 ;; is not entirely unimportant,
@@ -37,7 +39,7 @@
     ("csc203" 4)
     ("csc225" 4 5 6)
     ("csc300" 7 8 9 10 11)
-    ("csc-SE" 7)
+    ((csc-SE) 7)
     ("cpe315" 5 6 7 8 9)
     ("csc348" 5 6)
     ("csc349" 7)
@@ -48,47 +50,19 @@
     ("csc453" 7 8 9 10 11 12)
     ("csc491" 11)
     ("csc492" 12)
-    ("upper-level-csc-TE" 11)
-    ("csc-TE/special-problems" 11)
-    ("csc-TE-0" 8)
-    ("csc-TE-1" 8)
-    ("csc-TE-2" 9)
-    ("csc-TE-3" 10)))
+    ((upper-level-csc-TE) 11)
+    ((csc-TE/special-problems) 11)
+    ((csc-TE-0) 8)
+    ((csc-TE-1) 8)
+    ((csc-TE-2) 9)
+    ((csc-TE-3) 10)))
 
 ;; use this one for first-time-first-years
 (define csc-2017-2019-flowchart-FTF : Flowchart-Spec
-  (cons '("csc-TE/123" 1) csc-2017-2019-flowchart/pre))
+  (cons '((csc-TE/123) 1) csc-2017-2019-flowchart/pre))
 ;; use this one for everyone else:
 (define csc-2017-2019-flowchart : Flowchart-Spec
-  (cons '("csc-TE/123" 12) csc-2017-2019-flowchart/pre))
-
-;; there is essentially a different flowchart for
-;; AP students. This flowchart is going to have
-;; a different number of requirements, which worries
-;; me; I feel like this is used as an invariant somewhere
-;; else. Also, I'm really just making this up...
-#;(define ap-csc-2017-2019-flowchart/pre : Flowchart-Spec
-  '(("csc202" 1)
-    ("csc203" 2)
-    ("csc225" 2)
-    ("csc357" 3)
-    ("csc300" 7 8 9 10 11)
-    ("csc-SE" 7)
-    ("cpe315" 4 5 6 7 8 9)
-    ("csc348" 4 5 6)
-    ("csc349" 6 7)
-    ("csc430" 8)
-    ("csc431" 9)
-    ("csc445" 10)
-    ("csc453" 6 7 8 9 10 11 12)
-    ("csc491" 11)
-    ("csc492" 12)
-    ("upper-level-csc-TE" 11)
-    ("csc-TE/special-problems" 11)
-    ("csc-TE-0" 8)
-    ("csc-TE-1" 8)
-    ("csc-TE-2" 9)
-    ("csc-TE-3" 10)))
+  (cons '((csc-TE/123) 12) csc-2017-2019-flowchart/pre))
 
 (define se-2017-2019-flowchart/pre : Flowchart-Spec
   '(("csc101" 2)
@@ -109,18 +83,18 @@
     ("csc484" 8)
     ("csc491" 11)
     ("csc492" 12)
-    ("upper-level-se-TE" 11)
-    ("special-problems/se-TE" 10)
-    ("se-TE-0" 7)
-    ("se-TE-1" 9)
-    ("se-TE-2" 10)))
+    ((upper-level-se-TE) 11)
+    ((special-problems/se-TE) 10)
+    ((se-TE-0) 7)
+    ((se-TE-1) 9)
+    ((se-TE-2) 10)))
 
 ;; use this one for first-time-first-years
 (define se-2017-2019-flowchart-FTF : Flowchart-Spec
-  (cons '("se-TE/123" 1) se-2017-2019-flowchart/pre))
+  (cons '((se-TE/123) 1) se-2017-2019-flowchart/pre))
 ;; use this one for everyone else:
 (define se-2017-2019-flowchart : Flowchart-Spec
-  (cons '("se-TE/123" 12) se-2017-2019-flowchart/pre))
+  (cons '((se-TE/123) 12) se-2017-2019-flowchart/pre))
 
 (define cpe-2017-2019-flowchart/pre : Flowchart-Spec
   '(("csc101" 2)
@@ -138,16 +112,16 @@
     ("cpe462" 12)
     ("cpe464" 9 10 11 12)
     ("csc348" 6 7)
-    ("cpe-TE/400" 12)
-    ("cpe-TE-1" 10)
-    ("cpe-TE-2" 11)))
+    ((cpe-TE/400) 12)
+    ((cpe-TE-1) 10)
+    ((cpe-TE-2) 11)))
 
 ;; use this one for first-time-first-years
 (define cpe-2017-2019-flowchart-FTF : Flowchart-Spec
-  (cons '("cpe-TE/123" 1) cpe-2017-2019-flowchart/pre))
+  (cons '((cpe-TE/123) 1) cpe-2017-2019-flowchart/pre))
 ;; use this one for everyone else:
 (define cpe-2017-2019-flowchart : Flowchart-Spec
-  (cons '("cpe-TE/123" 12) cpe-2017-2019-flowchart/pre))
+  (cons '((cpe-TE/123) 12) cpe-2017-2019-flowchart/pre))
 
 ;; if only...
 (define max-program-qtrs 12)
@@ -170,7 +144,7 @@
 ;; given a flowchart, split it into a list of tuples
 ;; of the form requirement name x qtr x fraction,
 ;; sorted by qtr.
-(define-type Flowchart-Tup (List Requirement Natural Nonnegative-Real))
+(define-type Flowchart-Tup (List ReqName Natural Nonnegative-Real))
 (define tup-seats : (-> Flowchart-Tup Nonnegative-Real) third)
 
 (define (flow-chart->tuple-style [flowchart : Flowchart-Spec])
@@ -182,7 +156,7 @@
         ([req-qtr-list (in-list flowchart)])
       (define qtr-list (rest req-qtr-list))
       (define l (length qtr-list))
-      (for/list : (Listof (List Requirement Natural Nonnegative-Real))
+      (for/list : (Listof (List ReqName Natural Nonnegative-Real))
         ([qtr (in-list qtr-list)])
         (list (first req-qtr-list)
               qtr
@@ -246,7 +220,7 @@
 ;; given a flowchart and a list of requirements remaining, return
 ;; a sorted list of req-qtr-load tuples
 (define (filter-flow-chart [flow-chart : Flowchart-Spec]
-                           [reqs-left : (Listof Requirement)])
+                           [reqs-left : (Listof ReqName)])
   : (Listof Flowchart-Tup)
   (define tuple-ish (flow-chart->tuple-style flow-chart))
   (define result
@@ -267,8 +241,8 @@
 ;; and a major and a number of quarters, compute the set of
 ;; estimated requirements to be satisfied in the coming 'qtr-count'
 ;; quarters (as a list of tuples)
-(define (student-to-take [unmet-reqs : (Listof Requirement)]
-                         [major : (U "CSC" "CPE" "SE")]
+(define (student-to-take [unmet-reqs : (Listof ReqName)]
+                         [major : Major-Abbr]
                          [start-qtr : Natural]
                          [stop-qtr : Natural]
                          [first-time-first-year? : Boolean])
@@ -307,17 +281,17 @@
                                 (- total-needed
                                    (tup-seats (first reqs)))))])))
     (map (λ ([grp : (Listof Flowchart-Tup)])
-           : (List Requirement Nonnegative-Real)
+           : (List ReqName Nonnegative-Real)
            (list (first (first grp))
                  (apply + (map tup-seats grp))))
-         (group-by (inst first Requirement) reqs-to-take)))
+         (group-by (inst first ReqName) reqs-to-take)))
   (define by-end-requirements (helper stop-qtr))
   (define before-start-requirements (helper start-qtr))
   (seats-subtract by-end-requirements before-start-requirements))
 
 (require/typed racket/dict
                [dict-ref (-> Seats-By-Requirement
-                             Requirement
+                             ReqName
                              (List Nonnegative-Real)
                              (List Nonnegative-Real))])
 
@@ -325,11 +299,11 @@
 ;; signal an error if a requirement would have a negative number of seats
 (define (seats-subtract [req-set-a : Seats-By-Requirement]
                         [req-set-b : Seats-By-Requirement])
-  : (Listof (List Requirement Nonnegative-Real))
+  : Seats-By-Requirement
   (define all-requirements
     (remove-duplicates
-     (append (map (inst first Requirement) req-set-a)
-             (map (inst first Requirement) req-set-b))))
+     (append (map (inst first ReqName) req-set-a)
+             (map (inst first ReqName) req-set-b))))
   (define sbr : Seats-By-Requirement
     (for/list ([r (in-list all-requirements)])
       (define seats
@@ -339,8 +313,8 @@
         (error 'seats-subtract "negative seats required for requirement: ~v" r))
       (list r seats)))
   ;; filter out the ones with zero seats
-  (filter (λ ([tup : (List Requirement Nonnegative-Real)])
-            (< 0 (second tup)))
+  (filter (λ ([tup : (List ReqName Real)])
+            (not (= 0 (second tup))))
           sbr))
 
 
@@ -348,7 +322,7 @@
 ;; of quarters 'n',
 ;; return the number of requirements expected to be completed
 ;; in the next 'n' quarters
-(define (student-req-count [unmet-reqs : (Listof Requirement)]
+(define (student-req-count [unmet-reqs : (Listof ReqName)]
                            [qtr-load : Qtr-Load]
                            [qtrs : Natural]) : Nonnegative-Real
   (define estimated-qtrs-completed

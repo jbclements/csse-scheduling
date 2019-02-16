@@ -20,7 +20,7 @@
 
 ;; represents a student
 (struct Student ([id : Id]
-                 [major : String]
+                 [major : Major-Abbr]
                  [grades : (Listof Grade-Record)]
                  [entry-qtr : (U Qtr 'pre-poly)]
                  [expected-graduation-qtr : (U Qtr 'future 'no-data)])
@@ -79,7 +79,7 @@
                    (assert (string->number m) natural?)])]))
        (define id (assert (vector-ref l 0) string?))
        (Student id
-                (assert (vector-ref l 1) string?)
+                (cast (vector-ref l 1) Major-Abbr)
                 (hash-ref student-grades-table id (λ () '()))
                 (match (vector-ref l 2)
                   [(? natural? n) n]
