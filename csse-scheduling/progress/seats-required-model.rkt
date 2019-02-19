@@ -143,6 +143,6 @@
                                (symbol->string (first b)))])]))
 
 (module+ main
-  (seats-required/range "2188-1" 2 5 #f))
+  (seat-requirements/range "2188-1" 4 5 #f))
 
 

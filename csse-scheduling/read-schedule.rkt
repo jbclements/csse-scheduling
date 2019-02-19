@@ -15,6 +15,7 @@
          year-sections-equivalent
          join-sections-tables
          course-topic
+         courseA-size
          topic?
          canonicalize-topic
          record-instructor
@@ -27,29 +28,33 @@
          by-num-by-season
          requirement->name
          Schedule
+         InstructorA
+         QuarterA
+         CourseA
          availability->total-classroom-wtus)
 
 
 
 ;; represents a year's teaching assignments.. subtype of Sexp
-(define-type Schedule (Pairof Natural (Listof Instructor)))
+(define-type Schedule (Pairof Natural (Listof InstructorA)))
 
 ;; represents an instructor's assignments for the year
-(define-type Instructor (List Symbol
-                              (Pair 'f Quarter)
-                              (Pair 'w Quarter)
-                              (Pair 's Quarter)))
+(define-type InstructorA (List Symbol
+                              (Pair 'f QuarterA)
+                              (Pair 'w QuarterA)
+                              (Pair 's QuarterA)))
 
 ;; a quarter's assignment *as it's represented in the schedule-FALLQTR.rktd file*
-(define-type Quarter (Listof CourseA))
+(define-type QuarterA (Listof CourseA))
 
 ;; represents a course assignment, optionally mega or 2xmega
+;; this format is chosen for ease of entry in schedule.rkt, not as a nice internal representation
 (define-type CourseA (U CourseTopic
                   (List 'M CourseTopic)
                   (List 'MM CourseTopic)))
 
 ;; represents the size of a course
-(define-type CourseSize (U 'regular 'mega2 'mega3))
+(define-type CourseSize (U 1 2 3))
 
 ;; represents the course content (not how many students)
 (define-type CourseTopic
@@ -115,31 +120,31 @@
               ([c (in-list (ann (rest (second irec))
                                 (Listof CourseA)))])
               (list instructor base-qtr
-                    (course-size c)
+                    (courseA-size c)
                     (canonicalize-topic
                      catalog-cycle
                      (course-topic c))))
             (for/list : (Listof Record)
               ([c (in-list (rest (third irec)))])
               (list instructor (+ base-qtr 4)
-                    (course-size c)
+                    (courseA-size c)
                     (canonicalize-topic
                      catalog-cycle
                      (course-topic c))))
             (for/list : (Listof Record)
               ([c (in-list (rest (fourth irec)))])
               (list instructor (+ base-qtr 6)
-                    (course-size c)
+                    (courseA-size c)
                     (canonicalize-topic
                      catalog-cycle
                      (course-topic c))))))))
 
-(: course-size (CourseA -> CourseSize))
-(define (course-size c)
+(: courseA-size (CourseA -> CourseSize))
+(define (courseA-size c)
   (match c
-    [(list 'MM _) 'mega3]
-    [(list 'M _) 'mega2]
-    [other 'regular]))
+    [(list 'MM _) 3]
+    [(list 'M _) 2]
+    [other 1]))
 
 (define-predicate coursetopic? CourseTopic)
 
@@ -158,21 +163,21 @@
     [(? nat? n) (cast (csc-or-cpe n) CourseID)]
     [(? symbol? s) (ensure-canonical (symbol->string s))]))
 
-(define-predicate instructor? Instructor)
+(define-predicate instructor? InstructorA)
 
 ;; remove underscores (they're just placeholders)
-(define (strip-placeholders [i : Instructor]) : Instructor
+(define (strip-placeholders [i : InstructorA]) : InstructorA
   (list (first i)
         (cons 'f (strip-underscores (rest (second i))))
         (cons 'w (strip-underscores (rest (third i))))
         (cons 's (strip-underscores (rest (fourth i))))))
 
-(define (strip-underscores [cs : Quarter]) : Quarter
+(define (strip-underscores [cs : QuarterA]) : QuarterA
   (filter (λ ([c : CourseA]) : Boolean
             (not (equal? c '_)))
           cs))
 
-(: sexp->instructor (Any -> Instructor))
+(: sexp->instructor (Any -> InstructorA))
 (define (sexp->instructor s)
   (cond [(instructor? s) (strip-placeholders s)]
         [else (raise-argument-error
@@ -210,14 +215,14 @@
 
 ;; remove records corresponding to the named instructors.
 ;; signal an error if these instructors don't appear in the list.
-(define (subtract-instructors [instructors : (Listof Instructor)]
+(define (subtract-instructors [instructors : (Listof InstructorA)]
                               [to-omit : (Listof Symbol)])
   (for ([i (in-list to-omit)])
     (unless (assoc i instructors)
       (error 'subtract-instructors
              "can't omit non-existent instructor: ~e"
              i)))
-  (filter (λ ([i : Instructor]) (not (member (first i) to-omit)))
+  (filter (λ ([i : InstructorA]) (not (member (first i) to-omit)))
           instructors))
 
 
@@ -281,12 +286,7 @@
 
 ;; how many sections-worth of students will this course accommodate?
 (: record->sections-equivalent (Record -> Integer))
-(define (record->sections-equivalent rec)
-  (match (third rec)
-    ['regular 1]
-    ['mega2 2]
-    ['mega3 3]))
-
+(define record->sections-equivalent third)
 
 (define (record-course-sort-str [r : (Pair CourseID Any)])
   : String
@@ -301,9 +301,9 @@
 (: compress-irec (Record -> InstructorAndSize))
 (define (compress-irec record)
   (match (third record)
-    ['mega2 (list (first record) 'm2)]
-    ['mega3 (list (first record) 'm3)]
-    ['regular (first record)]))
+    [2 (list (first record) 'm2)]
+    [3 (list (first record) 'm3)]
+    [1 (first record)]))
 
 (define (requirement->name [r : Natural])
   (match r

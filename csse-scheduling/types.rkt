@@ -29,7 +29,7 @@
   #:transparent)
 
 ;; a requirement for a number of sections
-(struct Section-Requirement ([label : Symbol] ;; which requirement is this? (used for prioritizing)
+(struct Section-Requirement ([label : Category] ;; which requirement is this? (used for prioritizing)
                              [course : Course-Or-Group] ;; what course do they want?
                              [qtr-req : (U Natural #f)] ;; when do they want it?
                              [sections : Real])  ;; how many do they want?
