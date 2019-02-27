@@ -230,6 +230,9 @@
   ;; quick sanity check...
   (define sum-of-result-reqs (apply + (map tup-seats result)))
   (unless (= (length reqs-left) sum-of-result-reqs)
+    (let ([ans reqs-left])
+      (printf "reqs-left: ~s\n" ans)
+      ans)
     (error 'filter-flow-chart
            "expected reqs to sum to ~v, got ~v in result ~v"
            (length reqs-left)
@@ -362,8 +365,8 @@
 
   (define example-unmet
     '("cpe315" "cpe329" "cpe350" "cpe450" "csc453"
-               "cpe461" "cpe462" "cpe464" "cpe-TE/400"
-               "cpe-TE/123" "cpe-TE-1" "cpe-TE-2"))
+               "cpe461" "cpe462" "cpe464" (cpe-TE/400)
+               (cpe-TE/123) (cpe-TE-1) (cpe-TE-2)))
   (check-equal?
    (reqs->qtrs-done cpe-qtr-load (length example-unmet))
    6)

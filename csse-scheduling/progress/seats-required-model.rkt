@@ -24,7 +24,8 @@
 
 (provide seat-requirements/range
          seats-required
-         seats-required/range)
+         seats-required/range
+         student->courses)
 
 (define (check-req-names [label : String]
                          [set1 : (Listof (Pairof ReqName Any))]
@@ -56,9 +57,8 @@
   (student-to-take unmet-reqs (Student-major student) start-qtr stop-qtr
                    (first-year? student)))
 
-
-
-
+;; given a major, return the standard "student category" for that student,
+;; used in the generated seat-requirements
 (define (major->category [major : String])
   (match major
     ["CPE" 'cpe-bs]
