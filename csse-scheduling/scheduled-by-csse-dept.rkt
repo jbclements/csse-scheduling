@@ -14,7 +14,8 @@
  csc-or-cpe
  2017-course-configuration
  cycle-course-configuration
- 2019-course-wtus)
+ 2019-course-wtus
+ 2019-course-wtus/noerror)
 
 (define-type Configuration String)
 
@@ -220,6 +221,8 @@
       "csc400"
       "csc491"
       "csc492"
+      "csc497"
+      "csc498"
       "csc493"
       "csc494"
       "csc495"
@@ -287,17 +290,25 @@
 
 (define-predicate false? False)
 
+
 ;; given a course, return the number of WTUs required to teach it
-;; in the 2019-2021 catalog
-(define (2019-course-wtus [course : Course-Id] [lab-mult : Natural 1]) : Nonnegative-Real
+;; in the 2019-2021 catalog, or return #f if it's nonstandard
+(define (2019-course-wtus/noerror [course : Course-Id] [lab-mult : Natural 1])
+  : (U False Nonnegative-Real)
   (match (assoc course 2019-course-configurations)
     [#f (error '2019-course-wtus "no mapping found for course: ~e" course)]
     [(cons id configuration)
      (define maybe-wtus (configuration->wtus configuration lab-mult))
      (cond [maybe-wtus maybe-wtus]
-           [else (error '2019-course-wtus
+           [else #f ])]))
+
+;; same as above, but signal an error if nonstandard
+(define (2019-course-wtus [course : Course-Id] [lab-mult : Natural 1])  : Nonnegative-Real
+   (or (2019-course-wtus/noerror course lab-mult)
+       (error '2019-course-wtus
                         "nonstandard configuration for course: ~e"
-                        course)])]))
+                        course)))
+
 
 (define lecture-unit-wtus 1.0)
 (define lab-unit-wtus 2.0)

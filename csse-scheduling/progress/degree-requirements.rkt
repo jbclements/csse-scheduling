@@ -77,6 +77,9 @@
 (define c-passing-grade?
   (grade-names->pred c-passing-grades))
 
+(define (any-grade? [g : Grade]) : Boolean
+  #t)
+
 ;; Requirements are interesting; for most requirements, students
 ;; cannot fulfill multiple requirements using the same course.
 ;; accordingly, determining whether a collection of requirements
@@ -111,6 +114,11 @@
 ;; did the student pass the given course at all?
 (define (pass/req [course-id : Course-Id]) : ReqFun
   (passed-pred course-id passing-grade?))
+
+;; given a course id, did the student take the class
+;; (not necessarily finished, but definitely qualified for)
+(define (took/req [course-id : Course-Id]) : ReqFun
+  (passed-pred course-id any-grade?))
 
 (define (pass-with-grade-in-qtr/req [course-id : Course-Id] [qtr : Qtr]
                                     [grade-pred : (Grade -> Boolean)]) : ReqFun
@@ -182,22 +190,25 @@
   (or!/req
    (or!/req (passc/req "csc102")
             (passc/req "csc203"))
-   (ghost/req (pass/req "csc357"))))
+   (ghost/req (took/req "csc357"))))
 
 ;; has the student passed the data structures course?
 (define passed-data-structures? : ReqFun
   (or!/req
    (or!/req (passc/req "csc202")
             (passc/req "csc103"))
-   (ghost/req (pass/req "csc357"))))
+   (ghost/req (took/req "csc357"))))
 
 ;; passed-101 : has the student passed 101 or taken a later course
 ;; indicating that they didn't need it?
 (define passed-101?
   (or!/req (passc/req "csc101")
            (ghost/req
-            (or!/req passed-bigger-projects?
-                     passed-data-structures?))))
+            (or!/req
+             (or!/req passed-bigger-projects?
+                      passed-data-structures?)
+             ;; add a "just took it" requirement
+             (took/req "csc202")))))
 
 (define passed-123? (pass/req "csc123"))
 
@@ -210,7 +221,8 @@
 ;; did this csc student pass the 'discrete' requirement (141 or 348)?
 (define passed-discrete? : ReqFun
   (or!/req (pass/req "csc141")
-          (pass/req "csc348")))
+           (or!/req (pass/req "csc348")
+                    (ghost/req (took/req "csc349")))))
 
 ;; did this student get 4 units total from csc400, cpe400, or csc490/496.
 (define got-special-problems-credit? : ReqFun

@@ -58,6 +58,8 @@
       (match (second (cast (assoc name availability)
                            (List Symbol Sexp)))
         ['tt-standard (checky '(f w s) 30)]
+        ['tt-first-year (checky '(f w s) 20)]
+        ['tt-second-year (checky '(f w s) 20)]
         ['lec-standard (checky '(f w s) 45)]
         ['absent (checky '(f w s) 0)]
         [(list 'total (? real? wtus)) (checky '(f w s) wtus)]

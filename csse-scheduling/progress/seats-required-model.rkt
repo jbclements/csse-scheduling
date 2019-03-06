@@ -120,8 +120,12 @@
     (for/list ([req (in-list requirements)])
       (list (Seat-Requirement-course req)
             (Seat-Requirement-seats req))))
+  (define summed-tuples
+    (for/list : (Listof (List ReqName Real))
+      ([tuple-group (in-list (group-by (inst first ReqName) tuples))])
+      (list (first (first tuple-group)) (apply + (map (inst second Any Real) tuple-group)))))
   ((inst sort (List ReqName Real) ReqName)
-   tuples
+   summed-tuples
    req-name<?
    #:key (ann first ((List ReqName Real) -> ReqName))))
 

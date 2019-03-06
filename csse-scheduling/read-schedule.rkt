@@ -318,6 +318,8 @@
 (define (availability->total-classroom-wtus [availability : Sexp]) : Nonnegative-Real
   (match availability
     ['tt-standard 30]
+    ['tt-first-year 20]
+    ['tt-second-year 20]
     ['lec-standard 45]
     ['absent 0]
     [(list 'fw (? nn-real? fwwtu)) fwwtu]
