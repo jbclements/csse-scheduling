@@ -42,6 +42,7 @@
 (define-type Category (U 'csc-bs 'cpe-bs 'se-bs 'ee-bs 'bmed-bs
                          'enve-bs 'gene-bs 'ime-bs 'mate-bs 'me-bs
                          'csc-bs-firstyear 'cpe-bs-firstyear 'se-bs-firstyear
+                         'ee-bs-firstyear
                          'csc-ms
                          
                          'laes-csc-bs
