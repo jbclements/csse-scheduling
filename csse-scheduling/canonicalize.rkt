@@ -35,7 +35,7 @@
   (U "AEPS" "AERO" "AG" "AGB" "ANT" "ARCE" "ARCH" "ART" "ASCI" "ASTR" "BIO"
      "BMED" "BOT" "BRAE" "BUS" "CD" "CE" "CHEM" "CHIN" "CM" "COMS" "CPE" "CRP"
      "CSC" "DANC" "DATA" "DSCI" "ECON" "EDES" "EE" "ENGL" "ENGR" "ENVE" "ERSC"
-     "ES" "ESE" "FR" "FSN" "GEOG" "GEOL" "GER" "GRC" "GS" "HCS" "HIST" "HLTH" "HNRC"
+     "ES" "ESE" "FR" "FSN" "GEOG" "GEOL" "GER" "GRC" "GS" "GSA" "GSB" "GSE" "HCS" "HIST" "HLTH" "HNRC"
      "HNRS" "HUM" "IME" "ISLA" "IT" "ITAL" "ITP" "JOUR" "JPNS" "KINE" "LA"
      "LAES" "LS" "MATE" "MATH" "MCRO" "ME" "MLL" "MSCI" "MSL" "MU" "NR" "PEM"
      "PHIL" "PHYS" "POLS" "PSC" "PSY" "RELS" "RPTA" "SCM" "SOC" "SPAN" "SS"
@@ -55,7 +55,7 @@
 (: coursenum? (String -> Boolean))
 (define (coursenum? s)
   ;; turns out there are two-digit course numbers.
-  (regexp-match? #px"^[0P]?[0-9]{2,3}( +X)?$" s))
+  (regexp-match? #px"^[0PS]?[0-9]{2,3}( +X)?$" s))
 
 ;; the rows in the table, representing mappings from offering
 ;; to canonical name
@@ -125,7 +125,7 @@
            (check-num number-input)]))
   (define trimmed-number
     (match number
-      [(regexp #px"^0[0-9]{3}" (list _))
+      [(regexp #px"^[0PS][0-9]{3}" (list _))
        (substring number 1)]
       [other number]))
   (hash-ref mapping-hash (vector cycle subject trimmed-number) #f))
