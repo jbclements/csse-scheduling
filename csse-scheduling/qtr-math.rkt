@@ -18,6 +18,7 @@
          qtr->season
          qtr->year
          qtr->string
+         string->qtr
          year->qtrs
          catalog-cycle->qtrs
          encode-qtr
@@ -159,6 +160,18 @@
 (define (qtr->string [qtr : Natural]) : String
   (string-append (qtr->season qtr) " " (number->string (qtr->year qtr))))
 
+;; given a string form, e.g. "Fall 2001", return the corresponding qtr
+(define (string->qtr [str : String]) : Natural
+  (match str
+    [(regexp #px"^([^ ]+) ([0-9]+)$" (list _ season year))
+     ;; casts must succeed by definition of regexp
+     (encode-qtr (cast (string->number (cast year String)) Natural)
+                 (cast season String))]
+    [other
+     (raise-argument-error 'string->qtr
+                           "string like \"Fall 2001\""
+                           0 str)]))
+
 ;; return the quarter numbers greater than or equal
 ;; to the first quarter and less than the second.
 ;; ignore summer quarters.
@@ -242,6 +255,7 @@
 
   (check-equal? (qtr->string 2102) "Winter 2010")
   (check-equal? (qtr->string 328) "Fall 1932")
+  (check-equal? (string->qtr "Fall 1932") 328)
 
   (check-equal? (year->qtrs 2016) '(2168 2172 2174))
 
