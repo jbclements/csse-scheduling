@@ -1,4 +1,4 @@
-#lang typed/racket
+#lang typed/racket/base
 
 
 ;; this file provides a list of all the students, using data from the ad-hoc progress report.
@@ -14,7 +14,9 @@
 (: use-localhost? (Parameterof Boolean))
 
 (require "../types.rkt"
-         "../credentials.rkt")
+         "../credentials.rkt"
+         (only-in racket/list empty? first group-by)
+         racket/match)
 
 (define-predicate nn-real? Nonnegative-Real)
 
@@ -38,12 +40,24 @@
 (require/typed "../fetch-mapping.rkt"
                [student-grades-cache
                 (String -> (Listof (Pairof String Grade-Record)))]
+               [latest-student-grades-cache
+                (Listof (Pairof String Grade-Record))]
                [majors-cache
                 (String -> (Listof (Vector String String
                                            (U SqlNull Qtr)
                                            String)))])
 
 (define-predicate lolostring? (Listof (Listof String)))
+
+;; turn cached grade data into a hash table
+(define (rows->student-grades-table [rows : (Listof (Pairof String Grade-Record))])
+  : (Immutable-HashTable Id (Listof Grade-Record))
+    (make-immutable-hash
+     (map (λ ([g : (Listof (Pairof String Grade-Record))]) : (Pairof Id (Listof Grade-Record))
+            (cons ((inst first String) (first g)) ; id
+                  (map (inst cdr Any Grade-Record) g) ; grades
+                  ))
+          (group-by (inst first String) rows))))
 
 ;; given a version, get the data.
 (define (get-students [version : String]) : (Listof Student)
@@ -52,19 +66,10 @@
 
   (when (empty? rows)
     (error 'get-students "no rows. probably bad version: ~e" version))
-
   
+  (define student-grades-table (rows->student-grades-table rows))
 
-  (define student-grades-table : (Immutable-HashTable Id (Listof Grade-Record))
-    (make-immutable-hash
-     (map (λ ([g : (Listof (Pairof String Grade-Record))]) : (Pairof Id (Listof Grade-Record))
-            (cons ((inst first String) (first g)) ; id
-                  (map (inst cdr Any Grade-Record) g) ; grades
-                  ))
-          (group-by (inst first String) rows))))
-
-  (define major-table-query-result
-    (majors-cache version))
+  (define major-table-query-result (majors-cache version))
 
   (define students : (Listof Student)
     (map
@@ -76,33 +81,27 @@
                   ["NONE" 'future]
                   [(and (? string?)
                         (regexp #px"^[0-9]{4}$" (list m)))
-                   (assert (string->number m) natural?)])]))
+                   (assert (string->number m) exact-nonnegative-integer?)])]))
        (define id (assert (vector-ref l 0) string?))
        (Student id
                 (cast (vector-ref l 1) Major-Abbr)
                 (hash-ref student-grades-table id (λ () '()))
                 (match (vector-ref l 2)
-                  [(? natural? n) n]
+                  [(? exact-nonnegative-integer? n) n]
                   [(? sql-null?) 'pre-poly])
                 expected-grad))
      major-table-query-result))
-
- 
-
+  
   (when (= (length rows) 0)
     (error 'get-students
            "no students found for version ~v"
            version))
   (printf "total rows: ~v\n" (length rows))
-
   students)
 
 ;; given a student and a course, return a list of their grades in that course
 (define (student-grades-in-course [s : Student] [c : Course-Id]) : (Listof Grade-Record)
   (filter (λ ([r : Grade-Record]) (equal? (gr-course r) c)) (Student-grades s)))
-
-
-
 
 ;; DEBUGGING CODE TO LOOK AT A PARTICULAR STUDENT:
 #;(filter (λ ([s : Student]) (equal? s

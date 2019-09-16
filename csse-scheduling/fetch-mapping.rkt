@@ -5,6 +5,7 @@
          2017-course-configurations
          2019-course-configurations
          student-grades-cache
+         latest-student-grades-cache
          majors-cache
          2188-1-student-grades
          2188-1-majors)
@@ -94,6 +95,17 @@
        (~a "SELECT id,qtr,course,units_earned,grade FROM course_grade"
            " WHERE version=$1;")
        version)))))
+
+(define (latest-student-grades-cache)
+  (cache-query
+   "csseprogress"
+   "latest-student-grades.withcache"
+   (λ (conn)
+     (map
+      vector->list
+      (query-rows
+       conn
+       (~a "SELECT id,qtr,course,units_earned,grade FROM latest_course_grade;"))))))
 
 (define (majors-cache version)
   (cache-query
