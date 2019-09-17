@@ -147,6 +147,10 @@
                                (symbol->string (first b)))])]))
 
 (module+ main
-  (seat-requirements/range "2188-1" 4 5 #f))
+  (filter
+   (λ ([sr : Seat-Requirement])
+     (member (Seat-Requirement-course sr)
+             '("csc491" "csc492" "cpe461" "cpe462")))
+   (seat-requirements/range "2194-1" 0 3 #f)))
 
 
