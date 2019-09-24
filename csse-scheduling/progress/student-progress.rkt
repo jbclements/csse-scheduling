@@ -41,7 +41,7 @@
                [student-grades-cache
                 (String -> (Listof (Pairof String Grade-Record)))]
                [latest-student-grades-cache
-                (Listof (Pairof String Grade-Record))]
+                (-> (Listof (Pairof String Grade-Record)))]
                [majors-cache
                 (String -> (Listof (Vector String String
                                            (U SqlNull Qtr)
