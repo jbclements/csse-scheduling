@@ -47,6 +47,7 @@
     '("cpe100" ; "Computer Engineering Orientation"
       "cpe133" ; "Digital Design"
       "cpe233" ; "Computer Design and Assembly Language Programming"
+      "cpe316" ; microcontroller mumble
       "cpe328" ; "Discrete Time Signals and Systems"
       "cpe329" ; "Programmable Logic and Microprocessor-Based Systems Design"
       "cpe336" ; "Microprocessor System Design"
@@ -64,8 +65,13 @@
 
 ;; should this be parameterized by the catalog cycle? sigh...
 
+;; these are the courses we schedule. It's not entirely clear
+;; to me where this is used aside from in csc-or-cpe below, which
+;; allows me to write in the schedule e.g. "430" instead of "csc430"
+;; I believe this list is now mostly unused.
+
 ;; NOTE: THIS LIST MUST BE IN SYNC WITH THE ONE IN THE DATABASE.
-;; (you should get an error message if it's not...)
+;; (you should get an error message from the check below if not.)
 ;; the list of courses we schedule is not quite as straightforward
 ;; as it could be. See the notes in "which-ones-are-ours.rkt"
 ;; for more discussion of this. In fact, it seems like the best
@@ -165,6 +171,7 @@
        ("csc521" "Computer Security")
        ("csc530" "Languages and Translators")
        ("csc540" "Theory of Computation II")
+       ("csc549" "Advanced Algorithm Design and Analysis")
        ("csc550" "Operating Systems")
        ("csc560" "Database Systems")
        ("csc564" "Computer Networks: Research Topics")
@@ -252,7 +259,8 @@
   (define hits (hash-ref num-id-table coursenum (λ () '())))
   (match hits
     [(list) (cond [noerr? #f]
-                  [else (error 'csc-or-cpe "no courses with number ~e"
+                  [else (error 'csc-or-cpe "no courses that we schedule with number ~e \
+(maybe add it to courses-we-schedule?)"
                                coursenum)])]
     [(list name) name]
     [(list _ ...)
