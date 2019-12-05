@@ -27,12 +27,23 @@
 
 (define first-encodable-year : Natural 1900)
 
+;; this is a little D.R.Y. macro to avoid listing
+;; the names of the cycles twice.`
+(define-syntax cycle-defs
+  (syntax-rules ()
+    [(_ type-name list-name cycle ...)
+     (begin
+       (define-type type-name (U cycle ...))
+       (define list-name (list cycle ...)))]))
+
 ;; extend as needed...
-(define-type CatalogCycle
-  (U "1994-1997" "1997-1998" "1998-1999" "1999-2000" "2000-2001"
-     "2001-2003" "2003-2005"
-     "2005-2007" "2007-2009" "2009-2011" "2011-2013" "2013-2015"
-     "2015-2017" "2017-2019" "2019-2021"))
+(cycle-defs
+ CatalogCycle
+ all-cycles
+ "1994-1997" "1997-1998" "1998-1999" "1999-2000" "2000-2001"
+ "2001-2003" "2003-2005"
+ "2005-2007" "2007-2009" "2009-2011" "2011-2013" "2013-2015"
+ "2015-2017" "2017-2019" "2019-2020")
 
 (define-type Season
   (U "Winter" "Spring" "Summer" "Fall"))
