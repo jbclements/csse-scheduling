@@ -45,6 +45,42 @@
  "2005-2007" "2007-2009" "2009-2011" "2011-2013" "2013-2015"
  "2015-2017" "2017-2019" "2019-2020")
 
+;; make sure each pair lines up, and that each cycle is valid
+(define (check-all-cycles [all-cycles : (Listof String)])
+  : Void
+  (for ([c1 (in-list all-cycles)])
+    (check-one-cycle c1))
+  (for ([c1 (in-list all-cycles)]
+             [c2 (in-list (cdr all-cycles))])
+    (match-define (list c1-start c1-finish) (parse-catalog-cycle c1))
+    (match-define (list c2-start c2-finish) (parse-catalog-cycle c2))
+    (unless (= c1-finish c2-start)
+      (error 'cycle-check
+             "end of cycle ~v does not match beginning of cycle ~v"
+             c1 c2))))
+
+;; check one cycle for validity
+(define (check-one-cycle [c1 : String])
+  (match-define (list c1-start c1-finish) (parse-catalog-cycle c1))
+    (unless (< c1-start c1-finish)
+      (error 'cycle-check
+             "cycle ~v ends on or before it starts"
+             c1)))
+
+;; given a catalog-cycle of the form "2019-2020", return (list 2019 2020)
+(define (parse-catalog-cycle [cycle : String]) : (List Natural Natural)
+  (match cycle
+    [(regexp "^([0-9]+)-([0-9]+)$" (list _ a b))
+     ;; casts must succeed by definition of regexp:
+     (list (cast (string->number (cast a String)) Natural)
+           (cast (string->number (cast b String)) Natural))]
+    [other (error 'parse-catalog-cycle "cycle does not match expected format: ~v"
+                  cycle)]))
+
+
+(check-all-cycles all-cycles)
+
+
 (define-type Season
   (U "Winter" "Spring" "Summer" "Fall"))
 
@@ -53,27 +89,19 @@
 ;; given a year (e.g. 2015), return the catalog cycle that
 ;; fall of that year falls into (in this case, "2015-2017").
 (define (fall-year->catalog-cycle [year : Natural]) : CatalogCycle
-  ;; weird special-cases
-  (cond
-    [(<= 1994 year 1996) "1994-1997"]
-    [(= year 1997) "1997-1998"]
-    [(= year 1998) "1998-1999"]
-    [(= year 1999) "1999-2000"]
-    [(= year 2000) "2000-2001"]
-    [(< 2000 year)
-     (define base-year (- year (modulo (sub1 year) 2)))
-     (define result (string-append (number->string base-year)
-                                   "-"
-                                   (number->string (+ base-year 2))))
-     (cond [(catalog-cycle? result) result]
-           [else (raise-argument-error
-                  'fall-year->catalog-cycle
-                  "year mapping to known cycle (extend list?)"
-                  0 year)])]
-    [else (raise-argument-error
-           'fall-year->catalog-cycle
-           "year mapping to known cycle (extend list?)"
-           0 year)]))
+  (define maybe-match
+    (findf (λ ([cycle : String])
+             (match-define (list start end) (parse-catalog-cycle cycle))
+             (and (<= start year)
+                  (< year end)))
+           all-cycles))
+  (match maybe-match
+    [#f (raise-argument-error
+         'fall-year->catalog-cycle
+         "year mapping to known cycle (extend list?)"
+         0 year)]
+    ;; cast must succeed by definition of cycle-defs
+    [s (cast s CatalogCycle)]))
 
 ;; given a cycle (e.g. "2015-2017", return the fall years that
 ;; map to it
@@ -253,6 +281,7 @@
   (check-equal? (fall-year->catalog-cycle 2006) "2005-2007")
   (check-equal? (fall-year->catalog-cycle 2000) "2000-2001")
   (check-equal? (fall-year->catalog-cycle 1999) "1999-2000")
+  (check-equal? (fall-year->catalog-cycle 2019) "2019-2020")
 
   (check-equal? (qtrs-in-range 2154 2182)
                 '(2154 2158 2162 2164 2168 2172 2174 2178))
@@ -278,4 +307,12 @@
   (check-equal? (season-after-qtr "Fall" 2188) 2188)
   (check-equal? (season-after-qtr "Spring" 2188) 2194)
   (check-equal? (season-after-qtr "Fall" 2184) 2188)
+
+  (check-equal? (parse-catalog-cycle "2019-2020") (list 2019 2020))
+  (check-exn #px"does not match beginning"
+             (λ () (check-all-cycles (list "123-125" "127-129"))))
+  (check-exn #px"ends on or before it starts"
+             (λ () (check-all-cycles (list "2019-2019"))))
+  (check-exn #px"does not match expected format"
+             (λ () (check-all-cycles (list "1234"))))
 )

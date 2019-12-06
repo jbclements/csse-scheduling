@@ -15,7 +15,8 @@
  2017-course-configuration
  cycle-course-configuration
  2019-course-wtus
- 2019-course-wtus/noerror)
+ 2019-course-wtus/noerror
+ )
 
 (define-type Configuration String)
 
@@ -35,7 +36,7 @@
                [2019-course-configurations
                 (Listof (Pair Course-Id Configuration))])
 
-(define current-catalog : CatalogCycle "2019-2021")
+(define current-catalog : CatalogCycle "2019-2020")
 
 ;; NOTE: it would probably be much more robust to list the ones
 ;; that we *don't* schedule. That way, new courses will by default

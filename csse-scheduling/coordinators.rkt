@@ -12,7 +12,7 @@
 
 (define-runtime-path here ".")
 
-(define current-catalog : CatalogCycle "2017-2019")
+(define current-catalog : CatalogCycle "2019-2020")
 
 ;; a mapping from canonical course name to the last names of the
 ;; instructors that are the coordinators for that course
