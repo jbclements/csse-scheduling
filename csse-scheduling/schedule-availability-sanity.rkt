@@ -108,7 +108,7 @@
   ;; # of wtus for a courseA 
   (define (courseA-wtus [this-cycle : CatalogCycle]
                         [courseA : CourseA]) : Real
-    (when (not (equal? this-cycle "2019-2021"))
+    (when (not (equal? this-cycle "2019-2020"))
       (error 'courseA-wtus
              "time to generalize this function"))
     (2019-course-wtus/hacked
