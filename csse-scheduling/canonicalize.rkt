@@ -20,7 +20,8 @@
          subject?
          mappings
          MappingRow
-         CatalogCycle)
+         CatalogCycle
+         last-mapped-qtr)
 
 (require/typed "fetch-mapping.rkt"
                [course-mappings Any])
@@ -62,6 +63,13 @@
 (define mappings : (Listof MappingRow)
   (cast course-mappings (Listof MappingRow)))
 
+;; the last catalog cycle for which we have mappings
+(define last-mapped-qtr : Qtr
+  (apply max
+         (apply append
+                (map (λ ([r : MappingRow])
+                       (catalog-cycle->qtrs (vector-ref r 0)))
+                     mappings))))
 
 ;; a hash table to speed up the mapping, and also to check that the
 ;; rows that we got from the db conform to the contracts that we
