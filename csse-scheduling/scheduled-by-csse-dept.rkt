@@ -14,8 +14,8 @@
  csc-or-cpe
  2017-course-configuration
  cycle-course-configuration
- 2019-course-wtus
- 2019-course-wtus/noerror
+ cycle-course-wtus
+ cycle-course-wtus/noerror
  )
 
 (define-type Configuration String)
@@ -86,6 +86,7 @@
      '(("csc101" "Fundamentals of Computer Science")
        ("csc105" "Fundamentals of Computer Science I Supplemental Instruction")
        ("csc108" "Accelerated Introduction to Computer Science")
+       ("csc111" "Computing for All 1")
        ("csc123" "Introduction to Computing")
        ("csc171" "Introduction to Interactive Entertainment")
        ("csc202" "Data Structures")
@@ -286,39 +287,35 @@
 (define (2017-course-configuration [course : Course-Id])
   (cycle-course-configuration course "2017-2019"))
 
-(module+ test
-  (require typed/rackunit)
-
-  
-  (check-equal? (csc-or-cpe 123) "csc123")
-  (check-exn #px"more than one hit"
-             (λ () (csc-or-cpe 290)))
-  (check-equal? (csc-or-cpe 431) "csc431")
-  (check-equal? (csc-or-cpe 315) "cpe315"))
-
 (define-predicate false? False)
 
+;; the right way to handle this would probably be in a list included in a year's schedule.
+(define cycle-course-exceptions
+  : (Listof (Pair (List CatalogCycle Course-Id) Nonnegative-Real))
+  `((("2019-2020" "csc570") . 4)))
 
 ;; given a course, return the number of WTUs required to teach it
 ;; in the 2019-2021 catalog, or return #f if it's nonstandard
-(define (2019-course-wtus/noerror [course : Course-Id] [lab-mult : Natural 1])
+(define (cycle-course-wtus/noerror [cycle : CatalogCycle] [course : Course-Id] [lab-mult : Natural 1])
   : (U False Nonnegative-Real)
-  (define maybe-configuration
-    (cycle-course-configuration course "2019-2020"))
+  (define maybe-exception (assoc (list cycle course) cycle-course-exceptions))
   (cond
-    [(not maybe-configuration) (error '2019-course-wtus "no mapping found for course: ~e" course)]
+    [maybe-exception (cdr maybe-exception)]
     [else
-     (define maybe-wtus (configuration->wtus maybe-configuration lab-mult))
-     (cond [maybe-wtus maybe-wtus]
-           [else #f])]))
+     (define maybe-configuration (cycle-course-configuration course cycle))
+     (cond
+       [(not maybe-configuration) (error 'cycle-course-wtus "no mapping found for course: ~e" course)]
+       [else
+        (define maybe-wtus (configuration->wtus maybe-configuration lab-mult))
+        (cond [maybe-wtus maybe-wtus]
+              [else #f])])]))
 
 ;; same as above, but signal an error if nonstandard
-(define (2019-course-wtus [course : Course-Id] [lab-mult : Natural 1])  : Nonnegative-Real
-   (or (2019-course-wtus/noerror course lab-mult)
-       (error '2019-course-wtus
-                        "nonstandard configuration for course: ~e"
-                        course)))
-
+(define (cycle-course-wtus [cycle : CatalogCycle] [course : Course-Id] [lab-mult : Natural 1])  : Nonnegative-Real
+   (or (cycle-course-wtus/noerror cycle course lab-mult)
+       (error 'cycle-course-wtus
+              "nonstandard configuration for course: ~e"
+              course)))
 
 (define lecture-unit-wtus 1.0)
 (define lab-unit-wtus 2.0)
@@ -336,9 +333,19 @@
         (* activity-unit-wtus     (cast (string->number (cast activities String)) Nonnegative-Real)))]
     [other #f]))
 
+
 (module+ test
-  (check-equal? (2019-course-wtus "csc101") 5.0)
-  (check-equal? (2019-course-wtus "csc232") 3.3))
+  (require typed/rackunit)
+
+  
+  (check-equal? (csc-or-cpe 123) "csc123")
+  (check-exn #px"more than one hit"
+             (λ () (csc-or-cpe 290)))
+  (check-equal? (csc-or-cpe 431) "csc431")
+  (check-equal? (csc-or-cpe 315) "cpe315")
+
+  (check-equal? (cycle-course-wtus (ann "2019-2020" CatalogCycle) "csc101") 5.0)
+  (check-equal? (cycle-course-wtus (ann "2019-2020" CatalogCycle) "csc232") 3.3))
 
 
 

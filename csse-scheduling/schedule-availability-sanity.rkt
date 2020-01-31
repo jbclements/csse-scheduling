@@ -1,3 +1,4 @@
+
 #lang typed/racket
 
 ;; this file checks that the instructors don't have more units
@@ -101,20 +102,11 @@
               name wtu-sum limit qtrs))
     (- limit wtu-sum))
 
-
-
-  (define (2019-course-wtus/hacked [id : Course-Id] [size : Natural])
-    (match id
-      ["csc570" 4]
-      [other (2019-course-wtus id size)]))
-
   ;; # of wtus for a courseA 
   (define (courseA-wtus [this-cycle : CatalogCycle]
                         [courseA : CourseA]) : Real
-    (when (not (equal? this-cycle "2019-2020"))
-      (error 'courseA-wtus
-             "time to generalize this function"))
-    (2019-course-wtus/hacked
+    (cycle-course-wtus
+     this-cycle
      (canonicalize-topic this-cycle
                          (course-topic courseA))
      (courseA-size courseA)))
