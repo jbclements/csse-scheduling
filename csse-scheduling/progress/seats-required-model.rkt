@@ -33,10 +33,12 @@
   (define set1-names (map (inst car ReqName) set1))
   (define set2-names (map (inst car ReqName) set2))
   (unless (empty? (set-subtract set1-names set2-names))
-    (error 'name-check "name-check ~a failed: first set has ~e"
+    (error 'name-check "name-check for ~a failed: first set has ~e"
+           label
            (set-subtract set1-names set2-names)))
   (unless (empty? (set-subtract set2-names set1-names))
-    (error 'name-check "name-check ~a failed: second set has ~e"
+    (error 'name-check "name-check for ~a failed: second set has ~e"
+           label
            (set-subtract set2-names set1-names))))
 
 (check-req-names "csc" csc-2017-2019-flowchart csc-requirements)
