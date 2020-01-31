@@ -3,6 +3,9 @@
 ;; functions for mapping back and forth between quarters,
 ;; fall years, and catalog cycles
 
+;; HONESTLY, the right thing to do here is to establish a bijection between quarters and the integers.
+;; this would make it much easier to go to the previous/next quarter, do quarters in range, etc.
+
 (require racket/match
          "./types.rkt"
          (only-in racket/list range))
@@ -24,6 +27,15 @@
          encode-qtr
          season-after-qtr
          Season)
+
+;; this is the natural encoding of a quarter
+(define-type Qtr-Pair (Pairof Natural Season))
+
+(define-type Season (U "Winter" "Spring" "Summer" "Fall"))
+
+(require/typed "qtr-enum.rkt"
+               [enum-qtr->n (-> Qtr-Pair Natural)]
+               [enum-n->qtr (-> Natural Qtr-Pair)])
 
 (define first-encodable-year : Natural 1900)
 
@@ -81,8 +93,6 @@
 (check-all-cycles all-cycles)
 
 
-(define-type Season
-  (U "Winter" "Spring" "Summer" "Fall"))
 
 (define-predicate catalog-cycle? CatalogCycle)
 
@@ -180,8 +190,14 @@
                                0 qtr)]))
   (+ century-offset year-code))
 
-;; given a year and a season, return the qtr number
+;; given a year and a season, return the cal poly qtr number
 (define (encode-qtr [year : Natural] [season : (U Symbol String)]) : Qtr
+  (encode-qtr/2 (cons year (coerce-season season))))
+
+;; given qtr-pair, return the cal poly qtr number
+(define (encode-qtr/2 [qp : Qtr-Pair]) : Qtr
+  (define year (car qp))
+  (define season (cdr qp))
   (define century-code
     (cond [(<= 1900 year 1999) 0]
           [(<= 2000 year 2099) 2]
@@ -194,6 +210,10 @@
   (+ (* 1000 century-code)
      (* 10 (modulo year 100))
      (season->qtr-offset (coerce-season season))))
+
+;; map a cal poly qtr number to a qtr-pair
+(define (decode-qtr [qtr : Qtr]) : Qtr-Pair
+  (cons (qtr->year qtr) (qtr->season qtr)))
 
 ;; given a quarter, return its string form, e.g. 2018 -> "Fall 2001"
 (define (qtr->string [qtr : Natural]) : String
@@ -216,27 +236,15 @@
 ;; ignore summer quarters.
 (: qtrs-in-range (Natural Natural [#:include-summer? Boolean]-> (Listof Natural)))
 (define (qtrs-in-range min max #:include-summer? [include-summer? #f])
-  ;; horrible patch for missing century:
-  (cond [(<= 1000 min 2000)
-         (raise-argument-error 'qtrs-in-range
-                               "legal qtr number"
-                               0 min)]
-        [(<= 1002 max 2000)
-         (raise-argument-error 'qtrs-in-range
-                               "legal qtr number"
-                               0 max)]
-        [(and (< min 1000) (< 2000 max))
-         (append (qtrs-in-range min 1000)
-                 (qtrs-in-range 2002 max))]
-        [else
-         (define qtr-digits
-           (cond [include-summer? '(2 4 6 8)]
-                 [else '(2 4 8)]))
-         (for/list ([qtr : Natural (in-range min max)]
-                    #:when (member (modulo qtr 10) qtr-digits))
-           qtr)]))
-
-
+  (define qtr-pairs
+    (map enum-n->qtr
+         (range (enum-qtr->n (decode-qtr min))
+                (enum-qtr->n (decode-qtr max)))))
+  (define filtered-pairs
+    (filter (cond [include-summer? (λ (x) x)]
+                  [else (λ ([qpr : Qtr-Pair]) (not (equal? (cdr qpr) "Summer")))])
+            qtr-pairs))
+  (map encode-qtr/2 filtered-pairs))
 
 ;; given a year, return the quarters of the academic year beginning in
 ;; the fall of the given year.
@@ -248,11 +256,17 @@
 (define (catalog-cycle->qtrs [cycle : CatalogCycle]) : (Listof Qtr)
   (apply append (map year->qtrs (catalog-cycle->fall-years cycle))))
 
+;; return the cal poly number of the first quarter following 'qtr'
+;; that has the season 'season'.
 (define (season-after-qtr [season : Season] [qtr : Qtr]) : Qtr
-  (define desired-offset (season->qtr-offset season))
-  (define qtr-offset (modulo qtr 10))
-  (cond [(<= qtr-offset desired-offset) (encode-qtr (qtr->year qtr) season)]
-        [else (encode-qtr (add1 (qtr->year qtr)) season)]))
+  (define qtr-pair-n : Natural (enum-qtr->n (decode-qtr qtr)))
+  ;; a nice stream of following quarters would be easier to read...
+  (define matching-n
+    (let loop : Natural [(i : Natural 0)]
+      (cond [(equal? season (cdr (enum-n->qtr (+ qtr-pair-n i))))
+             (+ qtr-pair-n i)]
+            [else (loop (add1 i))])))
+  (encode-qtr/2 (enum-n->qtr matching-n)))
 
 (module+ test
   (require typed/rackunit)
