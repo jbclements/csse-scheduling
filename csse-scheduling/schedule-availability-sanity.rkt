@@ -69,9 +69,12 @@
          (+ (checky '(f) fall-wtus)
             (checky '(w) winter-wtus)
             (checky '(s) spring-wtus))]
-        [(list 'fw (? real? wtus))
+        [(list 'fall-winter (? real? wtus))
          (+ (checky '(f w) wtus)
             (checky '(s) 0))]
+        [(list 'winter-spring (? real? wtus))
+         (+ (checky '(f) 0)
+            (checky '(w s) wtus))]
         [other (error 'zzzzz "www: ~e" other)]))
     (list name (round-to-hundredth spare-wtus))))
 

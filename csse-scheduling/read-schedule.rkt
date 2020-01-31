@@ -322,7 +322,8 @@
     ['tt-second-year 20]
     ['lec-standard 45]
     ['absent 0]
-    [(list 'fw (? nn-real? fwwtu)) fwwtu]
+    [(list 'fall-winter (? nn-real? fwwtu)) fwwtu]
+    [(list 'winter-spring (? nn-real? wswtu)) wswtu]
     [(list 'total (? nn-real? wtu)) wtu]
     [(list (list 'f (? nn-real? fwtu)) (list 'w (? nn-real? wwtu)) (list 's (? nn-real? swtu)))
      (+ fwtu wwtu swtu)]
