@@ -31,10 +31,9 @@
 (require/typed "fetch-mapping.rkt"
                [courses-we-schedule/db
                 (Setof Course-Id)]
-               [2017-course-configurations
-                (Listof (Pair Course-Id Configuration))]
-               [2019-course-configurations
-                (Listof (Pair Course-Id Configuration))])
+               [cycle-course-configurations
+                (Listof (Pair CatalogCycle
+                              (Listof (Pair Course-Id Configuration))))])
 
 (define current-catalog : CatalogCycle "2019-2020")
 
@@ -273,10 +272,10 @@
 ;; given a course and a catalog cycle, return its configuration string
 (define (cycle-course-configuration [course : Course-Id] [cycle : CatalogCycle]) : (U False Configuration)
   (define configurations
-    (match cycle
-      ["2017-2019" 2017-course-configurations]
-      ["2019-2020" 2019-course-configurations]
-      [other (error 'cycle-course-configuration "unexpected cycle: ~e" cycle)]))
+    (match (assoc cycle cycle-course-configurations)
+      [(cons _ c) c]
+      [#f (error 'cycle-course-configuration
+                 "no configuration info for cycle ~v" cycle)]))
   (match (assoc course configurations)
     [#f #f]
     [(cons id configuration) configuration]))
@@ -304,12 +303,14 @@
 ;; in the 2019-2021 catalog, or return #f if it's nonstandard
 (define (2019-course-wtus/noerror [course : Course-Id] [lab-mult : Natural 1])
   : (U False Nonnegative-Real)
-  (match (assoc course 2019-course-configurations)
-    [#f (error '2019-course-wtus "no mapping found for course: ~e" course)]
-    [(cons id configuration)
-     (define maybe-wtus (configuration->wtus configuration lab-mult))
+  (define maybe-configuration
+    (cycle-course-configuration course "2019-2020"))
+  (cond
+    [(not maybe-configuration) (error '2019-course-wtus "no mapping found for course: ~e" course)]
+    [else
+     (define maybe-wtus (configuration->wtus maybe-configuration lab-mult))
      (cond [maybe-wtus maybe-wtus]
-           [else #f ])]))
+           [else #f])]))
 
 ;; same as above, but signal an error if nonstandard
 (define (2019-course-wtus [course : Course-Id] [lab-mult : Natural 1])  : Nonnegative-Real

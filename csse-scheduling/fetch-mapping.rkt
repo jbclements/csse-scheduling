@@ -2,8 +2,7 @@
 
 (provide course-mappings
          courses-we-schedule/db
-         2017-course-configurations
-         2019-course-configurations
+         cycle-course-configurations
          student-grades-cache
          latest-student-grades-cache
          majors-cache
@@ -64,10 +63,10 @@
         (~a "SELECT id FROM our_courses")))
      (list->set ids))))
 
-(define (configurations-cache base-year)
+(define (configurations-cache cycle)
   (cache-query
    "scheduling"
-   (~a base-year"-course-configurations.withcache")
+   (~a cycle"-course-configurations.withcache")
    (λ (conn)
      (map
       (λ (v) (cons (vector-ref v 0) (vector-ref v 1)))
@@ -76,10 +75,13 @@
        "SELECT ci.id, ci.configuration
  FROM course_info ci
  WHERE ci.cycle = $1"
-       (fall-year->catalog-cycle base-year))))))
+       cycle)))))
 
-(define 2017-course-configurations (configurations-cache 2017))
-(define 2019-course-configurations (configurations-cache 2019))
+(define cycle-course-configurations
+  (map (λ (yr)
+         (define cycle (fall-year->catalog-cycle yr))
+         (cons cycle (configurations-cache cycle)))
+       '(2017 2019 2020)))
 
 ;; extending this to handle the ad-hoc per-student data as well...
 
