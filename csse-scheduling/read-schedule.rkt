@@ -26,7 +26,6 @@
          compress-irec
          record-course-sort-str
          by-num-by-season
-         requirement->name
          Schedule
          InstructorA
          QuarterA
@@ -304,13 +303,6 @@
     [2 (list (first record) 'm2)]
     [3 (list (first record) 'm3)]
     [1 (first record)]))
-
-(define (requirement->name [r : Natural])
-  (match r
-    [431 (canonicalize "2017-2019" "CSC" "431")]
-    [else (csc-or-cpe r)]))
-
-
 
 (define-predicate nn-real? Nonnegative-Real)
 
