@@ -333,43 +333,70 @@
             
 
 ;; the master list of requirements
-(define csc-requirements : (Listof Requirement)
-  (ensure-distinct-names
-   (let ([req (λ ([course-id : Course-Id]) : Requirement
-                (list course-id (pass/req course-id)))])
-     (append
-      ;; NB: 123 appears below, it's treated like a TE to allow transfer students not to take it.
-      (list (list "csc101" passed-101?)
-            (list "csc202" passed-data-structures?)
-            (list "csc203" passed-bigger-projects?)
-            (req  "csc225")
-            (req  "csc300")
-            (list '(csc-SE) passed-csc-se-req?)
-            (req  "cpe315")
-            (list "csc348" passed-discrete?)
-            (req  "csc349")
-            (req  "csc357")
-            (req "csc430")
-            (req "csc431")
-            (req "csc445")
-            (req "csc453")
-            (req "csc491")
-            (req "csc492")
-           
-            (list '(upper-level-csc-TE)
-                  passed-upper-level-technical-elective?)
-            (list '(csc-TE/special-problems)
-                  (or!/req got-special-problems-credit?
-                           passed-technical-elective?))
-
-            (list '(csc-TE/123) (or!/req passed-123?
-                                    passed-technical-elective?))
-           
-            )
-      ;; 24 TE units minus upper-level (above) minus special-problems plus 123 = 5 courses:
-      (for/list : (Listof Requirement)
-        ([i (in-range 4)])
-        (list (list (string->symbol (~a "csc-TE-" i))) passed-technical-elective?))))))
+;; UGGGGHHHHH... backing out of requirements change for now....
+(define csc-requirements
+  : (Listof Requirement)
+  ;;: (Listof (Pair CatalogCycle (Listof Requirement)))
+  (let ()
+    ;; a convenience short-cut:
+    (define (req [course-id : Course-Id]) : Requirement
+      (list course-id (pass/req course-id)))
+    (define common-requirements
+      (append
+       ;; NB: 123 is treated like a TE to allow transfer students not to take it.
+       (list (list '(csc-TE/123) (or!/req passed-123?
+                                          passed-technical-elective?))
+             (list "csc101" passed-101?)
+             (list "csc202" passed-data-structures?)
+             (list "csc203" passed-bigger-projects?)
+             (req  "csc225")
+             (req  "csc300")
+             (list '(csc-SE) passed-csc-se-req?)
+             (req  "cpe315")
+             (list "csc348" passed-discrete?)
+             (req  "csc349")
+             (req  "csc357")
+             (req "csc430")
+             (req "csc445")
+             (req "csc453")
+             (req "csc491")
+             (req "csc492")
+             (list '(upper-level-csc-TE)
+                   passed-upper-level-technical-elective?)
+             (list '(csc-TE/special-problems)
+                   (or!/req got-special-problems-credit?
+                            passed-technical-elective?)))))
+    (define 2017-reqs
+      (ensure-distinct-names
+       (append
+        common-requirements
+        (list (req "csc431"))
+        ;; 24 TE units minus upper-level (above) minus special-problems = 4 courses:
+        (for/list : (Listof Requirement)
+          ([i (in-range 4)])
+          (list (list (string->symbol (~a "csc-TE-" i))) passed-technical-elective?)))))
+    (define 2019-reqs
+      (ensure-distinct-names
+       (append
+        common-requirements
+        (for/list : (Listof Requirement)
+          ;; one more for the loss of 431
+          ([i (in-range 5)])
+          (list (list (string->symbol (~a "csc-TE-" i))) passed-technical-elective?)))))
+    2017-reqs
+    #;(list
+     (cons
+      (ann "2017-2019" CatalogCycle)
+      (ensure-distinct-names
+       (append
+        common-requirements
+        (list (req "csc431"))
+        ;; 24 TE units minus upper-level (above) minus special-problems = 4 courses:
+        (for/list : (Listof Requirement)
+          ([i (in-range 4)])
+          (list (list (string->symbol (~a "csc-TE-" i))) passed-technical-elective?)))))
+     (cons (ann "2019-2020" CatalogCycle) 2019-reqs)
+     (cons (ann "2020-2021" CatalogCycle) 2019-reqs))))
 
 (define se-requirements : (Listof Requirement)
   (ensure-distinct-names

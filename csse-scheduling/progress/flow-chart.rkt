@@ -46,6 +46,9 @@
     ("csc357" 5 6 7)
     ("csc430" 8)
     ("csc431" 9)
+    ;; UGGHHH... backing this out for now:
+    ;; putting this in place of 431:
+    ;;((csc-TE-4) 9)
     ("csc445" 10)
     ("csc453" 7 8 9 10 11 12)
     ("csc491" 11)
