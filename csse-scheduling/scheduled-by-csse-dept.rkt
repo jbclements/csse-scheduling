@@ -275,7 +275,7 @@
   (define configurations
     (match cycle
       ["2017-2019" 2017-course-configurations]
-      ["2019-2021" 2019-course-configurations]
+      ["2019-2020" 2019-course-configurations]
       [other (error 'cycle-course-configuration "unexpected cycle: ~e" cycle)]))
   (match (assoc course configurations)
     [#f #f]
