@@ -44,6 +44,21 @@ to and from other representations.}
 @defproc[(year->qtrs ...) ...]{}
 @defproc[(catalog-cycle->qtrs ...) ...]{}
 
+@defproc[(next-qtr [qtr Natural]) Natural]{
+  Returns the cal poly quarter number following the given one.}
+
+@defproc[(prev-qtr [qtr Natural]) Natural]{
+  Returns the cal poly quarter number preceding the given one.}
+
+@defproc[(next-qtr/no-summer [qtr Natural]) Natural]{
+  Returns the cal poly quarter number following the given one,
+  unless it's a summer, in which case jump two later.}
+
+@defproc[(prev-qtr/no-summer [qtr Natural]) Natural]{
+  Returns the cal poly quarter number preceding the given one,
+  unless it's a summer, in which case jump two earlier.}
+
+
 @defmodule[types]{
 Just dumping this here...}
 

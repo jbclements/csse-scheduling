@@ -26,6 +26,10 @@
          catalog-cycle->qtrs
          encode-qtr
          season-after-qtr
+         next-qtr
+         next-qtr/no-summer
+         prev-qtr
+         prev-qtr/no-summer
          Season)
 
 ;; this is the natural encoding of a quarter
@@ -268,6 +272,34 @@
             [else (loop (add1 i))])))
   (encode-qtr/2 (enum-n->qtr matching-n)))
 
+;; what quarter comes after this one?
+(define (next-qtr [qtr : Qtr]) : Qtr
+  (encode-qtr/2 (enum-n->qtr (add1 (enum-qtr->n (decode-qtr qtr))))))
+
+;; ignoring summer, what quarter comes after this one?
+(define (next-qtr/no-summer [qtr : Qtr]) : Qtr
+  (define next1 (enum-n->qtr (add1 (enum-qtr->n (decode-qtr qtr)))))
+  (define delta (cond [(equal? (cdr next1) "Summer") 2]
+                      [else 1]))
+  (encode-qtr/2 (enum-n->qtr (+ (enum-qtr->n (decode-qtr qtr)) delta))))
+
+;; this will get triggered for the year zero...
+(define (ensure-natural-idx [n : Integer]) : Natural
+  (cond [(< n 0) (error 'ensure-natural-idx "expected number >= 0, got ~v" n)]
+        [else n]))
+
+;; return the qtr before this one
+(define (prev-qtr [qtr : Qtr]) : Qtr
+  (encode-qtr/2 (enum-n->qtr (ensure-natural-idx (sub1 (enum-qtr->n (decode-qtr qtr)))))))
+
+;; this is a bit uglier than I'd hoped.
+(define (prev-qtr/no-summer [qtr : Qtr]) : Qtr
+  (define next1 (enum-n->qtr (ensure-natural-idx (sub1 (enum-qtr->n (decode-qtr qtr))))))
+  (define delta (cond [(equal? (cdr next1) "Summer") 2]
+                      [else 1]))
+  (define new-n (ensure-natural-idx (- (enum-qtr->n (decode-qtr qtr)) delta)))
+  (encode-qtr/2 (enum-n->qtr new-n)))
+
 (module+ test
   (require typed/rackunit)
 
@@ -329,4 +361,13 @@
              (λ () (check-all-cycles (list "2019-2019"))))
   (check-exn #px"does not match expected format"
              (λ () (check-all-cycles (list "1234"))))
+
+  (check-equal? (next-qtr 2148) 2152)
+  (check-equal? (next-qtr 2144) 2146)
+  (check-equal? (next-qtr/no-summer 2144) 2148)
+
+  (check-equal? (prev-qtr 2152) 2148)
+  (check-equal? (prev-qtr 2148) 2146)
+  (check-equal? (prev-qtr/no-summer 2148) 2144)
+  
 )
