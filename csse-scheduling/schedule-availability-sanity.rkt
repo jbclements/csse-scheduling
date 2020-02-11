@@ -105,14 +105,21 @@
   ;; # of wtus for a courseA 
   (define (courseA-wtus [this-cycle : CatalogCycle]
                         [courseA : CourseA]) : Real
-    (cycle-course-wtus
-     this-cycle
-     (canonicalize-topic this-cycle
-                         (course-topic courseA))
-     (courseA-size courseA)))
+    (or (courseA-wtu-override courseA)
+        (cycle-course-wtus
+            this-cycle
+            (canonicalize-topic this-cycle
+                                (course-topic courseA))
+            (courseA-size courseA))))
 
-  (define (round-to-hundredth [n : Real]) : Real
-    (/ (round (* n 100)) 100))
+(define (round-to-hundredth [n : Real]) : Real
+  (/ (round (* n 100)) 100))
+
+(module+ test
+  (require typed/rackunit)
+  (check-equal? (courseA-wtus "2019-2020" 430) 5.0)
+  (check-equal? (courseA-wtus "2019-2020" '(MM 430)) 9.0)
+  (check-equal? (courseA-wtus "2019-2020" '(X (MM 430) 3.2)) 3.2))
 
 
 

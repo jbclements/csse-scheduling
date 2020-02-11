@@ -16,6 +16,7 @@
          join-sections-tables
          course-topic
          courseA-size
+         courseA-wtu-override
          topic?
          canonicalize-topic
          record-instructor
@@ -46,11 +47,18 @@
 ;; a quarter's assignment *as it's represented in the schedule-FALLQTR.rktd file*
 (define-type QuarterA (Listof CourseA))
 
+;; represents a course assignment; use the X to manually specify WTUs.
+(define-type CourseA (U CourseB WTUCourse))
+
+;; a course with an explicit specification of WTUs:
+(define-type WTUCourse (List 'X CourseB Nonnegative-Real))
+(define-predicate wtu-course? WTUCourse)
+
 ;; represents a course assignment, optionally mega or 2xmega
 ;; this format is chosen for ease of entry in schedule.rkt, not as a nice internal representation
-(define-type CourseA (U CourseTopic
-                  (List 'M CourseTopic)
-                  (List 'MM CourseTopic)))
+(define-type CourseB (U CourseTopic
+                        (List 'M CourseTopic)
+                        (List 'MM CourseTopic)))
 
 ;; represents the size of a course
 (define-type CourseSize (U 1 2 3))
@@ -67,8 +75,8 @@
 (define-predicate topic? CourseTopic)
 
 ;; represents the data in the style of a database:
-;; instructor quarter size courseID
-(define-type Record (List Symbol Natural CourseSize CourseID))
+;; instructor quarter size courseID maybe-override-wtus
+(define-type Record (U (List Symbol Natural CourseSize CourseID (U False Nonnegative-Real))))
 
 ;; represents the output of sections-equivalent.
 ;; e.g.:
@@ -114,32 +122,43 @@
          (for/list : (Listof (Listof Record))
            ([irec (in-list instructors)])
            (define instructor (first irec))
-           (append
-            (for/list : (Listof Record)
-              ([c (in-list (ann (rest (second irec))
-                                (Listof CourseA)))])
-              (list instructor base-qtr
-                    (courseA-size c)
-                    (canonicalize-topic
-                     catalog-cycle
-                     (course-topic c))))
-            (for/list : (Listof Record)
-              ([c (in-list (rest (third irec)))])
-              (list instructor (+ base-qtr 4)
-                    (courseA-size c)
-                    (canonicalize-topic
-                     catalog-cycle
-                     (course-topic c))))
-            (for/list : (Listof Record)
-              ([c (in-list (rest (fourth irec)))])
-              (list instructor (+ base-qtr 6)
-                    (courseA-size c)
-                    (canonicalize-topic
-                     catalog-cycle
-                     (course-topic c))))))))
+           (apply
+            append
+            (for/list : (Listof (Listof Record))
+              ([qtr : Natural (in-range base-qtr (+ base-qtr 8) 2)]
+               [season (in-list (rest irec))])
+              (courseAs->Records catalog-cycle (rest season) instructor qtr))))))
 
+;; map a list of courseA's to a list of Records
+(define (courseAs->Records [cycle : CatalogCycle] [cas : (Listof CourseA)] [instructor : Symbol] [qtr : Natural]) : (Listof Record)
+  (for/list : (Listof Record)
+    ([c (in-list cas)])
+    (list instructor qtr
+          (courseA-size c)
+          (canonicalize-topic
+           cycle
+           (course-topic c))
+          (courseA-wtu-override c))))
+
+;; return the courseB contained inside a courseA
+(define (courseA->courseB [c : CourseA]) : CourseB
+  (cond [(wtu-course? c) (second c)]
+        [else c]))
+
+;; if this is an "X" course spec, return the number of wtus
+;; specified. Otherwise, return #f
+(define (courseA-wtu-override [c : CourseA]) : (U False Nonnegative-Real)
+  (cond [(wtu-course? c) (third c)]
+        [else #f]))
+
+;; return the "size" of a CourseA. Mega=2, MegaMega=3.
 (: courseA-size (CourseA -> CourseSize))
 (define (courseA-size c)
+  (courseB-size (courseA->courseB c)))
+
+;; return the "size" of a section. Mega=2, MegaMega=3.
+(: courseB-size (CourseB -> CourseSize))
+(define (courseB-size c)
   (match c
     [(list 'MM _) 3]
     [(list 'M _) 2]
@@ -147,19 +166,23 @@
 
 (define-predicate coursetopic? CourseTopic)
 
+;; return the "topic"--that is, the course content, independent
+;; of how big it is or whether wtu's are specified explicitly
 (: course-topic (CourseA -> CourseTopic))
 (define (course-topic c)
+  (courseB-topic (courseA->courseB c)))
+
+(: courseB-topic (CourseB -> CourseTopic))
+(define (courseB-topic c)
   (match c
     [(list 'MM t) t]
     [(list 'M t) t]
     [(? coursetopic? t) t]))
 
-(define-predicate nat? Natural)
-
 (: canonicalize-topic (CatalogCycle CourseTopic -> CourseID))
 (define (canonicalize-topic cycle topic)
   (match topic
-    [(? nat? n) (cast (csc-or-cpe n) CourseID)]
+    [(? natural? n) (cast (csc-or-cpe n) CourseID)]
     [(? symbol? s) (ensure-canonical (symbol->string s))]))
 
 (define-predicate instructor? InstructorA)
