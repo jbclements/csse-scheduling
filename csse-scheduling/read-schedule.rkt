@@ -230,6 +230,11 @@
     [(cons (? natural? fall-qtr) (? list? instructor-sexps))
      (define instructors (map sexp->instructor instructor-sexps))
      (define non-omitted (subtract-instructors instructors instructors-to-omit))
+     (define maybe-duplicated-instructor (check-duplicates (map (ann first (-> InstructorA Symbol))
+                                                                instructors)))
+     (when maybe-duplicated-instructor
+       (error 'validate-schedule "instructor appears more than once: ~e\n"
+              maybe-duplicated-instructor))
      (cons fall-qtr non-omitted)]
     [other (raise-argument-error 'validate-schedule
                                  "list containing fall qtr and list of instructors"
@@ -346,3 +351,17 @@
      (raise-argument-error 'availability->total-wtus
                            "known availability format"
                            0 availability)]))
+
+(module+ test
+  (require typed/rackunit)
+
+  (define s1
+    '(2218
+      (zippy (f 349) (w) (s 430))
+      (cronkite (f 101 231 231 231) (w cpe450) (s (X (MM 490) 22)))))
+
+  (check-equal? (validate-schedule s1 '()) s1)
+  (check-equal? (availability->total-classroom-wtus 'lec-standard) 45)
+  (check-equal? (availability->total-classroom-wtus '(fall-winter 3.3)) 3.3)
+
+  )
