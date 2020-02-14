@@ -125,9 +125,9 @@
            (apply
             append
             (for/list : (Listof (Listof Record))
-              ([qtr : Natural (in-range base-qtr (+ base-qtr 8) 2)]
+              ([qtr-offset : Natural (in-list '(0 4 6))]
                [season (in-list (rest irec))])
-              (courseAs->Records catalog-cycle (rest season) instructor qtr))))))
+              (courseAs->Records catalog-cycle (rest season) instructor (+ base-qtr qtr-offset)))))))
 
 ;; map a list of courseA's to a list of Records
 (define (courseAs->Records [cycle : CatalogCycle] [cas : (Listof CourseA)] [instructor : Symbol] [qtr : Natural]) : (Listof Record)
