@@ -1,0 +1,27 @@
+The job of course coordinator is important, but almost totally undefined.
+
+This document tries to define it.
+
+Please feel free to make pull requests against this document, and please
+understand that for now, all of this is just my opinion (John Clements).
+
+Broadly speaking, the job of the course coordinator is to supervise a
+given course, ensuring that the course is taught in a way that ensures
+that students in the course are well-educated and well-prepared for
+follow-on courses (if there are any).
+
+As part of this, the course coordinator is responsible for maintaining
+the course ECO (Extended Course Outline), a document that describes the
+learning objectives (or are those outcomes?) of the course.
+
+The course coordinator is also notified of who's going to be teaching
+the given course, at least when I remember to run the script. Should be
+about 10 weeks before the start of the quarter. Or something.
+
+Some course coordinators, especially in lower-level courses, prepare
+final exams to be used by all sections of the course. In my opinion,
+this is a Good Idea, and provides a basic focal point for similarity in
+course outcomes. Note, however, that preparing these late in the quarter
+can lead to general unhappiness; you have been warned.
+
+Have I forgotten things? Almost certainly, yes.
