@@ -19,6 +19,7 @@
          courseA-wtu-override
          topic?
          canonicalize-topic
+         Record
          record-instructor
          record-course
          record-size
@@ -76,7 +77,7 @@
 
 ;; represents the data in the style of a database:
 ;; instructor quarter size courseID maybe-override-wtus
-(define-type Record (U (List Symbol Natural CourseSize CourseID (U False Nonnegative-Real))))
+(define-type Record (List Symbol Natural CourseSize CourseID (U False Nonnegative-Real)))
 
 ;; represents the output of sections-equivalent.
 ;; e.g.:
