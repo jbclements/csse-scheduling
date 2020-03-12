@@ -30,6 +30,8 @@
          next-qtr/no-summer
          prev-qtr
          prev-qtr/no-summer
+         qtr-subtract
+         qtr-subtract/no-summer
          Season)
 
 ;; this is the natural encoding of a quarter
@@ -40,6 +42,10 @@
 (require/typed "qtr-enum.rkt"
                [enum-qtr->n (-> Qtr-Pair Natural)]
                [enum-n->qtr (-> Natural Qtr-Pair)])
+
+(require/typed "qtr-enum-nosummer.rkt"
+               [(enum-qtr->n enum-qtr->n/nosmr) (-> Qtr-Pair Natural)]
+               [(enum-n->qtr enum-n->qtr/nosmr) (-> Natural Qtr-Pair)])
 
 (define first-encodable-year : Natural 1900)
 
@@ -272,16 +278,23 @@
             [else (loop (add1 i))])))
   (encode-qtr/2 (enum-n->qtr matching-n)))
 
+;; how many qtrs between these two? (1 = next quarter)
+(define (qtr-subtract [qtrA : Qtr] [qtrB : Qtr]) : Integer
+  (- (enum-qtr->n (decode-qtr qtrA))
+     (enum-qtr->n (decode-qtr qtrB))))
+
+;; how many qtrs between these two, omitting all summers?
+(define (qtr-subtract/no-summer [qtrA : Qtr] [qtrB : Qtr]) : Integer
+  (- (enum-qtr->n/nosmr (decode-qtr qtrA))
+     (enum-qtr->n/nosmr (decode-qtr qtrB))))
+
 ;; what quarter comes after this one?
 (define (next-qtr [qtr : Qtr]) : Qtr
   (encode-qtr/2 (enum-n->qtr (add1 (enum-qtr->n (decode-qtr qtr))))))
 
 ;; ignoring summer, what quarter comes after this one?
 (define (next-qtr/no-summer [qtr : Qtr]) : Qtr
-  (define next1 (enum-n->qtr (add1 (enum-qtr->n (decode-qtr qtr)))))
-  (define delta (cond [(equal? (cdr next1) "Summer") 2]
-                      [else 1]))
-  (encode-qtr/2 (enum-n->qtr (+ (enum-qtr->n (decode-qtr qtr)) delta))))
+  (encode-qtr/2 (enum-n->qtr/nosmr (add1 (enum-qtr->n/nosmr (decode-qtr qtr))))))
 
 ;; this will get triggered for the year zero...
 (define (ensure-natural-idx [n : Integer]) : Natural
@@ -294,11 +307,9 @@
 
 ;; this is a bit uglier than I'd hoped.
 (define (prev-qtr/no-summer [qtr : Qtr]) : Qtr
-  (define next1 (enum-n->qtr (ensure-natural-idx (sub1 (enum-qtr->n (decode-qtr qtr))))))
-  (define delta (cond [(equal? (cdr next1) "Summer") 2]
-                      [else 1]))
-  (define new-n (ensure-natural-idx (- (enum-qtr->n (decode-qtr qtr)) delta)))
-  (encode-qtr/2 (enum-n->qtr new-n)))
+  (encode-qtr/2
+   (enum-n->qtr/nosmr (ensure-natural-idx
+                       (sub1 (enum-qtr->n/nosmr (decode-qtr qtr)))))))
 
 (module+ test
   (require typed/rackunit)
@@ -369,5 +380,11 @@
   (check-equal? (prev-qtr 2152) 2148)
   (check-equal? (prev-qtr 2148) 2146)
   (check-equal? (prev-qtr/no-summer 2148) 2144)
+
+  (check-equal? (qtr-subtract 2204 2196) 3)
+  (check-equal? (qtr-subtract 2202 2204) -1)
+
+  (check-equal? (qtr-subtract 2204 2194) 4)
+  (check-equal? (qtr-subtract/no-summer 2204 2194) 3)
   
 )
