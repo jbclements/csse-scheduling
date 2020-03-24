@@ -86,7 +86,7 @@
      '(("csc101" "Fundamentals of Computer Science")
        ("csc105" "Fundamentals of Computer Science I Supplemental Instruction")
        ("csc108" "Accelerated Introduction to Computer Science")
-       ("csc111" "Computing for All 1")
+       ("csc121" "Computing for All 1")
        ("csc123" "Introduction to Computing")
        ("csc171" "Introduction to Interactive Entertainment")
        ("csc202" "Data Structures")
