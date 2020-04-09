@@ -40,7 +40,7 @@
      "HNRS" "HUM" "IME" "ISLA" "IT" "ITAL" "ITP" "JOUR" "JPNS" "KINE" "LA"
      "LAES" "LS" "MATE" "MATH" "MCRO" "ME" "MLL" "MSCI" "MSL" "MU" "NR" "PEM"
      "PHIL" "PHYS" "POLS" "PSC" "PSY" "RELS" "RPTA" "SCM" "SOC" "SPAN" "SS"
-     "STAT" "TH" "UNIV" "WGS" "WLC" "WVIT"))
+     "STAT" "TH" "UNIV" "WGS" "WLC" "WVIT" "ZOO"))
 
 (define-type CourseNum String) ;; such as "123" or "0123"
 
