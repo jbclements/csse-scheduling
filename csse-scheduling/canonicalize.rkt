@@ -38,7 +38,7 @@
      "CSC" "DANC" "DATA" "DSCI" "ECON" "EDES" "EE" "ENGL" "ENGR" "ENVE" "ERSC"
      "ES" "ESE" "FR" "FSN" "GEOG" "GEOL" "GER" "GRC" "GS" "GSA" "GSB" "GSE" "HCS" "HIST" "HLTH" "HNRC"
      "HNRS" "HUM" "IME" "ISLA" "IT" "ITAL" "ITP" "JOUR" "JPNS" "KINE" "LA"
-     "LAES" "LS" "MATE" "MATH" "MCRO" "ME" "MLL" "MSCI" "MSL" "MU" "NR" "PEM"
+     "LAES" "LS" "MATE" "MATH" "MCRO" "ME" "MLL" "MSCI" "MSL" "MU" "NR" "PEM" "PEW"
      "PHIL" "PHYS" "POLS" "PSC" "PSY" "RELS" "RPTA" "SCM" "SOC" "SPAN" "SS"
      "STAT" "TH" "UNIV" "WGS" "WLC" "WVIT" "ZOO"))
 
