@@ -9,6 +9,8 @@
 (provide csc-2017-2019-flowchart
          cpe-2017-2019-flowchart
          se-2017-2019-flowchart
+         ;; RIGHT HERE: now try using this one higher up...
+         csc-2020-2021-flowchart
          csc-qtr-load
          se-qtr-load
          cpe-qtr-load
@@ -33,32 +35,51 @@
 ;; note that the ordering of the requirements within a quarter
 ;; is not entirely unimportant,
 ;; as it can affect which courses are chosen (but only on the very edge)
-(define csc-2017-2019-flowchart/pre : Flowchart-Spec
+(define csc-core : Flowchart-Spec
   '(("csc101" 2)
     ("csc202" 3)
     ("csc203" 4)
     ("csc225" 4 5 6)
-    ("csc300" 7 8 9 10 11)
     ((csc-SE) 7)
-    ("cpe315" 5 6 7 8 9)
     ("csc348" 5 6)
-    ("csc349" 7)
     ("csc357" 5 6 7)
-    ("csc430" 8)
-    ("csc431" 9)
-    ;; UGGHHH... backing this out for now:
-    ;; putting this in place of 431:
-    ;;((csc-TE-4) 9)
-    ("csc445" 10)
-    ("csc453" 7 8 9 10 11 12)
-    ("csc491" 11)
-    ("csc492" 12)
     ((upper-level-csc-TE) 11)
-    ((csc-TE/special-problems) 11)
     ((csc-TE-0) 8)
     ((csc-TE-1) 8)
     ((csc-TE-2) 9)
-    ((csc-TE-3) 10)))
+    ((csc-TE-3) 10)
+    ))
+
+(define csc-2017-2019-flowchart/pre : Flowchart-Spec
+  (append
+   csc-core
+   '(("csc300" 7 8 9 10 11) ; now ((ethics) 7 8 9)
+     ("cpe315" 5 6 7 8 9) ; now ("cpe315" 5 6 7)
+     ("csc349" 7) ; now ("csc349" 6 7) 
+     ("csc430" 8) ; now ("csc430" 7 8)
+     ("csc431" 9) ; now ((csc-TE-4) 9 10 11)
+     ("csc445" 10) ; now ("csc445" 10 11)
+     ("csc453" 7 8 9 10 11 12) ; now ("csc453" 10 11 12)
+     ("csc491" 11) ; ((csc-sp-1) 11)
+     ("csc492" 12) ; ((csc-sp-2) 12)
+     ((csc-TE/special-problems) 11) ; now ((csc-TE/special-problems) 12)
+     )))
+
+(define csc-2020-2021-flowchart/pre : Flowchart-Spec
+  (append
+   csc-core
+   '(((ethics) 7 8 9)
+     ("cpe315" 5 6 7)
+     ("csc349" 6 7) 
+     ("csc430" 7 8)
+     ((csc-TE-4) 9 10 11)
+     ("csc445" 10 11)
+     ("csc453" 10 11 12)
+     ((csc-sp-1) 11)
+     ((csc-sp-2) 12)
+     ((csc-TE/special-problems) 12)
+     )))
+
 
 ;; use this one for first-time-first-years
 (define csc-2017-2019-flowchart-FTF : Flowchart-Spec
@@ -66,6 +87,13 @@
 ;; use this one for everyone else:
 (define csc-2017-2019-flowchart : Flowchart-Spec
   (cons '((csc-TE/123) 12) csc-2017-2019-flowchart/pre))
+
+;; use this one for first-time-first-years
+(define csc-2020-2021-flowchart-FTF : Flowchart-Spec
+  (cons '((csc-TE/123) 1) csc-2020-2021-flowchart/pre))
+;; use this one for everyone else:
+(define csc-2020-2021-flowchart : Flowchart-Spec
+  (cons '((csc-TE/123) 12) csc-2020-2021-flowchart/pre))
 
 (define se-2017-2019-flowchart/pre : Flowchart-Spec
   '(("csc101" 2)

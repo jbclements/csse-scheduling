@@ -27,6 +27,9 @@
          seats-required/range
          student->courses)
 
+;; given a major (e.g. "csc", and two lists of pairs of ReqNames + any
+;; (e.g. a list of requirements), ensure that each set has exactly the
+;; same set of ReqNames
 (define (check-req-names [label : String]
                          [set1 : (Listof (Pairof ReqName Any))]
                          [set2 : (Listof (Pairof ReqName Any))])
@@ -39,7 +42,9 @@
   (unless (empty? (set-subtract set2-names set1-names))
     (error 'name-check "name-check for ~a failed: second set has ~e"
            label
-           (set-subtract set2-names set1-names))))
+           (set-subtract set2-names set1-names)))
+  (unless (equal? (list->set set1-names) (list->set set2-names))
+    (error 'name-check "something else failed... duplicated req name?")))
 
 (check-req-names "csc" csc-2017-2019-flowchart csc-requirements)
 (check-req-names "cpe" cpe-2017-2019-flowchart cpe-requirements)

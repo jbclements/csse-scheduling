@@ -333,10 +333,9 @@
             
 
 ;; the master list of requirements
-;; UGGGGHHHHH... backing out of requirements change for now....
-(define csc-requirements
-  : (Listof Requirement)
-  ;;: (Listof (Pair CatalogCycle (Listof Requirement)))
+(define csc-requirements-map
+  ;; : (Listof Requirement)
+  : (Listof (Pair CatalogCycle (Listof Requirement)))
   (let ()
     ;; a convenience short-cut:
     (define (req [course-id : Course-Id]) : Requirement
@@ -383,8 +382,7 @@
           ;; one more for the loss of 431
           ([i (in-range 5)])
           (list (list (string->symbol (~a "csc-TE-" i))) passed-technical-elective?)))))
-    2017-reqs
-    #;(list
+    (list
      (cons
       (ann "2017-2019" CatalogCycle)
       (ensure-distinct-names
@@ -397,6 +395,10 @@
           (list (list (string->symbol (~a "csc-TE-" i))) passed-technical-elective?)))))
      (cons (ann "2019-2020" CatalogCycle) 2019-reqs)
      (cons (ann "2020-2021" CatalogCycle) 2019-reqs))))
+
+;; WIP
+(define csc-requirements (match (assoc "2020-2021" csc-requirements-map)
+                           [(cons _ requirements) requirements]))
 
 (define se-requirements : (Listof Requirement)
   (ensure-distinct-names
