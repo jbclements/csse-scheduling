@@ -8,15 +8,12 @@
          csse-scheduling/qtr-math
          "degree-requirements.rkt")
 
-(define next-fall-year 2018)
-
 (provide major-requirements
          major-requirement-names
          max-num-requirements
          student->bools
          student->unmet-requirements
          first-has-earlier-false?
-         grad-years-possible
 
          and/p
          not/p
@@ -77,21 +74,6 @@
            (cons _ rest2))
      (first-has-earlier-false? rest1 rest2)]
     [_ (error 'lists-of-different-lengths)]))
-
-;; if the student graduated this year, what category would they fall into?
-(define (grad-years-possible [entry-qtr : Qtr]) : String
-  (match (- next-fall-year (qtr->fall-year entry-qtr))
-    [1 "1 year"]
-    [2 "2 years"]
-    [3 "3 years"]
-    [4 "4 years"]
-    [(or 5 6) "5-6 years"]
-    [other
-     (cond [(<= 7 other) "7+ years"]
-           [else (raise-argument-error
-                  'grad-years-possible
-                  "plausible entry quarter"
-                  0 entry-qtr)])]))
 
 
 ;; STUDENT REQUIREMENT COMBINATORS
