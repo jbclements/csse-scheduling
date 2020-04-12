@@ -34,11 +34,11 @@
 ;; is not entirely unimportant,
 ;; as it can affect which courses are chosen (but only on the very edge)
 (define csc-core : Flowchart-Spec
-  '(("csc101" 2);
-    ("csc202" 3);
-    ("csc203" 4);
-    ("csc225" 4 5 6);
-    ((csc-SE) 7);
+  '(("csc101" 2)
+    ("csc202" 3)
+    ("csc203" 4)
+    ("csc225" 4 5 6)
+    ((csc-SE) 7)
     ("csc348" 5 6)
     ("csc357" 5 6 7)
     ((upper-level-csc-TE) 11)
@@ -78,12 +78,11 @@
      ((csc-TE/special-problems) 12)
      )))
 
-(define se-2017-2019-flowchart/pre : Flowchart-Spec
+(define common-se-flowchart/pre : Flowchart-Spec
   '(("csc101" 2)
     ("csc202" 3)
     ("csc203" 4)
-    ("csc225" 4)
-    ("csc300" 7 8 9 10 11 12)
+    ("csc225" 4)    
     ("csc305" 8)
     ("csc308" 7)
     ("csc309" 8)
@@ -95,33 +94,59 @@
     ("csc406" 12)
     ("csc430" 9)
     ("csc484" 8)
-    ("csc491" 11)
-    ("csc492" 12)
     ((upper-level-se-TE) 11)
     ((special-problems/se-TE) 10)
-    ((se-TE-0) 7)
-    ((se-TE-1) 9)
-    ((se-TE-2) 10)))
+    ((se-TE-0) 9)
+    ((se-TE-1) 10)
+    ))
+
+(define se-2017-2019-flowchart/pre : Flowchart-Spec
+  (append
+   common-se-flowchart/pre
+   '(("csc300" 7 8 9 10 11 12)
+     ((se-TE-2) 7)
+     ("csc491" 11)
+     ("csc492" 12))))
+
+(define se-2019-2020-flowchart/pre : Flowchart-Spec
+  (append
+   common-se-flowchart/pre
+   '(((ethics) 4 5 6)
+    ("csc365" 7))))
+
+(define common-cpe-flowchart/pre : Flowchart-Spec
+  '(("cpe100" 1);
+    ("csc101" 2);
+    ("csc202" 3);
+    ("csc203" 4);
+    
+    ("cpe233" 5);
+    ("csc357" 6 7);
+    ("cpe350" 10);
+    ("cpe450" 11);
+    ("csc453" 9 10 11 12);
+    ("cpe464" 9 10 11 12);
+    ("csc348" 6 7);
+    ((cpe-TE/400) 12)
+    ((cpe-TE-1) 11)))
 
 (define cpe-2017-2019-flowchart/pre : Flowchart-Spec
-  '(("csc101" 2)
-    ("csc202" 3)
-    ("csc203" 4)
-    ("cpe133" 3)
-    ("cpe233" 5)
-    ("cpe315" 8 9)
-    ("cpe329" 9)
-    ("csc357" 6 7)
-    ("cpe350" 10)
-    ("cpe450" 11)
-    ("csc453" 9 10 11 12)
-    ("cpe461" 11)
-    ("cpe462" 12)
-    ("cpe464" 9 10 11 12)
-    ("csc348" 6 7)
-    ((cpe-TE/400) 12)
-    ((cpe-TE-0) 10)
-    ((cpe-TE-1) 11)))
+  (append common-cpe-flowchart/pre
+          '(("cpe133" 3)
+            ("cpe329" 9)
+            ("cpe315" 8 9)
+            ("cpe461" 11)
+            ("cpe462" 12)
+            ((cpe-TE-0) 10))))
+
+(define cpe-2019-2020-flowchart/pre : Flowchart-Spec
+  (append common-cpe-flowchart/pre
+          '(("cpe133" 4)
+            ((cpe-arch) 9)
+            ((microcon) 9 10)
+            ((cpe-sp-1) 11)
+            ((cpe-sp-2) 12)
+            ((cpe-TE-0) 11))))
 
 (define-syntax islac
   (syntax-rules ()
@@ -153,10 +178,20 @@
           (cons (islac '((SE) "2017-2019"))
                 (append se-2017-2019-flowchart/pre '(((se-TE/123) 12))))
 
+          (cons (islac '((SE ftf) "2019-2020"))
+                (cons '((se-TE/123) 1) se-2019-2020-flowchart/pre))
+          (cons (islac '((SE) "2019-2020"))
+                (append se-2019-2020-flowchart/pre '(((se-TE/123) 12))))
+
           (cons (islac '((CPE ftf) "2017-2019"))
                 (cons '((cpe-TE/123) 1) cpe-2017-2019-flowchart/pre))
           (cons (islac '((CPE) "2017-2019"))
-                (append cpe-2017-2019-flowchart/pre '(((cpe-TE/123) 12)))))
+                (append cpe-2017-2019-flowchart/pre '(((cpe-TE/123) 12))))
+
+          (cons (islac '((CPE ftf) "2019-2020"))
+                (cons '((cpe-TE/123) 1) cpe-2019-2020-flowchart/pre))
+          (cons (islac '((CPE) "2019-2020"))
+                (append cpe-2019-2020-flowchart/pre '(((cpe-TE/123) 12)))))
     (Listof (Pair LAC Flowchart-Spec)))))
 
 
