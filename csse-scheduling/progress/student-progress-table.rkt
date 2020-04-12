@@ -24,40 +24,34 @@
          satisfies)
 
 
-(define (major-requirements [major : String]) : (Listof Requirement)
-  (ann (match major
-    ["CSC" csc-requirements]
-    ["CPE" cpe-requirements]
-    ["SE"  se-requirements]
-    [other (raise-argument-error 'major-requirements
-                                 "string that's one of: CSC, CPE, or SE"
-                                 0 major)])
-       (Listof Requirement)))
+(define (major-requirements [major : String] [cc : CatalogCycle])
+  : (Listof Requirement)
+  (hash-ref program-requirements (list (list (string->symbol major)) cc)))
 
 (define max-num-requirements
   (apply max (map (inst length Requirement)
-                  (list csc-requirements
-                        se-requirements
-                        cpe-requirements))))
+                  (hash-values program-requirements))))
 
 ;; given a major, return the names of the requirements
-(define (major-requirement-names [major : String]) : (Listof ReqName)
-  (map (inst first ReqName Any) (major-requirements major)))
+(define (major-requirement-names [major : String] [cc : CatalogCycle])
+  : (Listof ReqName)
+  (map (inst first ReqName Any) (major-requirements major cc)))
 
 
 ;; requirements no longer produce booleans, so this is all commented out for now:
 
 ;; given a student, produce a list of booleans representing their
 ;; satisfaction of the requirements. A #t indicates the requirement has been met.
-(define (student->bools [student : Student]) : (Listof Boolean)
-  (define requirements (major-requirements (Student-major student)))
-  (define needed (student->unmet-requirements student))
+(define (student->bools [student : Student] [cc : CatalogCycle]) : (Listof Boolean)
+  (define requirements (major-requirements (Student-major student) cc))
+  (define needed (student->unmet-requirements student cc))
   (for/list ([req-name (in-list (map (inst first ReqName) requirements))])
     (not (member req-name needed))))
 
 ;; given a student, produce a list of their unmet requirement names
-(define (student->unmet-requirements [student : Student]) : (Listof ReqName)
-  (define requirements (major-requirements (Student-major student)))
+(define (student->unmet-requirements [student : Student] [cc : CatalogCycle])
+  : (Listof ReqName)
+  (define requirements (major-requirements (Student-major student) cc))
   (missing-requirements requirements (Student-grades student)))
 
 (define (first-has-earlier-false? [lob1 : (Listof Boolean)]
@@ -132,7 +126,7 @@
     (write-to-file
      #:exists 'truncate
      (map (λ ([s : Student])
-            (list (Student-id s) (student->unmet-requirements s)))
+            (list (Student-id s) (student->unmet-requirements s "2017-2019")))
           students)
                    "/tmp/abc.rktd"))
 

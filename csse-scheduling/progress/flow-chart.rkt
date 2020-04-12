@@ -4,16 +4,15 @@
 ;; many courses are suggested for multiple quarters, so for each course,
 ;; we indicate a *list* of the quarters in which it's suggested.
 
-(require "../types.rkt")
 
-(provide csc-2017-2019-flowchart
-         cpe-2017-2019-flowchart
-         se-2017-2019-flowchart
-         ;; RIGHT HERE: now try using this one higher up...
-         csc-2020-2021-flowchart
-         csc-qtr-load
-         se-qtr-load
-         cpe-qtr-load
+;; also, note that this is Cal Poly's idiosyncratic use of the term "flow
+;; chart" to indicate a suggested schedule.
+
+(require "../types.rkt"
+         "../qtr-math.rkt")
+
+(provide all-flowcharts
+         flow-chart->qtr-load
          student-to-take
 
          Seats-By-Requirement)
@@ -26,8 +25,7 @@
 ;; of accidental error
 
 (define-type Flowchart-Spec
-  (Listof (Pairof ReqName
-                  (Listof Natural))))
+  (Listof (Pairof ReqName (Listof Natural))))
 
 (define-type Seats-By-Requirement
   (Listof (List ReqName Real)))
@@ -36,11 +34,11 @@
 ;; is not entirely unimportant,
 ;; as it can affect which courses are chosen (but only on the very edge)
 (define csc-core : Flowchart-Spec
-  '(("csc101" 2)
-    ("csc202" 3)
-    ("csc203" 4)
-    ("csc225" 4 5 6)
-    ((csc-SE) 7)
+  '(("csc101" 2);
+    ("csc202" 3);
+    ("csc203" 4);
+    ("csc225" 4 5 6);
+    ((csc-SE) 7);
     ("csc348" 5 6)
     ("csc357" 5 6 7)
     ((upper-level-csc-TE) 11)
@@ -53,16 +51,16 @@
 (define csc-2017-2019-flowchart/pre : Flowchart-Spec
   (append
    csc-core
-   '(("csc300" 7 8 9 10 11) ; now ((ethics) 7 8 9)
-     ("cpe315" 5 6 7 8 9) ; now ("cpe315" 5 6 7)
-     ("csc349" 7) ; now ("csc349" 6 7) 
-     ("csc430" 8) ; now ("csc430" 7 8)
-     ("csc431" 9) ; now ((csc-TE-4) 9 10 11)
-     ("csc445" 10) ; now ("csc445" 10 11)
-     ("csc453" 7 8 9 10 11 12) ; now ("csc453" 10 11 12)
-     ("csc491" 11) ; ((csc-sp-1) 11)
-     ("csc492" 12) ; ((csc-sp-2) 12)
-     ((csc-TE/special-problems) 11) ; now ((csc-TE/special-problems) 12)
+   '(("csc300" 7 8 9 10 11)
+     ("cpe315" 5 6 7 8 9)
+     ("csc349" 7)
+     ("csc430" 8)
+     ("csc431" 9)
+     ("csc445" 10)
+     ("csc453" 7 8 9 10 11 12)
+     ("csc491" 11)
+     ("csc492" 12)
+     ((csc-TE/special-problems) 11)
      )))
 
 (define csc-2020-2021-flowchart/pre : Flowchart-Spec
@@ -79,21 +77,6 @@
      ((csc-sp-2) 12)
      ((csc-TE/special-problems) 12)
      )))
-
-
-;; use this one for first-time-first-years
-(define csc-2017-2019-flowchart-FTF : Flowchart-Spec
-  (cons '((csc-TE/123) 1) csc-2017-2019-flowchart/pre))
-;; use this one for everyone else:
-(define csc-2017-2019-flowchart : Flowchart-Spec
-  (cons '((csc-TE/123) 12) csc-2017-2019-flowchart/pre))
-
-;; use this one for first-time-first-years
-(define csc-2020-2021-flowchart-FTF : Flowchart-Spec
-  (cons '((csc-TE/123) 1) csc-2020-2021-flowchart/pre))
-;; use this one for everyone else:
-(define csc-2020-2021-flowchart : Flowchart-Spec
-  (cons '((csc-TE/123) 12) csc-2020-2021-flowchart/pre))
 
 (define se-2017-2019-flowchart/pre : Flowchart-Spec
   '(("csc101" 2)
@@ -120,13 +103,6 @@
     ((se-TE-1) 9)
     ((se-TE-2) 10)))
 
-;; use this one for first-time-first-years
-(define se-2017-2019-flowchart-FTF : Flowchart-Spec
-  (cons '((se-TE/123) 1) se-2017-2019-flowchart/pre))
-;; use this one for everyone else:
-(define se-2017-2019-flowchart : Flowchart-Spec
-  (cons '((se-TE/123) 12) se-2017-2019-flowchart/pre))
-
 (define cpe-2017-2019-flowchart/pre : Flowchart-Spec
   '(("csc101" 2)
     ("csc202" 3)
@@ -144,15 +120,45 @@
     ("cpe464" 9 10 11 12)
     ("csc348" 6 7)
     ((cpe-TE/400) 12)
-    ((cpe-TE-1) 10)
-    ((cpe-TE-2) 11)))
+    ((cpe-TE-0) 10)
+    ((cpe-TE-1) 11)))
 
-;; use this one for first-time-first-years
-(define cpe-2017-2019-flowchart-FTF : Flowchart-Spec
-  (cons '((cpe-TE/123) 1) cpe-2017-2019-flowchart/pre))
-;; use this one for everyone else:
-(define cpe-2017-2019-flowchart : Flowchart-Spec
-  (cons '((cpe-TE/123) 12) cpe-2017-2019-flowchart/pre))
+(define-syntax islac
+  (syntax-rules ()
+    [(_ str) (ann str LAC)]))
+
+(define-type LAC (List Any CatalogCycle))
+
+(define all-flowcharts : (Immutable-HashTable LAC Flowchart-Spec)
+  (make-immutable-hash
+   (ann
+    ;; for FTF (they must take 123:)
+    (list (cons (islac '((CSC ftf) "2017-2019"))
+                (cons '((csc-TE/123) 1) csc-2017-2019-flowchart/pre))
+          (cons (islac '((CSC) "2017-2019"))
+                (append csc-2017-2019-flowchart/pre '(((csc-TE/123) 12))))
+
+          (cons (islac '((CSC ftf) "2019-2020"))
+                (cons '((csc-TE/123) 1) csc-2020-2021-flowchart/pre))
+          (cons (islac '((CSC) "2019-2020"))
+                (append csc-2020-2021-flowchart/pre '(((csc-TE/123) 12))))
+
+          (cons (islac '((CSC ftf) "2020-2021"))
+                (cons '((csc-TE/123) 1) csc-2020-2021-flowchart/pre))
+          (cons (islac '((CSC) "2020-2021"))
+                (append csc-2020-2021-flowchart/pre '(((csc-TE/123) 12))))
+
+          (cons (islac '((SE ftf) "2017-2019"))
+                (cons '((se-TE/123) 1) se-2017-2019-flowchart/pre))
+          (cons (islac '((SE) "2017-2019"))
+                (append se-2017-2019-flowchart/pre '(((se-TE/123) 12))))
+
+          (cons (islac '((CPE ftf) "2017-2019"))
+                (cons '((cpe-TE/123) 1) cpe-2017-2019-flowchart/pre))
+          (cons (islac '((CPE) "2017-2019"))
+                (append cpe-2017-2019-flowchart/pre '(((cpe-TE/123) 12)))))
+    (Listof (Pair LAC Flowchart-Spec)))))
+
 
 ;; if only...
 (define max-program-qtrs 12)
@@ -163,12 +169,7 @@
                     append
                     (map (inst cdr Any (Listof Natural))
                          (apply append
-                                (list csc-2017-2019-flowchart
-                                      se-2017-2019-flowchart
-                                      cpe-2017-2019-flowchart
-                                      csc-2017-2019-flowchart-FTF
-                                      se-2017-2019-flowchart-FTF
-                                      cpe-2017-2019-flowchart-FTF))))))
+                                (hash-values all-flowcharts))))))
   (error 'qtr-check
          "one or more flowchart entries are not in the legal range"))
 
@@ -213,15 +214,10 @@
     ([qtr (in-range 1 13)])
     (cdr (or (assoc qtr table) (cons #f 0)))))
 
-(define csc-qtr-load (flow-chart->qtr-load csc-2017-2019-flowchart-FTF))
-(define se-qtr-load (flow-chart->qtr-load se-2017-2019-flowchart-FTF))
-(define cpe-qtr-load (flow-chart->qtr-load cpe-2017-2019-flowchart-FTF))
-
-(define (major->qtr-load [major : (U "CSC" "SE" "CPE")]) : Qtr-Load
-  (match major
-    ["CSC" csc-qtr-load]
-    ["SE" se-qtr-load]
-    ["CPE" cpe-qtr-load]))
+(define (major->qtr-load [major : (U "CSC" "SE" "CPE")] [cc : CatalogCycle]) : Qtr-Load
+  (define key (list (list (string->symbol major) 'ftf) cc))
+  (define flow-chart (hash-ref all-flowcharts key))
+  (flow-chart->qtr-load flow-chart))
 
 ;; given a qtr-load and a number of unmet requirements, infer the
 ;; the number of quarters completed. This is definitely pretty approximate.
@@ -279,24 +275,15 @@
                          [major : Major-Abbr]
                          [start-qtr : Natural]
                          [stop-qtr : Natural]
-                         [first-time-first-year? : Boolean])
+                         [first-time-first-year? : Boolean]
+                         [cc : CatalogCycle])
   : Seats-By-Requirement
-  (define flow-chart
-    (match major
-      ["CSC" (if first-time-first-year?
-                 csc-2017-2019-flowchart-FTF
-                 csc-2017-2019-flowchart)]
-      ["SE" (if first-time-first-year?
-                 se-2017-2019-flowchart-FTF
-                 se-2017-2019-flowchart)]
-      ["CPE" (if first-time-first-year?
-                 cpe-2017-2019-flowchart-FTF
-                 cpe-2017-2019-flowchart)]
-      [_ (raise-argument-error
-          'student-to-take
-          "major string (\"CSC\",\"SE\",\"CPE\")"
-          1 unmet-reqs major)]))
-  (define qtr-load (major->qtr-load major))
+  (define major-sym (string->symbol major))
+  (define flavor
+    (cond [first-time-first-year? (list major-sym 'ftf)]
+          [else (list major-sym)]))
+  (define flow-chart (hash-ref all-flowcharts (list flavor cc)))
+  (define qtr-load (major->qtr-load major cc))
   (define (helper [qtr-count : Natural]) : Seats-By-Requirement
     ;; this helps us decide how many requirements they're likely to
     ;; want to satisfy in the specified period
@@ -379,12 +366,15 @@
 
 (module+ test
   (require typed/rackunit)
+  (define csc-qtr-load (flow-chart->qtr-load (hash-ref all-flowcharts
+                                                       '((CSC ftf) "2017-2019"))))
   (check-equal? (reqs->qtrs-done csc-qtr-load 0) 12)
   (check-equal? (reqs->qtrs-done csc-qtr-load 23) 0)
   (check-equal? (reqs->qtrs-done csc-qtr-load 9) 8)
   (check-equal? (reqs->qtrs-done csc-qtr-load 10) 7)
 
-  (check-equal? (filter-flow-chart se-2017-2019-flowchart
+  
+  (check-equal? (filter-flow-chart (hash-ref all-flowcharts '((SE) "2017-2019"))
                                    '("csc406" "csc300"))
                 '(("csc300" 7 1/6)
                   ("csc300" 8 1/6)
@@ -397,7 +387,9 @@
   (define example-unmet
     '("cpe315" "cpe329" "cpe350" "cpe450" "csc453"
                "cpe461" "cpe462" "cpe464" (cpe-TE/400)
-               (cpe-TE/123) (cpe-TE-1) (cpe-TE-2)))
+               (cpe-TE/123) (cpe-TE-0) (cpe-TE-1)))
+  (define cpe-qtr-load (flow-chart->qtr-load
+                        (hash-ref all-flowcharts '((CPE ftf) "2017-2019"))))
   (check-equal?
    (reqs->qtrs-done cpe-qtr-load (length example-unmet))
    6)
@@ -412,7 +404,7 @@
            2.5 1e-10)
   (check-equal?
    (list->set
-    (student-to-take example-unmet "CPE" 0 3 #f))
+    (student-to-take example-unmet "CPE" 0 3 #f "2017-2019"))
    (list->set
     '(("cpe315" 1)
       ("cpe329" 1)
@@ -423,7 +415,7 @@
 
   (check-equal?
    (list->set
-    (student-to-take example-unmet "CPE" 1 3 #f))
+    (student-to-take example-unmet "CPE" 1 3 #f "2017-2019"))
    (list->set
     '(("cpe329" 1)
       ("csc453" 1/4)
@@ -433,14 +425,14 @@
 
   (check-equal?
    (list->set
-    (student-to-take example-unmet "CPE" 3 3 #f))
+    (student-to-take example-unmet "CPE" 3 3 #f "2017-2019"))
    (set))
 
-  (check-equal? (student-to-take '("csc348") "CPE" 0 3 #f)
+  (check-equal? (student-to-take '("csc348") "CPE" 0 3 #f "2017-2019")
               '(("csc348" 1)))
-  (check-equal? (student-to-take '("csc348") "CPE" 0 0 #f)
+  (check-equal? (student-to-take '("csc348") "CPE" 0 0 #f "2017-2019")
               '())
-  (check-equal? (student-to-take '() "CSC" 0 3 #f) '()))
+  (check-equal? (student-to-take '() "CSC" 0 3 #f "2017-2019") '()))
 
 
 

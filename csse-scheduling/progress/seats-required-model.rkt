@@ -27,10 +27,19 @@
          seats-required/range
          student->courses)
 
+
+
+(define csc-flowchart
+  (hash-ref all-flowcharts '((CSC) "2020-2021")))
+(define cpe-2017-2019-flowchart
+  (hash-ref all-flowcharts '((CPE) "2017-2019")))
+(define se-2017-2019-flowchart
+  (hash-ref all-flowcharts '((SE) "2017-2019")))
+
 ;; given a major (e.g. "csc", and two lists of pairs of ReqNames + any
 ;; (e.g. a list of requirements), ensure that each set has exactly the
 ;; same set of ReqNames
-(define (check-req-names [label : String]
+(define (check-req-names [label : Any]
                          [set1 : (Listof (Pairof ReqName Any))]
                          [set2 : (Listof (Pairof ReqName Any))])
   (define set1-names (map (inst car ReqName) set1))
@@ -46,9 +55,11 @@
   (unless (equal? (list->set set1-names) (list->set set2-names))
     (error 'name-check "something else failed... duplicated req name?")))
 
-(check-req-names "csc" csc-2017-2019-flowchart csc-requirements)
-(check-req-names "cpe" cpe-2017-2019-flowchart cpe-requirements)
-(check-req-names "se"  se-2017-2019-flowchart  se-requirements)
+;; check that the list 
+(define requirements-keys (hash-keys program-requirements))
+(for ([key (in-list requirements-keys)])
+  (check-req-names key (hash-ref all-flowcharts key)
+                   (hash-ref program-requirements key)))
 
 (define (first-year? [student : Student])
   (equal? (Student-entry-qtr student) 'pre-poly))
@@ -58,11 +69,14 @@
 ;; NOTE: In this context, qtrs are naturals such as 0 or 1, counting the number of
 ;; quarters from the current one.
 ;; returns a "Seats-By-Requirement" : (Listof (List Requirement Nonnegative-Real))
-(define (student->courses [student : Student] [start-qtr : Natural] [stop-qtr : Natural])
+(define (student->courses [student : Student] [start-qtr : Natural]
+                          [stop-qtr : Natural]
+                          [cc : CatalogCycle])
   : Seats-By-Requirement
-  (define unmet-reqs (student->unmet-requirements student))
+  (define unmet-reqs (student->unmet-requirements student cc))
   (student-to-take unmet-reqs (Student-major student) start-qtr stop-qtr
-                   (first-year? student)))
+                   (first-year? student)
+                   cc))
 
 ;; given a major, return the standard "student category" for that student,
 ;; used in the generated seat-requirements
@@ -81,8 +95,11 @@
 ;; qtr and ending one before the given stop qtr. So, for instance,
 ;; start 2 and stop 5 would skip the first two quarters and
 ;; model the next three.
-(define (seat-requirements/range [version-str : String] [start-qtr : Natural] [stop-qtr : Natural]
-                              [omit-first-year? : Boolean #f])
+(define (seat-requirements/range [version-str : String]
+                                 [start-qtr : Natural]
+                                 [stop-qtr : Natural]
+                                 [cc : CatalogCycle]
+                                 [omit-first-year? : Boolean])
   : (Listof Seat-Requirement)
   (define students (get-students version-str))
   (define chosen-students
@@ -94,11 +111,11 @@
     (for/list ([i (in-naturals)]
                [student (in-list chosen-students)])
       (list (Student-major student)
-            (student->courses student start-qtr stop-qtr))))
+            (student->courses student start-qtr stop-qtr cc))))
   (define all-to-take-by-major (group-by (inst first Major-Abbr) all-to-take))
   (apply
    append
-   (for/list :(Listof (Listof Seat-Requirement))
+   (for/list : (Listof (Listof Seat-Requirement))
      ([major-grp (in-list all-to-take-by-major)])
      (define category (major->category (first (first major-grp))))
      (define sbr (map (inst second Any Seats-By-Requirement) major-grp))
@@ -117,11 +134,13 @@
 (define (seats-required/range [version-str : String]
                               [start-qtr : Natural]
                               [stop-qtr : Natural]
+                              [cc : CatalogCycle]
                               [omit-first-year? : Boolean #f])
   : (Listof (List ReqName Real))
   (define requirements (seat-requirements/range version-str
                                                 start-qtr
                                                 stop-qtr
+                                                cc
                                                 omit-first-year?))
   (define tuples : (Listof (List ReqName Real))
     (for/list ([req (in-list requirements)])
@@ -139,9 +158,10 @@
 ;; given a version-string and a number of quarters to predict,
 ;; return the number of seats of each requirement required
 (define (seats-required [version-str : String] [qtrs-to-predict : Natural]
-                        [omit-first-year? : Boolean #f])
+                        [cc : CatalogCycle]
+                        [omit-first-year? : Boolean])
   : (Listof (List ReqName Real))
-  (seats-required/range version-str 0 qtrs-to-predict omit-first-year?))
+  (seats-required/range version-str 0 qtrs-to-predict cc omit-first-year?))
 
 (define (req-name<? [a : ReqName] [b : ReqName]) : Boolean
   (cond [(string? a)
@@ -158,6 +178,6 @@
    (λ ([sr : Seat-Requirement])
      (member (Seat-Requirement-course sr)
              '("csc491" "csc492" "cpe461" "cpe462")))
-   (seat-requirements/range "2194-1" 0 3 #f)))
+   (seat-requirements/range "2194-1" 0 3 "2017-2019" #f)))
 
 
