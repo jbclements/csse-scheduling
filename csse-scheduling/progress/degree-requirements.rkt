@@ -26,11 +26,6 @@
          passing-grade?
          c-passing-grade?)
 
-;; FIXME ouch...
-;; for now, pin the catalog cycle:
-(define current-catalog-cycle "2017-2019")
-
-
 ;; given a list of grades, a course id, and a predicate mapping a grade to
 ;; a boolean, return a list of lists of grade-records indicating the
 ;; ways that the requirement could be satisfied.
@@ -272,25 +267,26 @@
                         g))))
 
 ;; represents the requirement for a technical elective
-(define passed-technical-elective? : ReqFun
-  (or!/courses/req (hash-ref csc-te-course-table current-catalog-cycle)))
+(define (passed-technical-elective? [cc : CatalogCycle]) : ReqFun
+  (or!/courses/req (hash-ref csc-te-course-table cc)))
 
 ;; represents the requirement for an upper-level technical elective
-(define passed-upper-level-technical-elective? : ReqFun
-  (or!/courses/req (hash-ref csc-ul-te-course-table current-catalog-cycle)))
+(define (passed-upper-level-technical-elective? [cc : CatalogCycle]) : ReqFun
+  (or!/courses/req (hash-ref csc-ul-te-course-table cc)))
 
 ;; represents the requirement for a technical elective
-(define passed-se-technical-elective? : ReqFun
-  (or!/courses/req (hash-ref se-te-course-table current-catalog-cycle)))
+(define (passed-se-technical-elective? [cc : CatalogCycle]) : ReqFun
+  (or!/courses/req (hash-ref se-te-course-table cc)))
 
 ;; represents the requirement for an upper-level technical elective
-(define passed-upper-level-se-technical-elective? : ReqFun
-  (or!/courses/req (hash-ref se-ul-te-course-table current-catalog-cycle)))
+(define (passed-upper-level-se-technical-elective? [cc : CatalogCycle]) : ReqFun
+  (or!/courses/req (hash-ref se-ul-te-course-table cc)))
 
+;; is this just longer because I hadn't built the abstraction yet?
 ;; short-cutting: find a cpe TE and remove it from the list
-(define passed-cpe-technical-elective? : ReqFun
+(define (passed-cpe-technical-elective? [cc : CatalogCycle]) : ReqFun
   (let ()
-    (define cpe-te-courses (hash-ref cpe-te-course-table current-catalog-cycle))
+    (define cpe-te-courses (hash-ref cpe-te-course-table cc))
     (λ ([grs : (Listof Grade-Record)])
       (define success-grade : (U False Grade-Record)
         (let loop ([grs grs])
@@ -343,8 +339,9 @@
           (list (list (string->symbol (~a prefix"-TE-" i)))
                 req)))
 
-(define (make-csc-te-reqs [n : Natural]) : (Listof Requirement)
-        (make-TE-requirements "csc" passed-technical-elective? n))
+;; FIXME 
+(define (make-csc-te-reqs [cc : CatalogCycle] [n : Natural]) : (Listof Requirement)
+        (make-TE-requirements "csc" (passed-technical-elective? cc) n))
 
 
 (define (req [course-id : Course-Id]) : Requirement
@@ -360,7 +357,11 @@
 (define ethics-req : Requirement
   (list '(ethics) (passed-one-of '("csc300" "phil323"))))
 
-(define common-csc-requirements
+;; NB because of the "cut" style of checking, it's important to put
+;; technical electives last; otherwise, a course like 307 could be
+;; counted as a technical elective rather than satisfying the SE requirement.
+
+(define (common-csc-requirements [cc : CatalogCycle])
   (append
    computing-common-requirements
    ;; NB: 123 is treated like a TE to allow transfer students not to take it.
@@ -384,15 +385,15 @@
          ;; nature of matching could mark a satisfied requirement
          ;; as unsatisfied
          (list '(upper-level-csc-TE)
-               passed-upper-level-technical-elective?)
+               (passed-upper-level-technical-elective? cc))
          (list '(csc-TE/123) (or!/req passed-123?
-                                      passed-technical-elective?))
+                                      (passed-technical-elective? cc)))
          (list '(csc-TE/special-problems)
                (or!/req got-special-problems-credit?
-                        passed-technical-elective?)))))
+                        (passed-technical-elective? cc))))))
 
 ;; the master list of requirements
-(define common-se-requirements : (Listof Requirement)
+(define (common-se-requirements [cc : CatalogCycle]) : (Listof Requirement)
   (append
    computing-common-requirements
    (list (req  "csc225")
@@ -408,35 +409,35 @@
          (req  "csc484")
          
          (list '(upper-level-se-TE)
-               passed-upper-level-se-technical-elective?)
+               (passed-upper-level-se-technical-elective? cc))
          (list '(special-problems/se-TE)
                (or!/req got-special-problems-credit?
-                        passed-se-technical-elective?))
+                        (passed-se-technical-elective? cc)))
          (list '(se-TE/123)
                (or!/req passed-123?
-                        passed-se-technical-elective?)))
+                        (passed-se-technical-elective? cc))))
 ))
 
 (define 2017-2019-se-requirements : (Listof Requirement)
   (append
-   common-se-requirements
+   (common-se-requirements "2017-2019")
    (list (req "csc300")
          (req "csc491")
          (req "csc492"))
    ;; 20 TE units minus upper-level (above) minus special problems
-   (make-TE-requirements "se" passed-se-technical-elective? 3)))
+   (make-TE-requirements "se" (passed-se-technical-elective? "2017-2019") 3)))
 ;; count TEs
 
 (define 2019-2020-se-requirements : (Listof Requirement)
   (append
-   common-se-requirements
+   (common-se-requirements "2019-2020")
    (list ethics-req
          (req "csc365"))
    ;; 16 TE units minus upper-level minus special problems
-   (make-TE-requirements "se" passed-se-technical-elective? 2)))
+   (make-TE-requirements "se" (passed-se-technical-elective? "2019-2020") 2)))
 ;; count TEs
 
-(define common-cpe-requirements : (Listof Requirement)
+(define (common-cpe-requirements [cc : CatalogCycle]) : (Listof Requirement)
   (append
    computing-common-requirements
    (list
@@ -451,23 +452,23 @@
     ;(req "ee211")
     ;(req "ee241")
     (list '(cpe-TE/400) (or!/req got-4-units-of-400?
-                                 passed-cpe-technical-elective?))
+                                 (passed-cpe-technical-elective? cc)))
     (list '(cpe-TE/123) (or!/req passed-123?
-                                 passed-cpe-technical-elective?)))
-   (make-TE-requirements "cpe" passed-cpe-technical-elective? 2)))
+                                 (passed-cpe-technical-elective? cc))))
+   (make-TE-requirements "cpe" (passed-cpe-technical-elective? cc) 2)))
 
 (define 2017-2019-cpe-requirements
   (append
-   common-cpe-requirements
+   (common-cpe-requirements "2017-2019")
    (list (req "cpe315")
          (req "cpe329")
          (req "cpe461")
          (req "cpe462")
          )))
 
-(define 2020-2021-cpe-requirements
+(define 2019-2020-cpe-requirements
   (append
-   common-cpe-requirements
+   (common-cpe-requirements "2019-2020")
    (list (list '(cpe-arch) (passed-one-of '("cpe315" "cpe333")))
          (list '(microcon) (passed-one-of '("cpe329" "cpe316" "cpe336")))
          (list '(cpe-sp-1) (passed-one-of '("cpe461" "csc497")))
@@ -475,8 +476,16 @@
          ;; omitting ee things for now
          )))
 
-(define 2019-2020-cpe-requirements
-  2020-2021-cpe-requirements)
+;; waiting for new te's
+#;(define 2020-2021-cpe-requirements
+  (append
+   (common-cpe-requirements "2020-2021")
+   (list (list '(cpe-arch) (passed-one-of '("cpe315" "cpe333")))
+         (list '(microcon) (passed-one-of '("cpe329" "cpe316" "cpe336")))
+         (list '(cpe-sp-1) (passed-one-of '("cpe461" "csc497")))
+         (list '(cpe-sp-2) (passed-one-of '("cpe462" "csc498")))
+         ;; omitting ee things for now
+         )))
 
 
 (define-type LAC (List Any CatalogCycle))
@@ -492,31 +501,35 @@
          : (Pair LAC (Listof Requirement))
          (cons (list '(CSC) (car tup)) (ensure-distinct-names (cdr tup))))
        (ann (list
+             (let ([cc : CatalogCycle "2017-2019"])
              (cons
-              (ann "2017-2019" CatalogCycle)
+              cc
               (append
-               common-csc-requirements
+               (common-csc-requirements cc)
                (list (req "csc431")
                      (req  "csc300")
                      (req "csc491")
                      (req "csc492"))
                ;; 24 TE units minus upper-level (above) minus special-problems = 4 courses:
-               (make-csc-te-reqs 4)))
-             (cons (ann "2019-2020" CatalogCycle)
-                   (append
-                    common-csc-requirements
-                    (list ethics-req
-                          (list '(csc-sp-1) (passed-one-of '("csc491" "csc497")))
-                          (list '(csc-sp-2) (passed-one-of '("csc492" "csc498"))))
-                    (make-csc-te-reqs 5)))
-             (cons (ann "2020-2021" CatalogCycle)
-                   (append
-                    ;; technically 431 is still required; in reality... it's not?
-                    common-csc-requirements
-                    (list ethics-req
-                          (list '(csc-sp-1) (passed-one-of '("csc491" "csc497")))
-                          (list '(csc-sp-2) (passed-one-of '("csc492" "csc498"))))
-                    (make-csc-te-reqs 5))))
+               (make-csc-te-reqs cc 4))))
+             (let ([cc : CatalogCycle "2019-2020"])
+               (cons cc
+                     (append
+                      (common-csc-requirements cc)
+                      (list ethics-req
+                            (list '(csc-sp-1) (passed-one-of '("csc491" "csc497")))
+                            (list '(csc-sp-2) (passed-one-of '("csc492" "csc498"))))
+                      (make-csc-te-reqs cc 5))))
+             ;; waiting on TE listing
+             #;(let ([cc : CatalogCycle "2020-2021"])
+               (cons cc
+                     (append
+                      ;; technically 431 is still required; in reality... it's not?
+                      (common-csc-requirements cc)
+                      (list ethics-req
+                            (list '(csc-sp-1) (passed-one-of '("csc491" "csc497")))
+                            (list '(csc-sp-2) (passed-one-of '("csc492" "csc498"))))
+                      (make-csc-te-reqs cc 5)))))
             (Listof (Pairof CatalogCycle (Listof Requirement))))))
     (let ()
       (map
@@ -687,7 +700,7 @@
            (2142 "csc102" 4 "A"))))
 
   (check-equal?
-   (passed-cpe-technical-elective?
+   ((passed-cpe-technical-elective? "2017-2019")
     '((2178 "csc100" 4 "A")
       (2178 "csc101" 4 "A")
       (2178 "csc100" 4 "A")
@@ -695,7 +708,7 @@
    '())
 
   (check-equal?
-   (passed-cpe-technical-elective?
+   ((passed-cpe-technical-elective? "2017-2019")
     '((2178 "csc100" 4 "A")
       (2178 "csc101" 4 "A")
       (2178 "csc530" 4 "A")
