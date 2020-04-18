@@ -177,7 +177,22 @@
   (filter
    (λ ([sr : Seat-Requirement])
      (member (Seat-Requirement-course sr)
-             '("csc491" "csc492" "cpe461" "cpe462")))
-   (seat-requirements/range "2194-1" 0 3 "2017-2019" #f)))
+             '("csc308")))
+   (seat-requirements/range "2202-1" 0 3 "2019-2020" #t))
+
+  (filter
+   (λ ([sr : Seat-Requirement])
+     (member (Seat-Requirement-course sr)
+             '("csc402")))
+   (seat-requirements/range "2202-1" 0 3 "2019-2020" #t))
+
+  (filter
+   (λ ([sr : Seat-Requirement])
+     (member (Seat-Requirement-course sr)
+             '((csc-SE))))
+   (seat-requirements/range "2202-1" 1 4 "2019-2020" #t))
+
+  
+  )
 
 
