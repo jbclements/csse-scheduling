@@ -14,8 +14,11 @@
          record->sections-equivalent
          year-sections-equivalent
          join-sections-tables
+         courseA-topic
+         ;; should have named this courseA-topic:
          course-topic
          courseA-size
+         courseA-wtus
          courseA-wtu-override
          topic?
          canonicalize-topic
@@ -138,7 +141,7 @@
           (courseA-size c)
           (canonicalize-topic
            cycle
-           (course-topic c))
+           (courseA-topic c))
           (courseA-wtu-override c))))
 
 ;; return the courseB contained inside a courseA
@@ -169,9 +172,12 @@
 
 ;; return the "topic"--that is, the course content, independent
 ;; of how big it is or whether wtu's are specified explicitly
-(: course-topic (CourseA -> CourseTopic))
-(define (course-topic c)
+(: courseA-topic (CourseA -> CourseTopic))
+(define (courseA-topic c)
   (courseB-topic (courseA->courseB c)))
+
+;; legacy name, not sure where it's used
+(define course-topic courseA-topic)
 
 (: courseB-topic (CourseB -> CourseTopic))
 (define (courseB-topic c)
@@ -185,6 +191,16 @@
   (match topic
     [(? natural? n) (cast (csc-or-cpe n) CourseID)]
     [(? symbol? s) (ensure-canonical (symbol->string s))]))
+
+;; # of wtus for a courseA 
+(define (courseA-wtus [this-cycle : CatalogCycle]
+                      [courseA : CourseA]) : Real
+  (or (courseA-wtu-override courseA)
+      (cycle-course-wtus
+       this-cycle
+       (canonicalize-topic this-cycle
+                           (course-topic courseA))
+       (courseA-size courseA))))
 
 (define-predicate instructor? InstructorA)
 
@@ -366,3 +382,10 @@
   (check-equal? (availability->total-classroom-wtus '(fall-winter 3.3)) 3.3)
 
   )
+
+ 
+(module+ test
+  (require typed/rackunit)
+  (check-equal? (courseA-wtus "2019-2020" 430) 5.0)
+  (check-equal? (courseA-wtus "2019-2020" '(MM 430)) 9.0)
+  (check-equal? (courseA-wtus "2019-2020" '(X (MM 430) 3.2)) 3.2))
