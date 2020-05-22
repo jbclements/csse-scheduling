@@ -12,19 +12,21 @@
 ;; this is the "per-student" model
 
 
-(require "student-progress.rkt"
+(require racket/set
+         racket/list
+         racket/match
+         "student-progress.rkt"
          "student-progress-table.rkt"
          "degree-requirements.rkt"
          "flow-chart.rkt"
-         racket/set
-         racket/list
-         racket/match
+         "../qtr-math.rkt"
          "../types.rkt"
          "../canonicalize.rkt")
 
 (provide seat-requirements/range
-         seats-required
-         seats-required/range
+         seat-requirements-reduce
+         ;seats-required
+         ;seats-required/range
          student->courses)
 
 
@@ -35,6 +37,11 @@
   (hash-ref all-flowcharts '((CPE) "2017-2019")))
 (define se-2017-2019-flowchart
   (hash-ref all-flowcharts '((SE) "2017-2019")))
+
+;; these courses should be associated with specific quarters,
+;; to ensure that students don't fall behind.
+(define constrained-courses
+  '("csc101" "csc202" "csc203" "csc225" "csc357"))
 
 ;; given a major (e.g. "csc", and two lists of pairs of ReqNames + any
 ;; (e.g. a list of requirements), ensure that each set has exactly the
@@ -72,7 +79,7 @@
 (define (student->courses [student : Student] [start-qtr : Natural]
                           [stop-qtr : Natural]
                           [cc : CatalogCycle])
-  : Seats-By-Requirement
+  : (Listof Seats-By-Requirement)
   (define unmet-reqs (student->unmet-requirements student cc))
   (student-to-take unmet-reqs (Student-major student) start-qtr stop-qtr
                    (first-year? student)
@@ -89,49 +96,90 @@
                                  "known major"
                                  0 major)]))
 
-;; given a version-string and a 'start' qtr and a 'stop' qtr
-;; expressed as offsets from the current qtr, return the number
-;; of seats required in each class starting in the given start
+
+(: transpose (All (A) ((Listof (Listof A)) -> (Listof (Listof A)))))
+(define (transpose lol)
+  (cond [(empty? (car lol))
+         '()]
+        [else
+         (cons (map (inst car A) lol)
+               (transpose (map (inst cdr A) lol)))]))
+
+;; given a model qtr (e.g. 2202, indicating data obtained after winter 2020),
+;; and a 'start' qtr and a 'stop' qtr, return a list of Seat-Requirement's
+;; indicating the requirements for each modeled quarter, starting in the given start
 ;; qtr and ending one before the given stop qtr. So, for instance,
-;; start 2 and stop 5 would skip the first two quarters and
-;; model the next three.
-(define (seat-requirements/range [version-str : String]
-                                 [start-qtr : Natural]
-                                 [stop-qtr : Natural]
+;; start 2208 and stop 2214 would model two quarters, fall 2020 and
+;; winter 2021.
+
+;; some courses are highly depended-on, like 202, 203, and 357.
+;; when students need these courses in a particular quarter of modeling,
+;; these requirements should be tagged with the appropriate quarter,
+;; so that we can see that they don't just need them any old time,
+;; they need them in the appropriate quarter.
+(define (seat-requirements/range [model-qtr : Qtr]
+                                 [start-qtr : Qtr]
+                                 [stop-qtr : Qtr]
                                  [cc : CatalogCycle]
                                  [omit-first-year? : Boolean])
-  : (Listof Seat-Requirement)
+  : (Listof (Listof Seat-Requirement))
+  (define version-str (string-append (number->string model-qtr) "-1"))
+  ;; cast could fail...
+  (define start-idx (cast (sub1 (qtr-subtract/no-summer start-qtr model-qtr)) Natural))
+  (define stop-idx (cast (sub1 (qtr-subtract/no-summer stop-qtr model-qtr)) Natural))
   (define students (get-students version-str))
   (define chosen-students
     (cond [omit-first-year?
            (filter (compose not first-year?) students)]
           [else students]))
-  ;; tuples of (list major (listof requirement))
-  (define all-to-take : (Listof (List Major-Abbr Seats-By-Requirement))
-    (for/list ([i (in-naturals)]
-               [student (in-list chosen-students)])
-      (list (Student-major student)
-            (student->courses student start-qtr stop-qtr cc))))
-  (define all-to-take-by-major (group-by (inst first Major-Abbr) all-to-take))
-  (apply
-   append
-   (for/list : (Listof (Listof Seat-Requirement))
-     ([major-grp (in-list all-to-take-by-major)])
-     (define category (major->category (first (first major-grp))))
-     (define sbr (map (inst second Any Seats-By-Requirement) major-grp))
-     (define by-course (group-by (inst first ReqName)
-                                 (apply append sbr)))
+  ;; tuples of (list major (listof (listof requirement))) (one for each student).
+  (define all-to-take : (Listof (Listof (Listof (List Major-Abbr ReqName Real))))
+    (for/list ([student (in-list chosen-students)])
+      (define qtrs-plan (student->courses student start-idx
+                                          stop-idx cc))
+      (for/list : (Listof (Listof (List Major-Abbr ReqName Real)))
+        ([qtr-plan (in-list qtrs-plan)])
+        (for/list : (Listof (List Major-Abbr ReqName Real))
+          ([sr : (List ReqName Real) (in-list qtr-plan)])
+          (ann (cons (Student-major student) sr)
+               (List Major-Abbr ReqName Real))))))
+  ;; transpose to make them by-qtr
+  (define qtrs-requirements
+    (transpose all-to-take))
+  (for/list ([qtr-requirement (in-list qtrs-requirements)]
+             [qtr : Natural (in-list (qtrs-in-range start-qtr stop-qtr))])
+    (seat-requirements-reduce
      (for/list : (Listof Seat-Requirement)
-       ([grp (in-list by-course)])
+       ([req (in-list (apply append qtr-requirement))])
        (Seat-Requirement
-        category
-        (first (first grp))
-        #f
-        (apply + (map (inst second Any Real) grp))))
-     )))
+        (major->category (first req))
+        (second req)
+        (cond [(member (second req) constrained-courses) qtr]
+              [else #f])
+        (third req))))))
+
+;; given a list of seat requirements, combine all of those that differ
+;; only in the seat count.
+(define (seat-requirements-reduce [losr : (Listof Seat-Requirement)])
+  : (Listof Seat-Requirement)
+  (define grouped : (Listof (Listof Seat-Requirement))
+    (group-by (λ ([sr : Seat-Requirement])
+                (list (Seat-Requirement-label sr)
+                      (Seat-Requirement-course sr)
+                      (Seat-Requirement-qtr-req sr)))
+              losr))
+  (for/list : (Listof Seat-Requirement)
+    ([g : (Listof Seat-Requirement) (in-list grouped)])
+    (define f (first g))
+    (Seat-Requirement
+     (Seat-Requirement-label f)
+     (Seat-Requirement-course f)
+     (Seat-Requirement-qtr-req f)
+     (apply + (map Seat-Requirement-seats g)))))
 
 ;; provide the old interface for existing users:
-(define (seats-required/range [version-str : String]
+;; can I just dump this?
+#;(define (seats-required/range [version-str : String]
                               [start-qtr : Natural]
                               [stop-qtr : Natural]
                               [cc : CatalogCycle]
@@ -157,7 +205,7 @@
 
 ;; given a version-string and a number of quarters to predict,
 ;; return the number of seats of each requirement required
-(define (seats-required [version-str : String] [qtrs-to-predict : Natural]
+#;(define (seats-required [version-str : String] [qtrs-to-predict : Natural]
                         [cc : CatalogCycle]
                         [omit-first-year? : Boolean])
   : (Listof (List ReqName Real))
@@ -173,24 +221,47 @@
                [else (string<? (symbol->string (first a))
                                (symbol->string (first b)))])]))
 
+(module+ test
+  (require typed/rackunit)
+
+  (check-equal?
+   (transpose '((a b c) (d e f)))
+   '((a d) (b e) (c f)))
+  (check-equal?
+   (seat-requirements-reduce
+    (list (Seat-Requirement 'csc-bs "csc123" #f 3)
+          (Seat-Requirement 'cpe-bs "csc123" #f 4)
+          (Seat-Requirement 'csc-bs "cpe464" #f 5)
+          (Seat-Requirement 'csc-bs "csc123" #f 6)
+          (Seat-Requirement 'csc-bs "cpe464" #f 10)))
+   (list (Seat-Requirement 'csc-bs "csc123" #f 9)
+         (Seat-Requirement 'cpe-bs "csc123" #f 4)
+         (Seat-Requirement 'csc-bs "cpe464" #f 15))))
+
 (module+ main
   (filter
    (λ ([sr : Seat-Requirement])
      (member (Seat-Requirement-course sr)
              '("csc308")))
-   (seat-requirements/range "2202-1" 0 3 "2019-2020" #t))
+   (apply
+    append
+    (seat-requirements/range 2202 2204 2214 "2019-2020" #t)))
 
   (filter
    (λ ([sr : Seat-Requirement])
      (member (Seat-Requirement-course sr)
              '("csc402")))
-   (seat-requirements/range "2202-1" 0 3 "2019-2020" #t))
+   (apply
+    append
+    (seat-requirements/range 2202 2204 2214 "2019-2020" #t)))
 
   (filter
    (λ ([sr : Seat-Requirement])
      (member (Seat-Requirement-course sr)
              '((csc-SE))))
-   (seat-requirements/range "2202-1" 1 4 "2019-2020" #t))
+   (apply
+    append
+    (seat-requirements/range 2202 2208 2218 "2019-2020" #t)))
 
   
   )

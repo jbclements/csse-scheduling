@@ -306,25 +306,38 @@
 ;; and a major and a number of quarters, compute the set of
 ;; estimated requirements to be satisfied in the coming 'qtr-count'
 ;; quarters (as a list of tuples)
+;; return each quarter separately.
 (define (student-to-take [unmet-reqs : (Listof ReqName)]
                          [major : Major-Abbr]
                          [start-qtr : Natural]
                          [stop-qtr : Natural]
                          [first-time-first-year? : Boolean]
                          [cc : CatalogCycle])
-  : Seats-By-Requirement
+  : (Listof Seats-By-Requirement)
+  (when (<= stop-qtr start-qtr)
+    (error 'student-to-take
+           "expected start-qtr to be < stop-qtr, got ~e and ~e"
+           start-qtr stop-qtr))
   (define major-sym (string->symbol major))
   (define flavor
     (cond [first-time-first-year? (list major-sym 'ftf)]
           [else (list major-sym)]))
   (define flow-chart (hash-ref all-flowcharts (list flavor cc)))
   (define qtr-load (major->qtr-load major cc))
-  (define (helper [qtr-count : Natural]) : Seats-By-Requirement
+  (define ordered-remaining-reqs
+    (filter-flow-chart flow-chart unmet-reqs))
+  ;; produce a list of all the courses they should expect to have
+  ;; taken by the end of 'qtr-count' quarters. Note that calling
+  ;; this repeatedly and taking differences seems crazy (and it does
+  ;; become (n^2), but there can be curious interactions between
+  ;; quarters (when e.g. adding a course takes you from 1.5 courses
+  ;; to 2.5 courses) which makes it easier to just compute the differences.
+  ;; This means that it is n^, but n here is the courses required
+  ;; by a particular person, so it's pretty much never more than 10.
+  (define (schedule-idea [qtr-count : Natural]) : Seats-By-Requirement
     ;; this helps us decide how many requirements they're likely to
     ;; want to satisfy in the specified period
     (define req-count (student-req-count unmet-reqs qtr-load qtr-count))
-    (define ordered-remaining-reqs
-      (filter-flow-chart flow-chart unmet-reqs))
     ;; take the shortest prefix that has enough units:
     (define reqs-to-take
       (let loop : (Listof Flowchart-Tup)
@@ -341,9 +354,13 @@
            (list (first (first grp))
                  (apply + (map tup-seats grp))))
          (group-by (inst first ReqName) reqs-to-take)))
-  (define by-end-requirements (helper stop-qtr))
-  (define before-start-requirements (helper start-qtr))
-  (seats-subtract by-end-requirements before-start-requirements))
+  (define by-qtr-end-reqs
+    (for/list : (Listof Seats-By-Requirement)
+      ([qtr : Natural (in-range start-qtr (add1 stop-qtr))])
+      (schedule-idea qtr)))
+  (for/list ([qtr-a (in-list by-qtr-end-reqs)]
+             [qtr-b (in-list (rest by-qtr-end-reqs))])
+    (seats-subtract qtr-b qtr-a)))
 
 (require/typed racket/dict
                [dict-ref (-> Seats-By-Requirement
@@ -440,34 +457,32 @@
   (check-= (student-req-count '("cpe461" "cpe462") cpe-qtr-load 3)
            2.5 1e-10)
   (check-equal?
-   (list->set
-    (student-to-take example-unmet "CPE" 0 3 #f "2017-2019"))
-   (list->set
-    '(("cpe315" 1)
-      ("cpe329" 1)
+   (student-to-take example-unmet "CPE" 0 3 #f "2017-2019")
+   '((("cpe315" 1/2)
       ("csc453" 1/4)
-      ("cpe464" 1/4)
-      ("cpe350" 1)
-      )))
-
-  (check-equal?
-   (list->set
-    (student-to-take example-unmet "CPE" 1 3 #f "2017-2019"))
-   (list->set
-    '(("cpe329" 1)
-      ("cpe315" 1/2)
+      ("cpe464" 1/4))
+     (("cpe329" 1))
+     (("cpe315" 1/2)
       ("cpe350" 1))))
 
+  ;; NB ordering of each list is not significant. could refactor to
+  ;; use sets instead...
   (check-equal?
-   (list->set
-    (student-to-take example-unmet "CPE" 3 3 #f "2017-2019"))
-   (set))
+   (student-to-take example-unmet "CPE" 1 3 #f "2017-2019")
+   '((("cpe329" 1))
+     (("cpe315" 1/2)
+      ("cpe350" 1))))
+
+  (check-exn
+   #px"expected start-qtr to be < stop-qtr"
+   (λ () (student-to-take example-unmet "CPE" 3 3 #f "2017-2019")))
 
   (check-equal? (student-to-take '("csc348") "CPE" 0 3 #f "2017-2019")
-              '(("csc348" 1)))
-  (check-equal? (student-to-take '("csc348") "CPE" 0 0 #f "2017-2019")
-              '())
-  (check-equal? (student-to-take '() "CSC" 0 3 #f "2017-2019") '()))
+              '((("csc348" 1))
+                ()
+                ()))
+  (check-equal? (student-to-take '() "CSC" 0 3 #f "2017-2019")
+                '(() () ())))
 
 
 
