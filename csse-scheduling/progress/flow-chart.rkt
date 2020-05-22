@@ -409,15 +409,17 @@
   (check-equal? (reqs->qtrs-done csc-qtr-load 10) 7)
 
   
-  (check-equal? (filter-flow-chart (hash-ref all-flowcharts '((SE) "2017-2019"))
-                                   '("csc406" "csc300"))
-                '(("csc300" 7 1/6)
+  (check-equal? (list->set
+                 (filter-flow-chart (hash-ref all-flowcharts '((SE) "2017-2019"))
+                                   '("csc406" "csc300")))
+                (list->set
+                 '(("csc300" 7 1/6)
                   ("csc300" 8 1/6)
                   ("csc300" 9 1/6)
                   ("csc300" 10 1/6)
                   ("csc300" 11 1/6)
                   ("csc300" 12 1/6)
-                  ("csc406" 12 1)))
+                  ("csc406" 12 1))))
 
   (define example-unmet
     '("cpe315" "cpe329" "cpe350" "cpe450" "csc453"
@@ -453,10 +455,8 @@
     (student-to-take example-unmet "CPE" 1 3 #f "2017-2019"))
    (list->set
     '(("cpe329" 1)
-      ("csc453" 1/4)
-      ("cpe464" 1/4)
-      ("cpe350" 1)
-      )))
+      ("cpe315" 1/2)
+      ("cpe350" 1))))
 
   (check-equal?
    (list->set
