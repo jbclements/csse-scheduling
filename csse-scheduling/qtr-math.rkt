@@ -32,6 +32,8 @@
          prev-qtr/no-summer
          qtr-subtract
          qtr-subtract/no-summer
+         qtr-add
+         qtr-add/no-summer
          Season)
 
 ;; this is the natural encoding of a quarter
@@ -278,23 +280,43 @@
             [else (loop (add1 i))])))
   (encode-qtr/2 (enum-n->qtr matching-n)))
 
+(define (qtr->n [qtr : Qtr]) : Natural
+  (enum-qtr->n (decode-qtr qtr)))
+
+(define (qtr->n/nosmr [qtr : Qtr]) : Natural
+  (enum-qtr->n/nosmr (decode-qtr qtr)))
+
+(define (n->qtr [i : Integer]) : Qtr
+  (encode-qtr/2 (enum-n->qtr (ensure-natural-idx i))))
+
+(define (n->qtr/nosmr [i : Integer]) : Qtr
+  (encode-qtr/2 (enum-n->qtr/nosmr (ensure-natural-idx i))))
+
 ;; how many qtrs between these two? (1 = next quarter)
 (define (qtr-subtract [qtrA : Qtr] [qtrB : Qtr]) : Integer
-  (- (enum-qtr->n (decode-qtr qtrA))
-     (enum-qtr->n (decode-qtr qtrB))))
+  (- (qtr->n qtrA)
+     (qtr->n qtrB)))
 
 ;; how many qtrs between these two, omitting all summers?
 (define (qtr-subtract/no-summer [qtrA : Qtr] [qtrB : Qtr]) : Integer
-  (- (enum-qtr->n/nosmr (decode-qtr qtrA))
-     (enum-qtr->n/nosmr (decode-qtr qtrB))))
+  (- (qtr->n/nosmr qtrA)
+     (qtr->n/nosmr qtrB)))
+
+;; what's the quarter 'n' quarters later? (1 = next quarter, -1 = last quarter)
+(define (qtr-add [qtrA : Qtr] [i : Integer]) : Qtr
+  (n->qtr (+ i (qtr->n qtrA))))
+
+;; same but ignore summer.
+(define (qtr-add/no-summer [qtrA : Qtr] [i : Integer]) : Qtr
+  (n->qtr/nosmr (+ i (qtr->n/nosmr qtrA))))
 
 ;; what quarter comes after this one?
 (define (next-qtr [qtr : Qtr]) : Qtr
-  (encode-qtr/2 (enum-n->qtr (add1 (enum-qtr->n (decode-qtr qtr))))))
+  (qtr-add qtr 1))
 
 ;; ignoring summer, what quarter comes after this one?
 (define (next-qtr/no-summer [qtr : Qtr]) : Qtr
-  (encode-qtr/2 (enum-n->qtr/nosmr (add1 (enum-qtr->n/nosmr (decode-qtr qtr))))))
+  (qtr-add/no-summer qtr 1))
 
 ;; this will get triggered for the year zero...
 (define (ensure-natural-idx [n : Integer]) : Natural
@@ -303,13 +325,10 @@
 
 ;; return the qtr before this one
 (define (prev-qtr [qtr : Qtr]) : Qtr
-  (encode-qtr/2 (enum-n->qtr (ensure-natural-idx (sub1 (enum-qtr->n (decode-qtr qtr)))))))
+  (qtr-add qtr -1))
 
-;; this is a bit uglier than I'd hoped.
 (define (prev-qtr/no-summer [qtr : Qtr]) : Qtr
-  (encode-qtr/2
-   (enum-n->qtr/nosmr (ensure-natural-idx
-                       (sub1 (enum-qtr->n/nosmr (decode-qtr qtr)))))))
+  (qtr-add/no-summer qtr -1))
 
 (module+ test
   (require typed/rackunit)
@@ -380,6 +399,9 @@
   (check-equal? (prev-qtr 2152) 2148)
   (check-equal? (prev-qtr 2148) 2146)
   (check-equal? (prev-qtr/no-summer 2148) 2144)
+  (check-equal? (qtr-add 2148 -1) 2146)
+  (check-equal? (qtr-add 2148 -2) 2144)
+  (check-equal? (qtr-add/no-summer 2148 -2) 2142)
 
   (check-equal? (qtr-subtract 2204 2196) 3)
   (check-equal? (qtr-subtract 2202 2204) -1)
