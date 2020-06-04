@@ -258,10 +258,10 @@
   (filter
    (λ ([sr : Seat-Requirement])
      (member (Seat-Requirement-course sr)
-             '((csc-SE))))
+             '("csc305")))
    (apply
     append
-    (seat-requirements/range 2202 2208 2218 "2019-2020" #t)))
+    (seat-requirements/range 2202 2204 2218 "2019-2020" #t)))
 
   
   )

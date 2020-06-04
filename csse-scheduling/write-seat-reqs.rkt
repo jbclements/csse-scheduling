@@ -1,7 +1,12 @@
-#lang typed/racket
+#lang typed/racket/base
 
 (require "types.rkt"
-         "canonicalize.rkt")
+         "canonicalize.rkt"
+         racket/list
+         racket/match)
+
+(require/typed csv-writing
+               [display-table ((Listof (Listof Any)) Output-Port -> Void)])
 
 (provide write-seat-requirements-log)
 
@@ -54,8 +59,12 @@
   (call-with-output-file outfile
     #:exists 'truncate
     (λ ([port : Output-Port])
-      (pretty-display
-       (sort
-        (map round-requirement seat-requirements)
-        seat-requirement-<)
+      (display-table
+       (cons (list "population" "course" "qtr" "seats")
+             (map
+              (λ ([sr : Seat-Requirement])
+                (match sr
+                  [(Seat-Requirement pop course qtr seats)
+                   (list pop (format "~a" course) qtr (ceiling seats))]))
+              (sort seat-requirements seat-requirement-<)))
        port))))

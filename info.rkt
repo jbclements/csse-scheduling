@@ -9,7 +9,8 @@
     "with-cache"
     "csv-reading"
     "sha"
-    "data-enumerate-lib"))
+    "data-enumerate-lib"
+    "csv-writing"))
 
 (define build-deps
   '("rackunit-lib"
