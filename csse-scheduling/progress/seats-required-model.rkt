@@ -34,7 +34,7 @@
 (define csc-flowchart
   (hash-ref all-flowcharts '((CSC) "2020-2021")))
 (define cpe-2017-2019-flowchart
-  (hash-ref all-flowcharts '((CPE) "2017-2019")))
+  (hash-ref all-flowcharts '((CPE) "2020-2021")))
 (define se-2017-2019-flowchart
   (hash-ref all-flowcharts '((SE) "2017-2019")))
 

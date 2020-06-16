@@ -1,4 +1,4 @@
-#lang typed/racket
+#lang typed/racket/base
 
 (provide (all-defined-out))
 #;(provide csc-te-course-table
@@ -190,6 +190,29 @@
             cpe494 cpe495 cpe521 cpe521 cpe522 cpe522 cpe523 cpe523 cpe532 cpe532 cpe541 cpe541 cpe542
             cpe542 csc549)))
 
+;; THIS LEAVES OUT ALL EE COURSES
+(define 2020-2021-cpe-te-courses
+  '("csc549" "cpe542" "cpe541" "cpe532" "cpe523" "cpe522" "cpe521"
+             "cpe495" "cpe494" "cpe493" "cpe488" "cpe485" "cpe482" "cpe479"
+             "cpe472" "cpe470" "cpe465" "cpe464" "cpe462" "cpe461" "cpe450"
+             "cpe447" "cpe446" "cpe442" "cpe441" "cpe439" "cpe432" "cpe428"
+             "cpe426" "cpe419" "cpe416" "cpe414" "cpe400" "cpe368" "cpe367"
+             "cpe350" "cpe336" "cpe333" "cpe329" "cpe328" "cpe327" "cpe316"
+             "cpe315" "csc599" "csc597" "csc596" "csc595" "csc594" "csc593"
+             "csc590" "csc582" "csc581" "csc580" "csc572" "csc570" "csc569"
+             "csc566" "csc564" "csc560" "csc550" "csc540" "csc530" "csc521"
+             "csc515" "csc509" "csc508" "csc498" "csc497" "csc496" "csc495"
+             "csc494" "csc493" "csc492" "csc491" "csc448" "csc445" "csc437"
+             "csc436" "csc435" "csc431" "csc429" "csc424" "csc422" "csc410"
+             "csc409" "csc406" "csc311" "csc309" "csc308" "csc307" "csc305"
+             "csc301" "csc300" "csc490" "csc489" "csc487" "csc486" "csc484"
+             "csc483" "csc482" "csc481" "csc480" "csc478" "csc477" "csc476"
+             "csc474" "csc473" "csc471" "csc469" "csc468" "csc466" "csc458"
+             "csc454" "csc453" "csc450" "csc430" "csc405" "csc402" "csc378"
+             "csc377" "csc371" "csc369" "csc366" "csc365" "csc357" "csc350"
+             "csc349" "csc348" "csc344" "csc325" "csc323" "csc321" "csc320"
+             "csc313"))
+
 (define 2017-cs-minor-courses
   '("cpe315" "cpe416" "cpe419" "cpe464" "cpe465" "cpe482" "cpe485"
              "csc300" "csc301" "csc305" "csc307" "csc308" "csc309"
@@ -238,7 +261,8 @@
 (define cpe-te-course-table : (Immutable-HashTable String (Listof String))
   (make-immutable-hash
    `(("2017-2019" . ,2017-cpe-te-courses)
-     ("2019-2020" . ,2019-2020-cpe-te-courses))))
+     ("2019-2020" . ,2019-2020-cpe-te-courses)
+     ("2020-2021" . ,2020-2021-cpe-te-courses))))
 
 (define csc-ms-500-level-course-table : (Immutable-HashTable String (Listof String))
   (make-immutable-hash

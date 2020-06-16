@@ -115,18 +115,18 @@
     ("csc365" 7))))
 
 (define common-cpe-flowchart/pre : Flowchart-Spec
-  '(("cpe100" 1);
-    ("csc101" 2);
-    ("csc202" 3);
-    ("csc203" 4);
+  '(("cpe100" 1)
+    ("csc101" 2)
+    ("csc202" 3)
+    ("csc203" 4)
     
-    ("cpe233" 5);
-    ("csc357" 6 7);
-    ("cpe350" 10);
-    ("cpe450" 11);
-    ("csc453" 9 10 11 12);
-    ("cpe464" 9 10 11 12);
-    ("csc348" 6 7);
+    ("cpe233" 5)
+    ("csc357" 6 7)
+    ("cpe350" 10)
+    ("cpe450" 11)
+    ("csc453" 9 10 11 12)
+    ("cpe464" 9 10 11 12)
+    ("csc348" 6 7)
     ((cpe-TE/400) 12)
     ((cpe-TE-1) 11)))
 
@@ -140,6 +140,15 @@
             ((cpe-TE-0) 10))))
 
 (define cpe-2019-2020-flowchart/pre : Flowchart-Spec
+  (append common-cpe-flowchart/pre
+          '(("cpe133" 4)
+            ((cpe-arch) 9)
+            ((microcon) 9 10)
+            ((cpe-sp-1) 11)
+            ((cpe-sp-2) 12)
+            ((cpe-TE-0) 11))))
+
+(define cpe-2020-2021-flowchart/pre : Flowchart-Spec
   (append common-cpe-flowchart/pre
           '(("cpe133" 4)
             ((cpe-arch) 9)
@@ -191,7 +200,12 @@
           (cons (islac '((CPE ftf) "2019-2020"))
                 (cons '((cpe-TE/123) 1) cpe-2019-2020-flowchart/pre))
           (cons (islac '((CPE) "2019-2020"))
-                (append cpe-2019-2020-flowchart/pre '(((cpe-TE/123) 12)))))
+                (append cpe-2019-2020-flowchart/pre '(((cpe-TE/123) 12))))
+
+          (cons (islac '((CPE ftf) "2020-2021"))
+                (cons '((cpe-TE/123) 1) cpe-2020-2021-flowchart/pre))
+          (cons (islac '((CPE) "2020-2021"))
+                (append cpe-2020-2021-flowchart/pre '(((cpe-TE/123) 12)))))
     (Listof (Pair LAC Flowchart-Spec)))))
 
 

@@ -126,7 +126,7 @@
     [s (cast s CatalogCycle)]))
 
 ;; given a cycle (e.g. "2015-2017", return the fall years that
-;; map to it
+;; map to it, in numerical order
 (define (catalog-cycle->fall-years [cycle : CatalogCycle]) : (Listof Natural)
   (match cycle
     [(regexp #px"^(\\d{4})-(\\d{4})$" (list _ startstr endstr))

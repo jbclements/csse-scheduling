@@ -441,14 +441,14 @@
   (append
    computing-common-requirements
    (list
-    (req "cpe100") 
-    (req "cpe133") 
-    (req "cpe233") 
-    (req "cpe350") 
+    (req "cpe100")
+    (req "cpe133")
+    (req "cpe233")
+    (req "cpe350")
     (req "cpe450")
     (req "csc453")
     (req "cpe464")
-    (list "csc348" passed-discrete?)
+    (req "csc348")
     ;(req "ee211")
     ;(req "ee241")
     (list '(cpe-TE/400) (or!/req got-4-units-of-400?
@@ -473,11 +473,12 @@
          (list '(microcon) (passed-one-of '("cpe329" "cpe316" "cpe336")))
          (list '(cpe-sp-1) (passed-one-of '("cpe461" "csc497")))
          (list '(cpe-sp-2) (passed-one-of '("cpe462" "csc498")))
+         ;(req "ee211")
          ;; omitting ee things for now
          )))
 
 ;; waiting for new te's
-#;(define 2020-2021-cpe-requirements
+(define 2020-2021-cpe-requirements
   (append
    (common-cpe-requirements "2020-2021")
    (list (list '(cpe-arch) (passed-one-of '("cpe315" "cpe333")))
