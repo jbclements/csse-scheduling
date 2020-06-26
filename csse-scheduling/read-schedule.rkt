@@ -51,7 +51,13 @@
 ;; a quarter's assignment *as it's represented in the schedule-FALLQTR.rktd file*
 (define-type QuarterA (Listof CourseA))
 
-;; represents a course assignment; use the X to manually specify WTUs.
+;; represents a course assignment; use the X to manually specify WTUs. This is the abbreviated
+;; format that I use to enter them.
+;; examples:
+;; 'csc123 : csc 123
+;; 123 : also csc 123
+;; '(M 123) : a 2x section of 123
+;; '(X (MM cpe464) 2) : a 2x section of 123 in which the instructor gets only 2 wtus
 (define-type CourseA (U CourseB WTUCourse))
 
 ;; a course with an explicit specification of WTUs:
@@ -113,9 +119,10 @@
 (define (year-sections-equivalent [schedule : Schedule]) : SectionsTable
   (sections-equivalent (schedule->records schedule)))
 
+;; given a schedule, validate it and return it as a list of records.
 (: schedule->records (Schedule -> (Listof Record)))
 (define (schedule->records schedule)
-  (define instructors (rest schedule))
+  (define instructor-records (rest schedule))
   (define catalog-cycle (fall-year->catalog-cycle
                          (qtr->fall-year (first schedule))))
   (define base-qtr (first schedule))
@@ -124,7 +131,7 @@
            "expected base quarter ending in 8, got: ~a\v" base-qtr))
   (apply append
          (for/list : (Listof (Listof Record))
-           ([irec (in-list instructors)])
+           ([irec (in-list instructor-records)])
            (define instructor (first irec))
            (apply
             append
@@ -239,7 +246,7 @@
 
 
 
-;; validate that this is a legal schedule sexp
+;; validate that this is a legal schedule sexp, remove omitted instructors
 (define (validate-schedule [schedule-sexp : Sexp]
                            [instructors-to-omit : (Listof Symbol)])
   : Schedule
