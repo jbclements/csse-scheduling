@@ -14,6 +14,7 @@
          catalog-cycle?
          fall-year->catalog-cycle
          catalog-cycle->fall-years
+         catalog-cycle-<?
          fall-year->base-qtr
          qtr->fall-year
          qtr->catalog-cycle
@@ -133,6 +134,12 @@
      (define start-year (assert (string->number (assert startstr string?)) natural?))
      (define end-year (assert (string->number (assert endstr string?)) natural?))
      (range start-year end-year)]))
+
+;; given two cycles, return true if the first one occurs before the last one.
+;; assumes that catalog cycles don't overlap or skip years...
+(define (catalog-cycle-<? [a : CatalogCycle] [b : CatalogCycle])
+  (< (car (catalog-cycle->fall-years a))
+     (car (catalog-cycle->fall-years b))))
 
 (define natural? exact-nonnegative-integer?)
 
@@ -408,5 +415,9 @@
 
   (check-equal? (qtr-subtract 2204 2194) 4)
   (check-equal? (qtr-subtract/no-summer 2204 2194) 3)
+
+  (check-equal? (catalog-cycle-<? "2005-2007" "2020-2021") #t)
+  (check-equal? (catalog-cycle-<? "2019-2020" "2019-2020") #f)
+  (check-equal? (catalog-cycle-<? "2020-2021" "2019-2020") #f)
   
 )
