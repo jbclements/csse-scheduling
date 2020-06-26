@@ -8,15 +8,19 @@
 
 
 (provide
- courses-we-schedule
- ee-scheduled-courses
- supervisory-courses
+ courses-we-schedule ; used?
+ ee-scheduled-courses ; used?
+ supervisory-courses ; used?
  csc-or-cpe
- 2017-course-configuration
+ 2017-course-configuration ; used?
  cycle-course-configuration
  cycle-course-wtus
  cycle-course-wtus/noerror
  )
+
+;; cycles before this can be ignored for the purposes of determining
+;; a subject for a number...
+(define cycle-cutoff : CatalogCycle "2015-2017")
 
 (define-type Configuration String)
 
@@ -33,9 +37,13 @@
                 (Setof Course-Id)]
                [cycle-course-configurations
                 (Listof (Pair CatalogCycle
-                              (Listof (Pair Course-Id Configuration))))])
+                              (Listof (Pair Course-Id Configuration))))]
+               [course-mappings
+                (Listof Course-Mapping)])
 
-(define current-catalog : CatalogCycle "2019-2020")
+(define-type Course-Mapping (Vector CatalogCycle String String Course-Id))
+
+;; 2020-06-26 not sure whether *any* of these lists of courses are used any more.
 
 ;; NOTE: it would probably be much more robust to list the ones
 ;; that we *don't* schedule. That way, new courses will by default
@@ -242,26 +250,45 @@
       "csc597"
       "csc599"))))
 
+;; map numbers to ids to allow short-cuts in schedule description.
+;; for instance, we can just write "430" rather than "csc430".
+(define num-id-table
+  (let ()
+    (define (mapping-cycle [cm : Course-Mapping]) : CatalogCycle
+      (vector-ref cm 0))
+    (define (mapping-subject [cm : Course-Mapping]) : String
+      (vector-ref cm 1))
+    (define (mapping-num [cm : Course-Mapping]) : String
+      (vector-ref cm 2))
+    (define (mapping-id [cm : Course-Mapping]) : Course-Id
+      (vector-ref cm 3))
+    (define (newer-than-cutoff [cc : CatalogCycle])  : Boolean
+      (not (catalog-cycle-<? cc cycle-cutoff)))
+    (define csc-cpe-mappings
+      (filter (λ ([cm : Course-Mapping])
+                (and
+                 (member (mapping-subject cm) '("CSC" "CPE"))
+                 (newer-than-cutoff (mapping-cycle cm))))
+              course-mappings))
+    (make-immutable-hash
+     (map (λ ([ms : (Listof Course-Mapping)])
+            (ann (cons (mapping-num (first ms))
+                       (remove-duplicates
+                        (map mapping-id ms)))
+                 (Pairof String (Listof Course-Id))))
+          (group-by mapping-num csc-cpe-mappings)))))
 
-;; map numbers to ids
-(define num-id-table : (HashTable Natural (Listof String))
-(for/fold ([ht : (HashTable Natural (Listof String)) (hash)])
-          ([id (in-set courses-we-schedule)])
-  (define num (match id
-                [(regexp #px"^[a-z]+([0-9]+)" (list _ n))
-                 (cast (string->number (cast n String))
-                       Natural)]))
-  (hash-set ht num (cons id (hash-ref ht num (λ () '()))))))
+(module+ test
+  (check-equal? (hash-ref num-id-table "100") '("cpe100"))
+  (check-equal? (hash-ref num-id-table "350") '("csc350" "cpe350")))
 
 ;; determine the canonical name from just the number, when possible.
-;; this draws on the ids, not the offering numbers
 (: csc-or-cpe (Natural [#:noerr Boolean] -> (U String False)))
 (define (csc-or-cpe coursenum #:noerr [noerr? #f])
-  (define hits (hash-ref num-id-table coursenum (λ () '())))
+  (define hits (hash-ref num-id-table (number->string coursenum) (λ () '())))
   (match hits
     [(list) (cond [noerr? #f]
-                  [else (error 'csc-or-cpe "no courses that we schedule with number ~e \
-(maybe add it to courses-we-schedule?)"
+                  [else (error 'csc-or-cpe "no courses in CSC or CPE that we schedule with number ~e"
                                coursenum)])]
     [(list name) name]
     [(list _ ...)
@@ -346,7 +373,5 @@
 
   (check-equal? (cycle-course-wtus (ann "2019-2020" CatalogCycle) "csc101") 5.0)
   (check-equal? (cycle-course-wtus (ann "2019-2020" CatalogCycle) "csc232") 3.3))
-
-
 
 
