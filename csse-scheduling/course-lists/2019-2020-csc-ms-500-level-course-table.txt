@@ -1,0 +1,32 @@
+CSC 508
+	Software Engineering I	
+CSC 509
+	Software Engineering II	
+CSC 515
+	Computer Architecture	
+CSC 521
+	Computer Security	
+CSC 530
+	Languages and Translators	
+CSC 540
+	Theory of Computation II	
+CSC 550
+	Operating Systems	
+CSC 560
+	Database Systems	
+CSC 564
+	Computer Networks: Research Topics	
+CSC 566
+	Topics in Advanced Data Mining	
+CSC 569
+	Distributed Computing	
+CSC 570
+	Current Topics in Computer Science	
+CSC 572
+	Computer Graphics	
+CSC 580
+	Artificial Intelligence	
+CSC 581
+	Computer Support for Knowledge Management	
+CSC 582
+	Computational Linguistics

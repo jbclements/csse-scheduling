@@ -1,11 +1,108 @@
 #lang typed/racket/base
 
+(require racket/set
+         racket/file
+         racket/runtime-path
+         racket/match
+         "canonicalize.rkt")
+
 (provide (all-defined-out))
 #;(provide csc-te-course-table
          csc-ul-te-course-table
          se-te-course-table
          se-ul-te-course-table
-         cpe-te-course-table)
+         g334
+         )
+
+(define must-have-these-cycles '("2019-2020" "2020-2021"))
+
+(define-runtime-path here ".")
+
+;; read the text file, return the list of courses
+(define (convert-table-text [cc : CatalogCycle]
+                            [tablename : String])
+  : (Listof String)
+  (define lines
+    (file->lines (build-path here "course-lists"
+                             (string-append cc "-" tablename ".txt"))))
+  (convert-table-text-lines cc lines))
+
+;; ensure the list of lines has the expected format, canonicalize
+;; each one
+(define (convert-table-text-lines [cc : CatalogCycle]
+                                  [lines : (Listof String)]) : (Listof String)
+  (let loop ([lines lines])
+    (cond [(null? lines) '()]
+          [else
+           (match lines
+             [(cons
+               s
+               (cons (regexp #px"^\t" (list _)) r))
+              (cons (course-line->id cc s)
+                    (loop r))]
+             ;; 2 for 1:
+             [(cons s1 (cons (regexp #px"^& (.*)" (list _ s2))
+                             (cons (regexp #px"^\t")
+                                   (cons (regexp #px"\t$")
+                                         r))))
+              (cons (course-line->id cc s1)
+                    ;; cast should succeed by construction of regexp
+                    (cons (course-line->id cc (cast s2 String))
+                          (loop r)))]
+             [other
+              (error 'convert-table-text-lines
+                     "unexpected list of lines: ~e"
+                     other)])])))
+
+(define (course-line->id [cc : CatalogCycle] [s : String]) : Course-Id
+  (match s
+    [(regexp #px"^([A-Z]{2,4}) ([0-9]{3})$" (list _ subject num-str))
+     ;; casts can't fail by structure of regexp, I claim
+     (canonicalize cc (cast subject String)
+                   (cast num-str String))]
+    ;; extra subject (ignored, shouldn't matter which we use
+    ;; for canonicalization)
+    [(regexp #px"^([A-Z]{2,4})/[A-Z]{2,4} ([0-9]{3})$" (list _ subject num-str))
+     ;; casts can't fail by structure of regexp, I claim
+     (canonicalize cc (cast subject String)
+                   (cast num-str String))]
+    ;; extra two subject-num pairs ignored, shouldn't matter which
+    ;; we use for canonicalization
+    [(regexp #px"^([A-Z]{2,4}) ([0-9]{3})/[A-Z]{2,4} [0-9]{3}/[A-Z]{2,4} [0-9]{3}"
+             (list _ subject num-str))
+     ;; ditto
+     (canonicalize cc (cast subject String) (cast num-str String))]))
+
+(module+ test
+  (require typed/rackunit)
+  (check-equal?
+   (convert-table-text-lines
+    "2020-2021"
+    (list "CSC 430"
+          "\tfoo"
+          "EE 504"
+          "\tbar"))
+   
+   
+   (list "csc430" "ee504"))
+
+  (check-equal?
+   (convert-table-text-lines
+    "2020-2021"
+    (list
+     "CSC 497" "& CSC 498"
+     "\tResearch Senior Project I"
+     "and Research Senior Project II\t"
+     "CSC 508"
+     "\tSoftware Engineering I\t"))
+   (list "csc497" "csc498" "csc508"))
+
+  (check-equal? (course-line->id "2019-2020" "CSC 430") "csc430")
+  (check-equal? (course-line->id "2019-2020" "CSC/CPE 321")
+                "csc321")
+  (check-equal? (course-line->id "2019-2020" "CPE 488/IME 458/MATE 458"
+                                 )
+                "cpe488"))
 
 ;; these classes may be used as technical electives in the 2015-2017 catalog
 (define 2015-csc-te-courses
@@ -229,52 +326,86 @@
              "csc582" "data301"))
 
 
+(define (make-cc-course-hash [pairs : (Listof (Pairof String (Listof String)))])
+  : (Immutable-HashTable String (Listof String))
+  (define t (make-immutable-hash pairs))
+  (unless (set-empty? (set-subtract must-have-these-cycles (hash-keys t)))
+    (error 'make-cc-course-hash
+           "expected table to include all required cycles, missing: ~e"
+           (set-subtract must-have-these-cycles (hash-keys t))))
+  t)
 
+(define (table-pair [cc : CatalogCycle] [table-name : String])
+  : (Pairof String (Listof String))
+  (cons cc (convert-table-text cc table-name)))
 
 
 (define csc-te-course-table : (Immutable-HashTable String (Listof String))
-  (make-immutable-hash
-   (ann (list (cons "2017-2019" 2017-csc-te-courses)
-              (cons "2019-2020" 2019-2020-csc-te-courses))
-        (Listof (Pairof String (Listof String))))))
+  (let ()
+    (define table-name "csc-te-course-table")
+    (make-cc-course-hash
+     (ann (list (cons "2017-2019" 2017-csc-te-courses)
+                (cons "2019-2020" 2019-2020-csc-te-courses)
+                (table-pair "2020-2021" table-name))
+          (Listof (Pairof String (Listof String)))))))
 
 ;; these classes may be used as the upper-level technical elective in the
 ;; 2017-2019 catalog
 (define csc-ul-te-course-table
-  (make-immutable-hash
-   (ann (list (cons "2017-2019" 2017-csc-ul-te-courses)
-              (cons "2019-2020" 2019-2020-csc-ul-te-courses))
-        (Listof (Pairof String (Listof String))))))
+  (let ()
+    (define table-name "csc-ul-te-course-table")
+    (make-cc-course-hash
+     (ann (list (cons "2017-2019" 2017-csc-ul-te-courses)
+                (cons "2019-2020" 2019-2020-csc-ul-te-courses)
+                (table-pair "2020-2021" table-name))
+          (Listof (Pairof String (Listof String)))))))
 
 (define se-te-course-table : (Immutable-HashTable String (Listof String))
-  (make-immutable-hash
-   (ann (list (cons "2017-2019" 2017-se-te-courses)
-              (cons "2019-2020" 2019-2020-se-te-courses))
-        (Listof (Pairof String (Listof String))))))
+  (let ()
+    (define table-name "se-te-course-table")
+    (make-cc-course-hash
+     (ann (list (cons "2017-2019" 2017-se-te-courses)
+                (cons "2019-2020" 2019-2020-se-te-courses)
+                (table-pair "2020-2021" table-name))
+          (Listof (Pairof String (Listof String)))))))
 
 (define se-ul-te-course-table : (Immutable-HashTable String (Listof String))
-  (make-immutable-hash
-   (ann (list (cons "2017-2019" 2017-se-ul-te-courses)
-              (cons "2019-2020" 2019-2020-se-ul-te-courses))
-        (Listof (Pairof String (Listof String))))))
+  (let ()
+    (define table-name "se-ul-te-course-table")
+    (make-cc-course-hash
+     (ann (list (cons "2017-2019" 2017-se-ul-te-courses)
+                (cons "2019-2020" 2019-2020-se-ul-te-courses)
+                (table-pair "2020-2021" table-name))
+          (Listof (Pairof String (Listof String)))))))
 
 (define cpe-te-course-table : (Immutable-HashTable String (Listof String))
-  (make-immutable-hash
+  (make-cc-course-hash
    `(("2017-2019" . ,2017-cpe-te-courses)
      ("2019-2020" . ,2019-2020-cpe-te-courses)
      ("2020-2021" . ,2020-2021-cpe-te-courses))))
 
 (define csc-ms-500-level-course-table : (Immutable-HashTable String (Listof String))
-  (make-immutable-hash
-   `(("2017-2019" . ,2017-csc-grad-courses))))
+  (let ()
+    (define table-name
+    "csc-ms-500-level-course-table")
+  (make-cc-course-hash
+   `(("2017-2019" . ,2017-csc-grad-courses)
+     ,(table-pair "2019-2020" table-name)
+     ,(table-pair "2020-2021" table-name)))))
 
 (define csc-ms-open-level-course-table : (Immutable-HashTable String (Listof String))
-  (make-immutable-hash
+  (make-cc-course-hash
    ;; this is a pretty good proxy; it's not written down in the catalog, and
    ;; it's technically up to the advisor, I believe
-   `(("2017-2019" . ,2017-cpe-te-courses))))
+   `(("2017-2019" . ,2017-cpe-te-courses)
+     ("2019-2020" . ,2019-2020-cpe-te-courses)
+     ("2020-2021" . ,2020-2021-cpe-te-courses))))
 
 (define cs-minor-course-table  : (Immutable-HashTable String (Listof String))
-  (make-immutable-hash
-   `(("2017-2019" . ,2017-cs-minor-courses))))
+  (let ()
+    (define table-name "cs-minor-course-table")
+    (make-cc-course-hash
+     `(("2017-2019" . ,2017-cs-minor-courses)
+       ,(table-pair "2019-2020" table-name)
+       ,(table-pair "2020-2021" table-name)))))
 

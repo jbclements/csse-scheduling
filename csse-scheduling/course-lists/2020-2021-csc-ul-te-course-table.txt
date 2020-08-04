@@ -1,0 +1,90 @@
+CSC 325
+	Introduction to Privacy: Policy and Technology	
+CSC 366
+	Database Modeling, Design and Implementation	
+CSC 402
+	Software Requirements Engineering	
+CSC 405
+	Software Construction	
+CSC 406
+	Senior Project - Software Deployment	
+CSC 409
+	Current Topics in Software Engineering	
+CSC 410
+	Software Evaluation	
+CSC 422
+	Network and Web Security	
+CSC 424
+	Software Security	
+CSC 429
+	Current Topics in Computer Security	
+CSC 435
+	Introduction to Object Oriented Design Using Graphical User Interfaces	
+CSC 437
+	Dynamic Web Development	
+CSC 448
+	Bioinformatics Algorithms	
+CSC/CPE 454
+	Implementation of Operating Systems	
+CSC 466
+	Knowledge Discovery from Data	
+CSC 468
+	Database Management Systems Implementation	
+CSC 473
+	Advanced Rendering Techniques	
+CSC 474
+	Computer Animation	
+CSC/CPE 476
+	Real-Time 3D Computer Graphics Software	
+CSC 477
+	Scientific and Information Visualization	
+CSC 478
+	Current Topics in Computer Graphics	
+CSC 481
+	Knowledge Based Systems	
+CSC 482
+	Speech and Language Processing	
+CSC 483
+	Current Topics in Human-Computer Interaction	
+CSC 484
+	User-Centered Interface Design and Development	
+CSC 486
+	Human-Computer Interaction Theory and Design	
+CSC 487
+	Deep Learning	
+CSC 489
+	Current Topics in Artificial Intelligence	
+CSC 508
+	Software Engineering I	
+CSC 509
+	Software Engineering II	
+CSC/CPE 515
+	Computer Architecture	
+CSC 521
+	Computer Security	
+CSC 530
+	Languages and Translators	
+CSC 540
+	Theory of Computation II	
+CSC 549
+	Advanced Algorithm Design and Analysis	
+CSC 550
+	Operating Systems	
+CSC 560
+	Database Systems	
+CSC/CPE 564
+	Computer Networks: Research Topics	
+CSC 566
+	Topics in Advanced Data Mining	
+CSC 572
+	Computer Graphics	
+CSC 580
+	Artificial Intelligence	
+CSC 581
+	Computer Support for Knowledge Management	
+CSC 582
+	Computational Linguistics	
+CPE 416
+	Autonomous Mobile Robotics	
+CPE 465
+	Advanced Computer Networks

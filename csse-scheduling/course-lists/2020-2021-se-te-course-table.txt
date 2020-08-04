@@ -1,0 +1,148 @@
+CSC 301
+	Personal Software Process	
+CSC 313
+	Teaching Computing	
+CSC/CPE 321
+	Introduction to Computer Security	
+CSC 323
+	Cryptography Engineering	
+CSC 325
+	Introduction to Privacy: Policy and Technology	
+CSC 344
+	Music Programming	
+CSC 366
+	Database Modeling, Design and Implementation	
+CSC 369
+	Introduction to Distributed Computing	
+CSC 371
+	Game Design	
+CSC 377
+	Introduction to Mixed Reality	
+CSC 378
+	Interactive Entertainment Engineering	
+CSC 400
+	Special Problems 2	
+CSC 409
+	Current Topics in Software Engineering	
+CSC 410
+	Software Evaluation	
+CSC 422
+	Network and Web Security	
+CSC 424
+	Software Security	
+CSC 429
+	Current Topics in Computer Security	
+CSC/CPE 431
+	Compiler Construction	
+CSC 435
+	Introduction to Object Oriented Design Using Graphical User Interfaces	
+CSC 436
+	Mobile Application Development	
+CSC 437
+	Dynamic Web Development	
+CSC 445
+	Theory of Computation I	
+CSC 448
+	Bioinformatics Algorithms	
+CSC/CPE 453
+	Introduction to Operating Systems	
+CSC/CPE 454
+	Implementation of Operating Systems	
+CSC/CPE 458
+	Current Topics in Computer Systems	
+CSC 466
+	Knowledge Discovery from Data	
+CSC 468
+	Database Management Systems Implementation	
+CSC/CPE 469
+	Distributed Systems	
+CSC/CPE 471
+	Introduction to Computer Graphics	
+CSC 473
+	Advanced Rendering Techniques	
+CSC 474
+	Computer Animation	
+CSC/CPE 476
+	Real-Time 3D Computer Graphics Software	
+CSC 477
+	Scientific and Information Visualization	
+CSC 478
+	Current Topics in Computer Graphics	
+CSC 480
+	Artificial Intelligence	
+CSC 481
+	Knowledge Based Systems	
+CSC 482
+	Speech and Language Processing	
+CSC 483
+	Current Topics in Human-Computer Interaction	
+CSC 486
+	Human-Computer Interaction Theory and Design	
+CSC 487
+	Deep Learning	
+CSC 489
+	Current Topics in Artificial Intelligence	
+CSC 490
+	Selected Advanced Topics 2	
+CSC 496
+	Selected Advanced Laboratory 2	
+CSC 497
+& CSC 498
+	Research Senior Project I
+and Research Senior Project II	
+CSC 508
+	Software Engineering I	
+CSC 509
+	Software Engineering II	
+CSC/CPE 515
+	Computer Architecture	
+CSC 521
+	Computer Security	
+CSC 530
+	Languages and Translators	
+CSC 540
+	Theory of Computation II	
+CSC 549
+	Advanced Algorithm Design and Analysis	
+CSC 550
+	Operating Systems	
+CSC 560
+	Database Systems	
+CSC/CPE 564
+	Computer Networks: Research Topics	
+CSC 566
+	Topics in Advanced Data Mining	
+CSC/CPE 569
+	Distributed Computing	
+CSC 570
+	Current Topics in Computer Science	
+CSC 572
+	Computer Graphics	
+CSC 580
+	Artificial Intelligence	
+CSC 581
+	Computer Support for Knowledge Management	
+CSC 582
+	Computational Linguistics	
+CPE 315
+	Computer Architecture	
+CPE 400
+	Special Problems for Undergraduates 2	
+CPE 416
+	Autonomous Mobile Robotics	
+CPE 419
+	Applied Parallel Computing	
+CPE/EE 428
+	Computer Vision	
+CPE 464
+	Introduction to Computer Networks	
+CPE 465
+	Advanced Computer Networks	
+CPE 482
+	Advanced Topics in Systems for Computer Engineering	
+CPE 485
+	Autonomous Robot Navigation	
+CPE 488/IME 458/MATE 458
+	Microelectronics and Electronics Packaging	
+DATA 301
+	Introduction to Data Science
