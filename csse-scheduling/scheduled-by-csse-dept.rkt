@@ -248,7 +248,13 @@
       "csc595"
       "csc596"
       "csc597"
-      "csc599"))))
+      "csc599"
+      "ee461"
+      "ee462"
+      "ee463"
+      "ee464"
+      "ee500"
+      "ee599"))))
 
 ;; map numbers to ids to allow short-cuts in schedule description.
 ;; for instance, we can just write "430" rather than "csc430".

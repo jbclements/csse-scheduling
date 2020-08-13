@@ -157,6 +157,46 @@
             ((cpe-sp-2) 12)
             ((cpe-TE-0) 11))))
 
+(define ee-2020-2021-flowchart : Flowchart-Spec
+  '(;; FIRST YEAR
+    ("ee111" 1)
+    ("ee151" 1)
+    ("csc101" 2)
+    ("ee113" 3)
+    ("ee143" 3)
+    ;; SECOND YEAR
+    ("ee211" 4)
+    ("ee241" 4)
+    ("cpe133" 4)
+
+    ("ee212" 5)
+    ("ee242" 5)
+    ("cpe233" 5)
+
+    ("ee255" 6)
+    ("ee295" 6)
+    ("ee228" 6)
+    ("ee335" 6 9)
+    ("ee375" 6 9)
+
+    ;; THIRD YEAR
+    ("ee306" 7)
+    ("ee346" 7)
+    ("ee328" 7)
+    ("ee368" 7)
+    ("ee402" 7 10)
+
+    ("ee307" 8)
+    ("ee347" 8)
+    ("ee302" 8)
+    ("ee342" 8)
+    ("ee314" 8)
+
+    ("ee308" 9)
+    ("ee348" 9)
+    (microcon 9)
+    ))
+
 (define-syntax islac
   (syntax-rules ()
     [(_ str) (ann str LAC)]))
@@ -263,7 +303,7 @@
     ([qtr (in-range 1 13)])
     (cdr (or (assoc qtr table) (cons #f 0)))))
 
-(define (major->qtr-load [major : (U "CSC" "SE" "CPE")] [cc : CatalogCycle]) : Qtr-Load
+(define (major->qtr-load [major : Major-Abbr] [cc : CatalogCycle]) : Qtr-Load
   (define key (list (list (string->symbol major) 'ftf) cc))
   (define flow-chart (hash-ref all-flowcharts key))
   (flow-chart->qtr-load flow-chart))

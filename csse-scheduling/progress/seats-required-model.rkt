@@ -87,11 +87,12 @@
 
 ;; given a major, return the standard "student category" for that student,
 ;; used in the generated seat-requirements
-(define (major->category [major : String])
+(define (major->category [major : Major-Abbr])
   (match major
     ["CPE" 'cpe-bs]
     ["CSC" 'csc-bs]
     ["SE" 'se-bs]
+    ["EE" 'ee-bs]
     [other (raise-argument-error 'major->category
                                  "known major"
                                  0 major)]))

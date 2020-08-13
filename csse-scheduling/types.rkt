@@ -17,7 +17,7 @@
 ;; ... combine with Course-Or-Group
 (define-type ReqName Course-Or-Group)
 
-(define-type Major-Abbr (U "CSC" "CPE" "SE"))
+(define-type Major-Abbr (U "CSC" "CPE" "SE" "EE"))
 
 (define-type Course-Or-Group (U Course-Id (List Symbol)))
 
