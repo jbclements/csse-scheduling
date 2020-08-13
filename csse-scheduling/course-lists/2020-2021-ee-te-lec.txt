@@ -1,0 +1,64 @@
+EE 400
+	Special Problems 6	
+EE 403
+	Fiber Optic Communication	
+EE 405
+	High Frequency Amplifier Design	
+EE 406
+	Power Systems Analysis I	
+EE 407
+	Power Systems Analysis II	
+EE 412
+	Advanced Analog Circuits	
+EE 415
+	Communication Systems Design	
+EE 416
+	Digital Communication Systems	
+EE 418
+	Photonic Engineering	
+EE 419
+	Digital Signal Processing	
+EE 423/BMED 434/MATE 430
+	Micro/Nano Fabrication	
+EE 425
+	Analog Filter Design	
+EE/CPE 432
+	Digital Control Systems	
+EE 440
+	Wireless Communications	
+EE 470
+	Selected Advanced Topics	
+EE 502
+	Microwave Engineering	
+EE 509
+	Computational Intelligence	
+EE 511
+	Electric Machines Theory	
+EE 513
+	Control Systems Theory	
+EE 514
+	Advanced Topics in Automatic Control	
+EE 515
+	Discrete Time Filters	
+EE 518
+	Power System Protection	
+EE 519
+	Advanced Analysis of Power Systems	
+EE 520
+	Advanced Solar-Photovoltaic Systems Design	
+EE 524
+	Solid State Electronics	
+EE 526
+	Advanced Digital Communications	
+EE 527
+	Advanced Topics in Power Electronics	
+EE 528
+	Digital Image Processing	
+EE 529
+	Microwave Device Electronics	
+EE 530
+	Fourier Optics	
+EE 533
+	Antennas	
+EE 570
+	Selected Advanced Topics

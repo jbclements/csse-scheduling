@@ -1,0 +1,120 @@
+BMED 420
+	Principles of Biomaterials Design	
+BMED 425
+	Biomedical Engineering Transport	
+BMED 430
+	Biomedical Modeling and Simulation	
+BMED/MATE 435
+	Microfabrication Laboratory	
+BMED 440
+	Bioelectronics and Instrumentation	
+BMED 445
+	Biopotential Instrumentation	
+BUS 311
+	Managing Technology in the International Legal Environment	
+CHEM 313
+	Survey of Biochemistry and Biotechnology	
+CPE 315
+	Computer Architecture	
+CPE 333
+	Computer Hardware Architecture and Design	
+CPE 416
+	Autonomous Mobile Robotics	
+CPE 464
+	Introduction to Computer Networks	
+CSC/CPE 357
+	Systems Programming	
+CSC/CPE 453
+	Introduction to Operating Systems	
+CSC/CPE 458
+	Current Topics in Computer Systems	
+CSC/CPE 471
+	Introduction to Computer Graphics	
+ECON 330
+	International Trade Theory	
+ECON 337
+	Money, Banking and Credit	
+ENVE 331
+	Fundamentals of Environmental Engineering	
+IME 301
+	Operations Research I	
+IME 303
+	Project Organization and Management	
+IME 305
+	Operations Research II	
+IME 319
+	Human Factors Engineering	
+IME/HNRS 322
+	Leadership and Project Management	
+IME 401
+	Sales Engineering	
+IME 435
+	Reliability for Design and Testing	
+IME 457
+	Advanced Electronic Manufacturing	
+IME/MATE 458/CPE 488
+	Microelectronics and Electronics Packaging	
+MATE 340
+	Electronic Materials Systems	
+MATH 304
+	Vector Analysis	
+MATH 306
+	Linear Algebra II	
+MATH 406
+	Linear Algebra III	
+MATH 408
+	Complex Analysis I	
+MATH 409
+	Complex Analysis II	
+MATH 412
+	Introduction to Analysis I	
+MATH 413
+	Introduction to Analysis II	
+MATH 451
+	Numerical Analysis I	
+MATH 452
+	Numerical Analysis II	
+MATH 453
+	Numerical Optimization	
+ME 302
+	Thermodynamics I	
+ME 405
+	Mechatronics	
+ME 415
+	Energy Conversion	
+MU 311
+	Sound Design: Technologies	
+MU 312
+	Sound Design: Recording	
+MU 411
+	Sound Design: Synthesis	
+PHYS 302
+	Classical Mechanics I	
+PHYS 303
+	Classical Mechanics II	
+PHYS 310
+	Physics of Energy	
+PHYS 313
+	Introduction to Atmospheric Physics	
+PHYS 318
+	Special Theory of Relativity	
+PHYS 322
+	Vibrations and Waves	
+PHYS 403
+	Particle and Nuclear Physics	
+PHYS 405
+	Quantum Mechanics I	
+PHYS 406
+	Quantum Mechanics II	
+PHYS 408
+	Electromagnetic Fields and Waves I	
+PHYS 409
+	Electromagnetic Fields and Waves II	
+PHYS 412
+	Solid State Physics	
+PHYS 417
+	Nonlinear Dynamical Systems	
+PHYS 423
+	Advanced Optics	
+PHYS 452
+	Solid State Physics Laboratory

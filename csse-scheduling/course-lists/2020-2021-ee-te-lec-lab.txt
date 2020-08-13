@@ -1,0 +1,46 @@
+EE 410
+	Power Electronics I	
+EE 411
+	Power Electronics II	
+EE 413
+	Advanced Electronic Design	
+EE/CPE 414
+	Robotic Systems Integration	
+EE 417
+	Alternating Current Machines	
+EE 420
+	Sustainable Electric Energy Conversion	
+EE 424
+	Introduction to Remote Sensing	
+EE/CPE 428
+	Computer Vision	
+EE 431/CPE 441
+	Computer-Aided Design of VLSI Devices	
+EE 433
+	Introduction to Magnetic Design	
+EE 434
+	Automotive Engineering for a Sustainable Future	
+EE/CPE 439
+	Introduction to Real-Time Operating Systems	
+EE/CPE 442
+	Real Time Embedded Systems	
+EE/CPE 446
+	Design of Fault-Tolerant Digital Systems	
+EE/CPE 447
+	Stringed Musical Instrument Acoustics, Mechanics, and Transducer Design	
+EE 495
+	Cooperative Education Experience 5	
+EE 504
+	Software Defined Radio	
+EE 516
+	Pattern Recognition	
+EE/CPE 521
+	Computer Systems	
+EE/CPE 522
+	Advanced Real-Time Operating Systems Design	
+EE/CPE 523
+	Digital Systems Design	
+EE 531/CPE 541
+	Advanced VLSI Design	
+EE/CPE 542
+	Advanced Real Time Embedded Systems
