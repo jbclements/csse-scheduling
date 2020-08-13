@@ -58,11 +58,16 @@
 ;; 123 : also csc 123
 ;; '(M 123) : a 2x section of 123
 ;; '(X (MM cpe464) 2) : a 2x section of 123 in which the instructor gets only 2 wtus
-(define-type CourseA (U CourseB WTUCourse))
+;; '(S 430) ; a split course of 430 (not allowing both split and X for now...
+(define-type CourseA (U CourseB WTUCourse SplitCourse))
 
 ;; a course with an explicit specification of WTUs:
 (define-type WTUCourse (List 'X CourseB Nonnegative-Real))
 (define-predicate wtu-course? WTUCourse)
+
+;; a course that's split with another instructor:
+(define-type SplitCourse (List 'S CourseB))
+(define-predicate split-course? SplitCourse)
 
 ;; represents a course assignment, optionally mega or 2xmega
 ;; this format is chosen for ease of entry in schedule.rkt, not as a nice internal representation
@@ -85,8 +90,9 @@
 (define-predicate topic? CourseTopic)
 
 ;; represents the data in the style of a database:
-;; instructor quarter size courseID maybe-override-wtus
-(define-type Record (List Symbol Natural CourseSize CourseID (U False Nonnegative-Real)))
+;; instructor quarter size courseID maybe-override-wtus split?
+(define-type Record (List Symbol Natural CourseSize CourseID (U False Nonnegative-Real) Boolean))
+
 
 ;; represents the output of sections-equivalent.
 ;; e.g.:
@@ -94,14 +100,14 @@
   ("csc481" (2168 2) (2172 2) (2174 2)))
 (define-type SectionsTable (Listof SectionsTableRow))
 (define-type SectionsTableRow
-  (List CourseID (Listof (List Integer Integer))))
+  (List CourseID (Listof (List Qtr Exact-Rational))))
 
 ;; return the course associated with a table row
 (: table-row-course (SectionsTableRow -> CourseID))
 (define table-row-course first)
 
 ;; return the qtrs associated with a table row
-(: table-row-qtrs (SectionsTableRow -> (Listof (List Integer Integer))))
+(: table-row-qtrs (SectionsTableRow -> (Listof (List Qtr Exact-Rational))))
 (define table-row-qtrs second)
 
 ;; given two sections-tables with non-overlapping qtrs, join them together
@@ -149,11 +155,18 @@
           (canonicalize-topic
            cycle
            (courseA-topic c))
-          (courseA-wtu-override c))))
+          (courseA-wtu-override c)
+          (courseA-split? c))))
+
+;; is this a split section?
+(define (courseA-split? c)
+  (cond [(and (list? c) (equal? (first c) 'S)) #t]
+        [else #f]))
 
 ;; return the courseB contained inside a courseA
 (define (courseA->courseB [c : CourseA]) : CourseB
   (cond [(wtu-course? c) (second c)]
+        [(split-course? c) (second c)]
         [else c]))
 
 ;; if this is an "X" course spec, return the number of wtus
@@ -202,12 +215,16 @@
 ;; # of wtus for a courseA 
 (define (courseA-wtus [this-cycle : CatalogCycle]
                       [courseA : CourseA]) : Real
+  ;; warning: multiplier not used in case of explicit wtu override:
+  (define course-split-multiplier
+    (if (split-course? courseA) 1/2 1))  
   (or (courseA-wtu-override courseA)
-      (cycle-course-wtus
-       this-cycle
-       (canonicalize-topic this-cycle
-                           (course-topic courseA))
-       (courseA-size courseA))))
+      (* course-split-multiplier
+         (cycle-course-wtus
+          this-cycle
+          (canonicalize-topic this-cycle
+                              (course-topic courseA))
+          (courseA-size courseA)))))
 
 (define-predicate instructor? InstructorA)
 
@@ -244,6 +261,8 @@
 (: record-size (Record -> CourseSize))
 (define record-size third)
 
+(define (record-split? [r : Record]) : Boolean
+  (sixth r))
 
 
 ;; validate that this is a legal schedule sexp, remove omitted instructors
@@ -305,17 +324,17 @@
 (define (sections-equivalent [records : (Listof Record)])
   ((inst sort (List CourseID
                     (Listof
-                     (List Integer Integer)))
+                     (List Qtr Exact-Rational)))
          String)
    (for/list : (Listof (List CourseID
                              (Listof
-                              (List Integer Integer))))
+                              (List Qtr Exact-Rational))))
      ([course-recs (in-list (by-num-by-season records))])
      (list (record-course (first (first course-recs)))
            (for/list : (Listof
-                        (List Natural Integer))
+                        (List Qtr Exact-Rational))
              ([season-recs (in-list course-recs)])
-             (list (second (first season-recs))
+             (list (record-qtr (first season-recs))
                    (sum-sections season-recs)))))
    string<?
    #:key record-course-sort-str))
@@ -330,20 +349,31 @@
    (group-by record-course records)))
 
 ;; how many sections-worth of students will this accommodate?
-(: sum-sections ((Listof Record) -> Integer))
+(: sum-sections ((Listof Record) -> Exact-Rational))
 (define (sum-sections i-recs)
   (for/sum ([irec (in-list i-recs)])
     (record->sections-equivalent irec)))
 
 ;; how many sections-worth of students will this course accommodate?
-(: record->sections-equivalent (Record -> Integer))
-(define record->sections-equivalent third)
+(: record->sections-equivalent (Record -> CourseSize))
+(define (record->sections-equivalent r)
+  (define split-multiplier
+    (if (record-split? r) 1/2 1))
+  ;; I believe this math is too hard for TR:
+  (cast
+   (* (record-size r)
+      split-multiplier)
+   CourseSize))
 
 (define (record-course-sort-str [r : (Pair CourseID Any)])
   : String
   (course-key (car r)))
-  
+
 (define-type InstructorAndSize
+  (U InstructorAndSize2
+     (List 'split InstructorAndSize2)))
+
+(define-type InstructorAndSize2
   (U Symbol
      (List Symbol (U 'm2 'm3))))
 
@@ -351,10 +381,14 @@
 ;; shrink the printed representation of an instructor and size
 (: compress-irec (Record -> InstructorAndSize))
 (define (compress-irec record)
-  (match (third record)
-    [2 (list (first record) 'm2)]
-    [3 (list (first record) 'm3)]
-    [1 (first record)]))
+  (define with-size : InstructorAndSize2
+    (match (record-size record)
+      [2 (list (first record) 'm2)]
+      [3 (list (first record) 'm3)]
+      [1 (first record)]))
+  (cond [(record-split? record)
+         (list 'split with-size)]
+        [else with-size]))
 
 (define-predicate nn-real? Nonnegative-Real)
 

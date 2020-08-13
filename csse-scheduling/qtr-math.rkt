@@ -3,8 +3,12 @@
 ;; functions for mapping back and forth between quarters,
 ;; fall years, and catalog cycles
 
-;; HONESTLY, the right thing to do here is to establish a bijection between quarters and the integers.
-;; this would make it much easier to go to the previous/next quarter, do quarters in range, etc.
+;; there are four different representations of a quarter:
+;; 1) A pair of season and year.
+;; 2) A cal poly quarter number (represented as a natural) -- not sequential!
+;; 3) A sequential numbering of all quarters including summer quarter
+;; 4) A sequential numbering of all quarters not including summer quarter.
+;; This code can map between any of them. It does lost of other stuff too.
 
 (require racket/match
          "./types.rkt"
@@ -35,7 +39,8 @@
          qtr-subtract/no-summer
          qtr-add
          qtr-add/no-summer
-         Season)
+         Season
+         Qtr)
 
 ;; this is the natural encoding of a quarter
 (define-type Qtr-Pair (Pairof Natural Season))
@@ -68,7 +73,7 @@
  "1994-1997" "1997-1998" "1998-1999" "1999-2000" "2000-2001"
  "2001-2003" "2003-2005"
  "2005-2007" "2007-2009" "2009-2011" "2011-2013" "2013-2015"
- "2015-2017" "2017-2019" "2019-2020" "2020-2021")
+ "2015-2017" "2017-2019" "2019-2020" "2020-2021" "2021-2022")
 
 ;; make sure each pair lines up, and that each cycle is valid
 (define (check-all-cycles [all-cycles : (Listof String)])
