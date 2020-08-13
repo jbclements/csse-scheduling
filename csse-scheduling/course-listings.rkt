@@ -11,7 +11,10 @@
          csc-ul-te-course-table
          se-te-course-table
          se-ul-te-course-table
-         g334
+         ee-te-lec-table
+         ee-te-lec-lab-table
+         ee-te-lab-table
+         ee-te-other-table
          )
 
 (define must-have-these-cycles '("2019-2020" "2020-2021"))
@@ -56,21 +59,29 @@
 
 (define (course-line->id [cc : CatalogCycle] [s : String]) : Course-Id
   (match s
+    ;; EG "CPE 426"
     [(regexp #px"^([A-Z]{2,4}) ([0-9]{3})$" (list _ subject num-str))
      ;; casts can't fail by structure of regexp, I claim
      (canonicalize cc (cast subject String)
                    (cast num-str String))]
+    ;; e.g. "CSC/CPE 102"
     ;; extra subject (ignored, shouldn't matter which we use
     ;; for canonicalization)
     [(regexp #px"^([A-Z]{2,4})/[A-Z]{2,4} ([0-9]{3})$" (list _ subject num-str))
      ;; casts can't fail by structure of regexp, I claim
      (canonicalize cc (cast subject String)
                    (cast num-str String))]
-    ;; extra two subject-num pairs ignored, shouldn't matter which
-    ;; we use for canonicalization
-    [(regexp #px"^([A-Z]{2,4}) ([0-9]{3})/[A-Z]{2,4} [0-9]{3}/[A-Z]{2,4} [0-9]{3}"
+    ;; e.g. "EE 431/CPE 441"
+    ;; extra subject-num pairl ignored, shouldn't matter which we
+    ;; use for canonicalization
+    [(regexp #px"^([A-Z]{2,4}) ([0-9]{3})/[A-Z]{2,4} [0-9]{3}$"
              (list _ subject num-str))
      ;; ditto
+     (canonicalize cc (cast subject String) (cast num-str String))]
+    ;; extra two subject-num pairs ignored, shouldn't matter which
+    ;; we use for canonicalization
+    [(regexp #px"^([A-Z]{2,4}) ([0-9]{3})/[A-Z]{2,4} [0-9]{3}/[A-Z]{2,4} [0-9]{3}$"
+             (list _ subject num-str))
      (canonicalize cc (cast subject String) (cast num-str String))]))
 
 (module+ test
@@ -102,7 +113,10 @@
                 "csc321")
   (check-equal? (course-line->id "2019-2020" "CPE 488/IME 458/MATE 458"
                                  )
-                "cpe488"))
+                "cpe488")
+  (check-equal? (course-line->id "2020-2021" "EE 431/CPE 441")
+                "cpe441")
+  )
 
 ;; these classes may be used as technical electives in the 2015-2017 catalog
 (define 2015-csc-te-courses
@@ -325,9 +339,10 @@
              "csc566" "csc569" "csc570" "csc572" "csc580" "csc581"
              "csc582" "data301"))
 
+(define-type CC-Course-Hash (Immutable-HashTable String (Listof String)))
 
 (define (make-cc-course-hash [pairs : (Listof (Pairof String (Listof String)))])
-  : (Immutable-HashTable String (Listof String))
+  : CC-Course-Hash
   (define t (make-immutable-hash pairs))
   (unless (set-empty? (set-subtract must-have-these-cycles (hash-keys t)))
     (error 'make-cc-course-hash
@@ -336,11 +351,18 @@
   t)
 
 (define (table-pair [cc : CatalogCycle] [table-name : String])
-  : (Pairof String (Listof String))
+  : (Pairof CatalogCycle (Listof String))
   (cons cc (convert-table-text cc table-name)))
 
 
-(define csc-te-course-table : (Immutable-HashTable String (Listof String))
+(define (cycles->table-pairs [table-name : String]
+                             [cycles : (Listof CatalogCycle)])
+  : (Listof (Pair CatalogCycle (Listof Course-Id)))
+  (for/list ([cc : CatalogCycle (in-list cycles)])
+    (table-pair cc table-name)))
+
+
+(define csc-te-course-table : CC-Course-Hash
   (let ()
     (define table-name "csc-te-course-table")
     (make-cc-course-hash
@@ -360,7 +382,7 @@
                 (table-pair "2020-2021" table-name))
           (Listof (Pairof String (Listof String)))))))
 
-(define se-te-course-table : (Immutable-HashTable String (Listof String))
+(define se-te-course-table : CC-Course-Hash
   (let ()
     (define table-name "se-te-course-table")
     (make-cc-course-hash
@@ -369,7 +391,7 @@
                 (table-pair "2020-2021" table-name))
           (Listof (Pairof String (Listof String)))))))
 
-(define se-ul-te-course-table : (Immutable-HashTable String (Listof String))
+(define se-ul-te-course-table : CC-Course-Hash
   (let ()
     (define table-name "se-ul-te-course-table")
     (make-cc-course-hash
@@ -378,13 +400,13 @@
                 (table-pair "2020-2021" table-name))
           (Listof (Pairof String (Listof String)))))))
 
-(define cpe-te-course-table : (Immutable-HashTable String (Listof String))
+(define cpe-te-course-table : CC-Course-Hash
   (make-cc-course-hash
    `(("2017-2019" . ,2017-cpe-te-courses)
      ("2019-2020" . ,2019-2020-cpe-te-courses)
      ("2020-2021" . ,2020-2021-cpe-te-courses))))
 
-(define csc-ms-500-level-course-table : (Immutable-HashTable String (Listof String))
+(define csc-ms-500-level-course-table : CC-Course-Hash
   (let ()
     (define table-name
     "csc-ms-500-level-course-table")
@@ -393,7 +415,7 @@
      ,(table-pair "2019-2020" table-name)
      ,(table-pair "2020-2021" table-name)))))
 
-(define csc-ms-open-level-course-table : (Immutable-HashTable String (Listof String))
+(define csc-ms-open-level-course-table : CC-Course-Hash
   (make-cc-course-hash
    ;; this is a pretty good proxy; it's not written down in the catalog, and
    ;; it's technically up to the advisor, I believe
@@ -406,6 +428,24 @@
     (define table-name "cs-minor-course-table")
     (make-cc-course-hash
      `(("2017-2019" . ,2017-cs-minor-courses)
-       ,(table-pair "2019-2020" table-name)
-       ,(table-pair "2020-2021" table-name)))))
+       ,@(cycles->table-pairs table-name
+                              (list "2019-2020" "2020-2021"))))))
 
+
+(define ee-te-lec-lab-table : CC-Course-Hash
+  (make-cc-course-hash
+   (cycles->table-pairs "ee-te-lec-lab"
+                        (list "2020-2021"))))
+
+(define ee-te-lec-table : CC-Course-Hash
+  (make-cc-course-hash
+   (cycles->table-pairs "ee-te-lec"
+                        (list "2020-2021"))))
+
+(define ee-te-lab-table : CC-Course-Hash
+  (make-cc-course-hash
+   (cycles->table-pairs "ee-te-lab" (list "2020-2021"))))
+
+(define ee-te-other-table : CC-Course-Hash
+  (make-cc-course-hash
+   (cycles->table-pairs "ee-te-other" (list "2020-2021"))))
