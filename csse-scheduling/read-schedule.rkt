@@ -351,19 +351,16 @@
 ;; how many sections-worth of students will this accommodate?
 (: sum-sections ((Listof Record) -> Exact-Rational))
 (define (sum-sections i-recs)
-  (for/sum ([irec (in-list i-recs)])
+  (for/sum : Exact-Rational ([irec (in-list i-recs)])
     (record->sections-equivalent irec)))
 
 ;; how many sections-worth of students will this course accommodate?
-(: record->sections-equivalent (Record -> CourseSize))
+(: record->sections-equivalent (Record -> Exact-Rational))
 (define (record->sections-equivalent r)
   (define split-multiplier
     (if (record-split? r) 1/2 1))
-  ;; I believe this math is too hard for TR:
-  (cast
-   (* (record-size r)
-      split-multiplier)
-   CourseSize))
+  (* (record-size r)
+     split-multiplier))
 
 (define (record-course-sort-str [r : (Pair CourseID Any)])
   : String
