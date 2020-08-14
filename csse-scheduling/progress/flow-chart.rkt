@@ -162,8 +162,8 @@
     ("ee111" 1)
     ("ee151" 1)
     ("csc101" 2)
-    ("ee113" 3)
-    ("ee143" 3)
+    ((circuits) 3)
+    ((circuits-lab) 3)
     ;; SECOND YEAR
     ("ee211" 4)
     ("ee241" 4)
@@ -182,8 +182,8 @@
     ;; THIRD YEAR
     ("ee306" 7)
     ("ee346" 7)
-    ("ee328" 7)
-    ("ee368" 7)
+    ("cpe328" 7)
+    ("cpe368" 7)
     ("ee402" 7 10)
 
     ("ee307" 8)
@@ -195,7 +195,19 @@
     ("ee308" 9)
     ("ee348" 9)
     ((ee-microcon) 9)
-    ;; RIGHT HERE
+
+    ;; FOURTH YEAR
+    ("ee409" 10)
+    ("ee449" 10)
+    ("ee460" 10)
+    ((ee-te-1) 10)
+
+    ((ee-te-2) 11)
+    ((ee-sp-1) 11)
+    
+    ((ee-te-3) 12)
+    ((ee-sp-2) 12)
+    
     ))
 
 (define-syntax islac
@@ -246,7 +258,10 @@
           (cons (islac '((CPE ftf) "2020-2021"))
                 (cons '((cpe-TE/123) 1) cpe-2020-2021-flowchart/pre))
           (cons (islac '((CPE) "2020-2021"))
-                (append cpe-2020-2021-flowchart/pre '(((cpe-TE/123) 12)))))
+                (append cpe-2020-2021-flowchart/pre '(((cpe-TE/123) 12))))
+
+          (cons (islac '((EE) "2020-2021"))
+                ee-2020-2021-flowchart))
     (Listof (Pair LAC Flowchart-Spec)))))
 
 

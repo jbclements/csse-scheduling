@@ -561,6 +561,7 @@
      "ee460"
      ee-sp-1 ee-sp-2
      ee-te-1 ee-te-2 ee-te-3
+     "csc101"
      )))
 
 
