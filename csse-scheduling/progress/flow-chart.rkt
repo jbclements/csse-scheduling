@@ -157,7 +157,7 @@
             ((cpe-sp-2) 12)
             ((cpe-TE-0) 11))))
 
-(define ee-2020-2021-flowchart : Flowchart-Spec
+(define ee-common-flowchart : Flowchart-Spec
   '(;; FIRST YEAR
     ("ee111" 1)
     ("ee151" 1)
@@ -210,6 +210,7 @@
     
     ))
 
+
 (define-syntax islac
   (syntax-rules ()
     [(_ str) (ann str LAC)]))
@@ -260,8 +261,14 @@
           (cons (islac '((CPE) "2020-2021"))
                 (append cpe-2020-2021-flowchart/pre '(((cpe-TE/123) 12))))
 
+          (cons (islac '((EE) "2019-2020"))
+                ee-common-flowchart)
+          (cons (islac '((EE ftf) "2019-2020"))
+                ee-common-flowchart)
           (cons (islac '((EE) "2020-2021"))
-                ee-2020-2021-flowchart))
+                ee-common-flowchart)
+          (cons (islac '((EE ftf) "2020-2021"))
+                ee-common-flowchart))
     (Listof (Pair LAC Flowchart-Spec)))))
 
 

@@ -96,6 +96,7 @@
 ;; exploration at the first success. I believe this is a reasonable
 ;; analog of prolog's "cut" operator.
 
+;; FIXME: should probably make catalog-cycle an argument to reqfun...
 (define-type ReqFun ((Listof Grade-Record) -> (Listof (Listof Grade-Record))))
 
 (define-type Requirement (List ReqName ReqFun))
@@ -354,7 +355,7 @@
      (csc-sp-2 . ,(ccparam _ (passed-one-of '("csc492" "csc498"))))
      (circuits . ,(ccparam _ (passed-one-of '("ee112" "ee113"))))
      (circuits-lab . ,(ccparam _ (passed-one-of '("ee143" "ime156"))))
-     (ee-microcon .  ,(ccparam _ (passed-one-of '("cpe329" "ee336"))))     
+     (ee-microcon .  ,(ccparam _ (passed-one-of '("cpe329" "cpe336"))))     
      ;; imprecise, allows 461 + 464
      (ee-sp-1 . ,(ccparam _ (passed-one-of '("ee461" "ee463"))))
      (ee-sp-2 . ,(ccparam _ (passed-one-of '("ee462" "ee464"))))
@@ -535,34 +536,42 @@
       cpe-sp-1
       cpe-sp-2))))
 
+(define common-ee-requirements-list
+  '("cpe133" "cpe233"
+             "ee111" "ee151"
+             ;; slight approximation, should be (or (and ... ...) (and ... ...))
+             circuits circuits-lab
+             ;; check to make sure IME courses aren't filtered out
+             "ee211" "ee241"
+             "ee212" "ee242"
+             "ee228"
+             "ee255" "ee295"
+             "ee302" "ee342"
+             "ee306" "ee346"
+             "ee307" "ee347"
+             "ee308" "ee348"
+             "ee314"
+             "cpe328"
+             "cpe368"
+             ee-microcon
+             "ee335" "ee375"
+             "ee402"
+             "ee409" "ee449"
+             "ee460"
+             ee-sp-1 ee-sp-2
+             ee-te-1 ee-te-2 ee-te-3
+             "csc101"
+             ))
+
+(define 2019-2020-ee-requirements
+  (all-of-these
+   (ann "2019-2020" CatalogCycle)
+   common-ee-requirements-list))
+
 (define 2020-2021-ee-requirements
   (all-of-these
    (ann "2020-2021" CatalogCycle)
-   '("cpe133" "cpe233"
-     "ee111" "ee151"
-      ;; slight approximation, should be (or (and ... ...) (and ... ...))
-     circuits circuits-lab
-      ;; check to make sure IME courses aren't filtered out
-     "ee211" "ee241"
-     "ee212" "ee242"
-     "ee228"
-     "ee255" "ee295"
-     "ee302" "ee342"
-     "ee306" "ee346"
-     "ee307" "ee347"
-     "ee308" "ee348"
-     "ee314"
-     "cpe328"
-     "cpe368"
-     ee-microcon
-     "ee335" "ee375"
-     "ee402"
-     "ee409" "ee449"
-     "ee460"
-     ee-sp-1 ee-sp-2
-     ee-te-1 ee-te-2 ee-te-3
-     "csc101"
-     )))
+   common-ee-requirements-list))
 
 
 (define-type LAC (List Any CatalogCycle))
@@ -617,6 +626,7 @@
           (cons (list '(CPE) (ann "2017-2019" CatalogCycle)) 2017-2019-cpe-requirements)
           (cons (list '(CPE) (ann "2019-2020" CatalogCycle)) 2019-2020-cpe-requirements)
           #;(cons (list '(CPE) (ann "2020-2021" CatalogCycle)) 2020-2021-cpe-requirements)
+          (cons (list '(EE) (ann "2019-2020" CatalogCycle)) 2019-2020-ee-requirements)
           (cons (list '(EE) (ann "2020-2021" CatalogCycle)) 2020-2021-ee-requirements))
          (Listof (Pairof LAC (Listof Requirement)))))
    (Listof (Pairof LAC (Listof Requirement))))))
