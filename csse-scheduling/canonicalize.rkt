@@ -36,7 +36,7 @@
   (U "AEPS" "AERO" "AG" "AGB" "ANT" "ARCE" "ARCH" "ART" "ASCI" "ASTR" "BIO"
      "BMED" "BOT" "BRAE" "BUS" "CD" "CE" "CHEM" "CHIN" "CM" "COMS" "CPE" "CRP"
      "CSC" "DANC" "DATA" "DSCI" "ECON" "EDES" "EE" "ENGL" "ENGR" "ENVE" "ERSC"
-     "ES" "ESE" "FR" "FSN" "GEOG" "GEOL" "GER" "GRC" "GS" "GSA" "GSB" "GSE" "HCS" "HIST" "HLTH" "HNRC"
+     "ES" "ESE" "FPE" "FR" "FSN" "GEOG" "GEOL" "GER" "GRC" "GS" "GSA" "GSB" "GSE" "HCS" "HIST" "HLTH" "HNRC"
      "HNRS" "HUM" "IME" "ISLA" "IT" "ITAL" "ITP" "JOUR" "JPNS" "KINE" "LA"
      "LAES" "LS" "MATE" "MATH" "MCRO" "ME" "MLL" "MSCI" "MSL" "MU" "NR" "PEM" "PEW"
      "PHIL" "PHYS" "POLS" "PSC" "PSY" "RELS" "RPTA" "SCM" "SOC" "SPAN" "SS"

@@ -1,0 +1,34 @@
+EE 400
+	Special Problems 6	
+EE/PHYS 422
+	Polymer Electronics Laboratory	
+EE 443
+	Fiber Optics Laboratory	
+EE 444
+	Power Systems Laboratory	
+EE 445
+	High Frequency Amplifier Design Laboratory	
+EE 452
+	Advanced Analog Circuits Laboratory	
+EE 455
+	Analog Filter Design Laboratory	
+EE 456
+	Digital Communication Systems Laboratory	
+EE 458
+	Photonic Engineering Laboratory	
+EE 459
+	Digital Signal Processing Laboratory	
+EE 471
+	Selected Advanced Laboratory	
+EE/CPE 472
+	Digital Control Systems Laboratory	
+EE 475
+	Communication Networks and Systems Laboratory	
+EE 480
+	Wireless Communications Laboratory	
+EE/CPE 532
+	VLSI Circuit Testing	
+EE 541
+	Advanced Microwave Laboratory	
+EE 544
+	Solid-state Electronics and VLSI Laboratory

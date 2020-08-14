@@ -342,7 +342,7 @@
                      cc
                      (or!/req got-4-units-of-400?
                               (passed-cpe-technical-elective? cc))))
-     (cpe-TE-123 . ,(ccparam cc
+     (cpe-TE/123 . ,(ccparam cc
                       (or!/req passed-123?
                                (passed-cpe-technical-elective? cc))))
      (cpe-arch . ,(ccparam _ (passed-one-of '("cpe315" "cpe333"))))
@@ -549,8 +549,8 @@
         (req "ee308")
         (req "ee348")
         (req "ee314")
-        (req "ee328")
-        (req "ee368")
+        (req "cpe328")
+        (req "cpe368")
         (list '(mozzz) (passed-one-of '("cpe329" "ee336")))
         (req "ee335")
         (req "ee375")

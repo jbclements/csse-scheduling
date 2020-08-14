@@ -58,6 +58,8 @@
                      other)])])))
 
 (define (course-line->id [cc : CatalogCycle] [s : String]) : Course-Id
+
+
   (match s
     ;; EG "CPE 426"
     [(regexp #px"^([A-Z]{2,4}) ([0-9]{3})$" (list _ subject num-str))
@@ -82,7 +84,12 @@
     ;; we use for canonicalization
     [(regexp #px"^([A-Z]{2,4}) ([0-9]{3})/[A-Z]{2,4} [0-9]{3}/[A-Z]{2,4} [0-9]{3}$"
              (list _ subject num-str))
-     (canonicalize cc (cast subject String) (cast num-str String))]))
+     (canonicalize cc (cast subject String) (cast num-str String))]
+    ;; e.g. "IME/MATE 458/CPE 488"
+    [(regexp #px"^([A-Z]{2,4})/[A-Z]{2,4} ([0-9]{3})/[A-Z]{2,4} [0-9]{3}$"
+             (list _ subject num-str))
+     (canonicalize cc (cast subject String) (cast num-str String))]
+    ))
 
 (module+ test
   (require typed/rackunit)
@@ -116,6 +123,9 @@
                 "cpe488")
   (check-equal? (course-line->id "2020-2021" "EE 431/CPE 441")
                 "cpe441")
+
+  (check-equal? (course-line->id "2019-2020" "IME/MATE 458/CPE 488")
+                "cpe488")
   )
 
 ;; these classes may be used as technical electives in the 2015-2017 catalog
@@ -428,24 +438,21 @@
     (define table-name "cs-minor-course-table")
     (make-cc-course-hash
      `(("2017-2019" . ,2017-cs-minor-courses)
-       ,@(cycles->table-pairs table-name
-                              (list "2019-2020" "2020-2021"))))))
+       ,@(cycles->table-pairs table-name (list "2019-2020" "2020-2021"))))))
 
 
 (define ee-te-lec-lab-table : CC-Course-Hash
   (make-cc-course-hash
-   (cycles->table-pairs "ee-te-lec-lab"
-                        (list "2020-2021"))))
+   (cycles->table-pairs "ee-te-lec-lab" (list "2019-2020" "2020-2021"))))
 
 (define ee-te-lec-table : CC-Course-Hash
   (make-cc-course-hash
-   (cycles->table-pairs "ee-te-lec"
-                        (list "2020-2021"))))
+   (cycles->table-pairs "ee-te-lec" (list "2019-2020" "2020-2021"))))
 
 (define ee-te-lab-table : CC-Course-Hash
   (make-cc-course-hash
-   (cycles->table-pairs "ee-te-lab" (list "2020-2021"))))
+   (cycles->table-pairs "ee-te-lab" (list "2019-2020" "2020-2021"))))
 
 (define ee-te-other-table : CC-Course-Hash
   (make-cc-course-hash
-   (cycles->table-pairs "ee-te-other" (list "2020-2021"))))
+   (cycles->table-pairs "ee-te-other" (list "2019-2020" "2020-2021"))))
