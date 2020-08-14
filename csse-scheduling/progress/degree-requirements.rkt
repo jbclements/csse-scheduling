@@ -351,7 +351,18 @@
      (cpe-sp-2 . ,(ccparam _ (passed-one-of '("cpe462" "csc498"))))
      (ethics .   ,(ccparam _ (passed-one-of '("csc300" "phil323"))))
      (csc-sp-1 . ,(ccparam _ (passed-one-of '("csc491" "csc497"))))
-     (csc-sp-2 . ,(ccparam _ (passed-one-of '("csc492" "csc498")))))))
+     (csc-sp-2 . ,(ccparam _ (passed-one-of '("csc492" "csc498"))))
+     (circuits . ,(ccparam _ (passed-one-of '("ee112" "ee113"))))
+     (circuits-lab . ,(ccparam _ (passed-one-of '("ee143" "ime156"))))
+     (ee-microcon .  ,(ccparam _ (passed-one-of '("cpe329" "ee336"))))     
+     ;; imprecise, allows 461 + 464
+     (ee-sp-1 . ,(ccparam _ (passed-one-of '("ee461" "ee463"))))
+     (ee-sp-2 . ,(ccparam _ (passed-one-of '("ee462" "ee464"))))
+     ;; this could be tighter... it fails to really check the 11 unit requirement.
+     ;; I think this is good enough for forecasting.
+     (ee-te-1 . ,passed-ee-te-lec-lab-req?)
+     (ee-te-2 . ,passed-ee-te-lec-lab-req?)
+     (ee-te-3 . ,passed-ee-te-open-req?))))
 
 (define (req-lookup [spec : (U Symbol String)] [cc : CatalogCycle]) : ReqFun
   ((hash-ref req-table spec) cc))
@@ -525,48 +536,32 @@
       cpe-sp-2))))
 
 (define 2020-2021-ee-requirements
-  (list (req "cpe133")
-        (req "cpe233")
-        (req "ee111")
-        (req "ee151")
-        ;; slight approximation, should be (or (and ... ...) (and ... ...))
-        (list '(circuits) (passed-one-of '("ee112" "ee113")))
-        (list '(circuits-lab) (passed-one-of '("ee143" "ime156")))
-        ;; check to make sure IME courses aren't filtered out
-        (req "ee211")
-        (req "ee241")
-        (req "ee212")
-        (req "ee242")
-        (req "ee228")
-        (req "ee255")
-        (req "ee295")
-        (req "ee302")
-        (req "ee342")
-        (req "ee306")
-        (req "ee346")
-        (req "ee307")
-        (req "ee347")
-        (req "ee308")
-        (req "ee348")
-        (req "ee314")
-        (req "cpe328")
-        (req "cpe368")
-        (list '(mozzz) (passed-one-of '("cpe329" "ee336")))
-        (req "ee335")
-        (req "ee375")
-        (req "ee402")
-        (req "ee409")
-        (req "ee449")
-        (req "ee460")
-        ;; same approx
-        (list '(ee-sp-1) (passed-one-of '("ee461" "ee463")))
-        (list '(ee-sp-2) (passed-one-of '("ee462" "ee464")))
-        ;; this could be tighter... it fails to really check the 11 unit requirement.
-        ;; I think this is good enough for forecasting.
-        (list '(ee-te-1) passed-ee-te-lec-lab-req?)
-        (list '(ee-te-2) passed-ee-te-lec-lab-req?)
-        (list '(ee-te-3) passed-ee-te-open-req?)
-        ))
+  (all-of-these
+   (ann "2020-2021" CatalogCycle)
+   '("cpe133" "cpe233"
+     "ee111" "ee151"
+      ;; slight approximation, should be (or (and ... ...) (and ... ...))
+     circuits circuits-lab
+      ;; check to make sure IME courses aren't filtered out
+     "ee211" "ee241"
+     "ee212" "ee242"
+     "ee228"
+     "ee255" "ee295"
+     "ee302" "ee342"
+     "ee306" "ee346"
+     "ee307" "ee347"
+     "ee308" "ee348"
+     "ee314"
+     "cpe328"
+     "cpe368"
+     ee-microcon
+     "ee335" "ee375"
+     "ee402"
+     "ee409" "ee449"
+     "ee460"
+     ee-sp-1 ee-sp-2
+     ee-te-1 ee-te-2 ee-te-3
+     )))
 
 
 (define-type LAC (List Any CatalogCycle))
@@ -620,7 +615,8 @@
           #;(cons (list '(SE) (ann "2020-2021" CatalogCycle)) 2020-sereqs)
           (cons (list '(CPE) (ann "2017-2019" CatalogCycle)) 2017-2019-cpe-requirements)
           (cons (list '(CPE) (ann "2019-2020" CatalogCycle)) 2019-2020-cpe-requirements)
-          #;(cons (list '(CPE) (ann "2020-2021" CatalogCycle)) 2020-2021-cpe-requirements))
+          #;(cons (list '(CPE) (ann "2020-2021" CatalogCycle)) 2020-2021-cpe-requirements)
+          (cons (list '(EE) (ann "2020-2021" CatalogCycle)) 2020-2021-ee-requirements))
          (Listof (Pairof LAC (Listof Requirement)))))
    (Listof (Pairof LAC (Listof Requirement))))))
 

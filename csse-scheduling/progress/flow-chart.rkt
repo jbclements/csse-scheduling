@@ -194,7 +194,8 @@
 
     ("ee308" 9)
     ("ee348" 9)
-    (microcon 9)
+    ((ee-microcon) 9)
+    ;; RIGHT HERE
     ))
 
 (define-syntax islac
