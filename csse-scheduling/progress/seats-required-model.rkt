@@ -40,22 +40,23 @@
 ;; (e.g. a list of requirements), ensure that each set has exactly the
 ;; same set of ReqNames
 (define (check-req-names [label : Any]
-                         [set1 : (Listof (Pairof ReqName Any))]
-                         [set2 : (Listof (Pairof ReqName Any))])
-  (define set1-names (map (inst car ReqName) set1))
-  (define set2-names (map (inst car ReqName) set2))
+                         [flowchart-set : (Listof (Pairof ReqName Any))]
+                         [degree-requirement-set : (Listof (Pairof ReqName Any))])
+  (define set1-names (map (inst car ReqName) flowchart-set))
+  (define set2-names (map (inst car ReqName) degree-requirement-set))
   (unless (empty? (set-subtract set1-names set2-names))
-    (error 'name-check "name-check for ~a failed: first set has ~e"
+    (error 'name-check "name-check for ~a failed: flowchart set has ~e"
            label
            (set-subtract set1-names set2-names)))
   (unless (empty? (set-subtract set2-names set1-names))
-    (error 'name-check "name-check for ~a failed: second set has ~e"
+    (error 'name-check "name-check for ~a failed: degree requirement set has ~e"
            label
            (set-subtract set2-names set1-names)))
   (unless (equal? (list->set set1-names) (list->set set2-names))
     (error 'name-check "something else failed... duplicated req name?")))
 
-;; check that the list 
+;; check that the list of degree requirements has the same set
+;; of requirements as the flow chart
 (define requirements-keys (hash-keys program-requirements))
 (for ([key (in-list requirements-keys)])
   (check-req-names key (hash-ref all-flowcharts key)
@@ -69,14 +70,19 @@
 ;; NOTE: In this context, qtrs are naturals such as 0 or 1, counting the number of
 ;; quarters from the current one.
 ;; returns a "Seats-By-Requirement" : (Listof (List Requirement Nonnegative-Real))
-(define (student->courses [student : Student] [start-qtr : Natural]
-                          [stop-qtr : Natural]
+(define (student->courses [student : Student]
+                          [start-qtr-idx : Natural]
+                          [stop-qtr-idx : Natural]
                           [cc : CatalogCycle])
   : (Listof Seats-By-Requirement)
   (define unmet-reqs (student->unmet-requirements student cc))
-  (student-to-take unmet-reqs (Student-major student) start-qtr stop-qtr
+  (student-to-take unmet-reqs (Student-major student)
+                   start-qtr-idx
+                   stop-qtr-idx
                    (first-year? student)
                    cc))
+
+
 
 ;; given a major, return the standard "student category" for that student,
 ;; used in the generated seat-requirements
@@ -233,7 +239,7 @@
          (Seat-Requirement 'csc-bs "cpe464" #f 15))))
 
 (module+ main
-  (filter
+  #;(filter
    (λ ([sr : Seat-Requirement])
      (member (Seat-Requirement-course sr)
              '("csc308")))
@@ -241,7 +247,7 @@
     append
     (seat-requirements/range 2202 2204 2214 "2019-2020" #t)))
 
-  (filter
+  #;(filter
    (λ ([sr : Seat-Requirement])
      (member (Seat-Requirement-course sr)
              '("csc402")))
@@ -249,15 +255,22 @@
     append
     (seat-requirements/range 2202 2204 2214 "2019-2020" #t)))
 
-  (filter
+  #;(filter
    (λ ([sr : Seat-Requirement])
      (member (Seat-Requirement-course sr)
              '("csc305")))
-   (apply
+   #;(apply
     append
     (seat-requirements/range 2202 2204 2218 "2019-2020" #t)))
 
-  
+  (filter
+   (λ ([sr : Seat-Requirement])
+     (member (Seat-Requirement-course sr)
+             '("cpe350")))
+   (apply
+    append
+    (seat-requirements/range 2204 2208 2218 "2019-2020" #f)))
+
   )
 
 

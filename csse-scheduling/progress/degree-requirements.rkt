@@ -525,7 +525,6 @@
     (ann "2019-2020" CatalogCycle)
     '(cpe-arch
       microcon
-      ;; could be common?:
       circuits cpe-circuits-lab
       "ee211" "ee241"
       "ee212" "ee242"
@@ -534,7 +533,6 @@
       "ee307" "ee347"
       cpe-sp-1
       cpe-sp-2))
-   ;; ee211 .. omitting ee things for now
    ))
 
 
