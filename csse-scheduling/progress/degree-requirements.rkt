@@ -354,8 +354,14 @@
      (csc-sp-1 . ,(ccparam _ (passed-one-of '("csc491" "csc497"))))
      (csc-sp-2 . ,(ccparam _ (passed-one-of '("csc492" "csc498"))))
      (circuits . ,(ccparam _ (passed-one-of '("ee112" "ee113"))))
-     (circuits-lab . ,(ccparam _ (passed-one-of '("ee143" "ime156"))))
-     (ee-microcon .  ,(ccparam _ (passed-one-of '("cpe329" "cpe336"))))     
+     (circuits-lab . ,(ccparam _ (passed-one-of
+                                  '("ee143" "ime156"))))
+     (cpe-circuits-lab . ,(ccparam _ (passed-one-of
+                                      '("ee143" "ime156" "cpe488"))))
+     (ee-microcon .  ,(ccparam _ (passed-one-of '("cpe329" "cpe336"))))
+     (cpe-signals . ,(ccparam _ (or!/req (pass/req "ee228")
+                                         (and/req (pass/req "cpe327")
+                                                  (pass/req "cpe367")))))
      ;; imprecise, allows 461 + 464
      (ee-sp-1 . ,(ccparam _ (passed-one-of '("ee461" "ee463"))))
      (ee-sp-2 . ,(ccparam _ (passed-one-of '("ee462" "ee464"))))
@@ -379,12 +385,11 @@
 ;; make a list of technical elective requirements for a given major
 (define (make-TE-requirements [prefix : String] [req : ReqFun] [n : Natural])
   (for/list : (Listof Requirement)
-          ;; one more for the loss of 431
           ([i (in-range n)])
           (list (list (string->symbol (~a prefix"-TE-" i)))
                 req)))
 
-;; FIXME 
+
 (define (make-csc-te-reqs [cc : CatalogCycle] [n : Natural]) : (Listof Requirement)
         (make-TE-requirements "csc" (passed-technical-elective? cc) n))
 
@@ -497,21 +502,21 @@
        "csc453"
        "cpe464"
        "csc348"
-       ;(req "ee211")
-       ;(req "ee241")
        cpe-TE/400
        cpe-TE/123
        )))
    (make-TE-requirements "cpe" (passed-cpe-technical-elective? cc) 2)))
 
+;; doesn't include EE requirements
 (define 2017-2019-cpe-requirements
   (append
    (common-cpe-requirements "2017-2019")
-   (list (req "cpe315")
-         (req "cpe329")
-         (req "cpe461")
-         (req "cpe462")
-         )))
+   (all-of-these
+    (ann "2017-2019" CatalogCycle)
+    '("cpe315"
+      "cpe329"
+      "cpe461"
+      "cpe462"))))
 
 (define 2019-2020-cpe-requirements
   (append
@@ -520,12 +525,19 @@
     (ann "2019-2020" CatalogCycle)
     '(cpe-arch
       microcon
+      ;; could be common?:
+      circuits cpe-circuits-lab
+      "ee211" "ee241"
+      "ee212" "ee242"
+      cpe-signals
+      "ee306" "ee346"
+      "ee307" "ee347"
       cpe-sp-1
       cpe-sp-2))
    ;; ee211 .. omitting ee things for now
    ))
 
-;; waiting for new te's
+
 (define 2020-2021-cpe-requirements
   (append
    (common-cpe-requirements "2020-2021")
@@ -533,6 +545,12 @@
     (ann "2020-2021" CatalogCycle)
     '(cpe-arch
       microcon
+      circuits cpe-circuits-lab
+      "ee211" "ee241"
+      "ee212" "ee242"
+      cpe-signals
+      "ee306" "ee346"
+      "ee307" "ee347"
       cpe-sp-1
       cpe-sp-2))))
 
@@ -625,7 +643,7 @@
           #;(cons (list '(SE) (ann "2020-2021" CatalogCycle)) 2020-sereqs)
           (cons (list '(CPE) (ann "2017-2019" CatalogCycle)) 2017-2019-cpe-requirements)
           (cons (list '(CPE) (ann "2019-2020" CatalogCycle)) 2019-2020-cpe-requirements)
-          #;(cons (list '(CPE) (ann "2020-2021" CatalogCycle)) 2020-2021-cpe-requirements)
+          (cons (list '(CPE) (ann "2020-2021" CatalogCycle)) 2020-2021-cpe-requirements)
           (cons (list '(EE) (ann "2019-2020" CatalogCycle)) 2019-2020-ee-requirements)
           (cons (list '(EE) (ann "2020-2021" CatalogCycle)) 2020-2021-ee-requirements))
          (Listof (Pairof LAC (Listof Requirement)))))
@@ -815,7 +833,7 @@
                   (map
                    requirement-work
                    (map (inst first String Any) cpe-requirements))))
-                ;; REGRESSION:
+                ;; REGRESSION TEST:
                 55))
 
   (define 2017-2019-csc-requirements

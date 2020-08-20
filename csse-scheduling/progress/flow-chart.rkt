@@ -119,7 +119,6 @@
     ("csc101" 2)
     ("csc202" 3)
     ("csc203" 4)
-    
     ("cpe233" 5)
     ("csc357" 6 7)
     ("cpe350" 10)
@@ -141,7 +140,18 @@
 
 (define cpe-2019-2020-flowchart/pre : Flowchart-Spec
   (append common-cpe-flowchart/pre
-          '(("cpe133" 4)
+          '(((circuits) 3)
+            ((cpe-circuits-lab) 3)
+            ("cpe133" 4)
+            ("ee211" 5)
+            ("ee241" 5)
+            ("ee212" 6)
+            ("ee242" 6)
+            ((cpe-signals) 7)
+            ("ee306" 7)
+            ("ee346" 7)
+            ("ee307" 8)
+            ("ee347" 8)
             ((cpe-arch) 9)
             ((microcon) 9 10)
             ((cpe-sp-1) 11)
@@ -150,7 +160,18 @@
 
 (define cpe-2020-2021-flowchart/pre : Flowchart-Spec
   (append common-cpe-flowchart/pre
-          '(("cpe133" 4)
+          '(((circuits) 3)
+            ((cpe-circuits-lab) 3)
+            ("cpe133" 4)
+            ("ee211" 5)
+            ("ee241" 5)
+            ("ee212" 6)
+            ("ee242" 6)
+            ((cpe-signals) 7)
+            ("ee306" 7)
+            ("ee346" 7)
+            ("ee307" 8)
+            ("ee347" 8)
             ((cpe-arch) 9)
             ((microcon) 9 10)
             ((cpe-sp-1) 11)
