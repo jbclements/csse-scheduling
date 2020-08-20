@@ -407,15 +407,15 @@
 ;; return each quarter separately.
 (define (student-to-take [unmet-reqs : (Listof ReqName)]
                          [major : Major-Abbr]
-                         [start-qtr : Natural]
-                         [stop-qtr : Natural]
+                         [start-qtr-idx : Natural]
+                         [stop-qtr-idx : Natural]
                          [first-time-first-year? : Boolean]
                          [cc : CatalogCycle])
   : (Listof Seats-By-Requirement)
-  (when (<= stop-qtr start-qtr)
+  (when (<= stop-qtr-idx start-qtr-idx)
     (error 'student-to-take
            "expected start-qtr to be < stop-qtr, got ~e and ~e"
-           start-qtr stop-qtr))
+           start-qtr-idx stop-qtr-idx))
   (define major-sym (string->symbol major))
   (define flavor
     (cond [first-time-first-year? (list major-sym 'ftf)]
@@ -454,7 +454,7 @@
          (group-by (inst first ReqName) reqs-to-take)))
   (define by-qtr-end-reqs
     (for/list : (Listof Seats-By-Requirement)
-      ([qtr : Natural (in-range start-qtr (add1 stop-qtr))])
+      ([qtr : Natural (in-range start-qtr-idx (add1 stop-qtr-idx))])
       (schedule-idea qtr)))
   (for/list ([qtr-a (in-list by-qtr-end-reqs)]
              [qtr-b (in-list (rest by-qtr-end-reqs))])
