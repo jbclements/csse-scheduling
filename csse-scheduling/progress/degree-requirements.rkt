@@ -208,6 +208,11 @@
              ;; add a "just took it" requirement
              (took/req "csc202")))))
 
+(define ee-passed-101?
+  (or!/req (passc/req "csc101")
+           (ghost/req
+            (took/req "cpe133"))))
+
 (define passed-123? (pass/req "csc123"))
 
 ;; did this csc student pass the SE requirement? (307 OR 308+309)
@@ -576,18 +581,21 @@
              "ee460"
              ee-sp-1 ee-sp-2
              ee-te-1 ee-te-2 ee-te-3
-             "csc101"
              ))
 
 (define 2019-2020-ee-requirements
-  (all-of-these
-   (ann "2019-2020" CatalogCycle)
-   common-ee-requirements-list))
+  (append
+   (list (list "csc101" ee-passed-101?))
+   (all-of-these
+    (ann "2019-2020" CatalogCycle)
+    common-ee-requirements-list)))
 
 (define 2020-2021-ee-requirements
+  (append
+   (list (list "csc101" ee-passed-101?))
   (all-of-these
    (ann "2020-2021" CatalogCycle)
-   common-ee-requirements-list))
+   common-ee-requirements-list)))
 
 
 (define-type LAC (List Any CatalogCycle))
