@@ -6,6 +6,7 @@
 (require "../canonicalize.rkt"
          "../course-listings.rkt"
          "../types.rkt"
+         "../group-courses.rkt"
          racket/list
          racket/match
          racket/format)
@@ -341,9 +342,22 @@
   (syntax-rules ()
       [(_ id exp) (λ ([id : CatalogCycle]) exp)]))
 
+;; some names are associated with a fixed set of courses,
+;; and not dependent on the catalog cycles:
+(define simple-req-pairs
+  (map
+   (λ ([tup : (Pair (List Symbol) (Listof Course-Id))])
+     : (Pair Symbol (CatalogCycle -> ReqFun))
+     (cons (car (car tup))
+           (λ ([cc : CatalogCycle])
+             (passed-one-of (cdr tup)))))
+   simple-group-courses))
+
 ;; making a big table prevents bad collisions
 (define req-table : (Immutable-HashTable Symbol (CatalogCycle -> ReqFun))
   (make-immutable-hash
+   (append
+    simple-req-pairs
    `((cpe-TE/400 . ,(ccparam
                      cc
                      (or!/req got-4-units-of-400?
@@ -351,30 +365,14 @@
      (cpe-TE/123 . ,(ccparam cc
                       (or!/req passed-123?
                                (passed-cpe-technical-elective? cc))))
-     (cpe-arch . ,(ccparam _ (passed-one-of '("cpe315" "cpe333"))))
-     (microcon . ,(ccparam _ (passed-one-of '("cpe329" "cpe316" "cpe336"))))
-     (cpe-sp-1 . ,(ccparam _ (passed-one-of '("cpe461" "csc497"))))
-     (cpe-sp-2 . ,(ccparam _ (passed-one-of '("cpe462" "csc498"))))
-     (ethics .   ,(ccparam _ (passed-one-of '("csc300" "phil323"))))
-     (csc-sp-1 . ,(ccparam _ (passed-one-of '("csc491" "csc497"))))
-     (csc-sp-2 . ,(ccparam _ (passed-one-of '("csc492" "csc498"))))
-     (circuits . ,(ccparam _ (passed-one-of '("ee112" "ee113"))))
-     (circuits-lab . ,(ccparam _ (passed-one-of
-                                  '("ee143" "ime156"))))
-     (cpe-circuits-lab . ,(ccparam _ (passed-one-of
-                                      '("ee143" "ime156" "cpe488"))))
-     (ee-microcon .  ,(ccparam _ (passed-one-of '("cpe329" "cpe336"))))
      (cpe-signals . ,(ccparam _ (or!/req (pass/req "ee228")
                                          (and/req (pass/req "cpe327")
                                                   (pass/req "cpe367")))))
-     ;; imprecise, allows 461 + 464
-     (ee-sp-1 . ,(ccparam _ (passed-one-of '("ee461" "ee463"))))
-     (ee-sp-2 . ,(ccparam _ (passed-one-of '("ee462" "ee464"))))
      ;; this could be tighter... it fails to really check the 11 unit requirement.
      ;; I think this is good enough for forecasting.
      (ee-te-1 . ,passed-ee-te-lec-lab-req?)
      (ee-te-2 . ,passed-ee-te-lec-lab-req?)
-     (ee-te-3 . ,passed-ee-te-open-req?))))
+     (ee-te-3 . ,passed-ee-te-open-req?)))))
 
 (define (req-lookup [spec : (U Symbol String)] [cc : CatalogCycle]) : ReqFun
   ((hash-ref req-table spec) cc))
