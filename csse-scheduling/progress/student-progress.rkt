@@ -2,7 +2,8 @@
 
 
 ;; this file provides a list of all the students, using data from the ad-hoc progress report.
-;; UPDATE: as of 2018-09-14, it omits grad students
+;; UPDATE: as of 2018-09-14, it omits graduate students in fetch-mapping using csgrad
+;; and eegrad materialized views.
 
 (provide (struct-out Student)
          get-students

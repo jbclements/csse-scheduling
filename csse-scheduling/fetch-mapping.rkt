@@ -120,7 +120,8 @@
           " FROM ((majors m LEFT JOIN entry_qtr e ON m.id=e.id AND m.version=e.version)"
           "       LEFT JOIN grad_qtr g ON m.id = g.id AND m.version = g.version)"
           " WHERE m.version=$1"
-          " and (m.id, m.version) NOT IN (SELECT id,version FROM csgrad);")
+          " and (m.id, m.version) NOT IN (SELECT id,version FROM csgrad)"
+          " and (m.id, m.version) NOT IN (SELECT id,version FROM eegrad);")
       version))))
 
 (define 2188-1-student-grades (student-grades-cache "2188-1"))
