@@ -210,9 +210,13 @@
              (took/req "csc202")))))
 
 (define ee-passed-101?
-  (or!/req (passc/req "csc101")
+  (or!/req (pass/req "csc101")
            (ghost/req
-            (took/req "cpe133"))))
+            (or!/req
+             (took/req "cpe133")
+             (or!/req
+              (took/req "csc202")
+              (took/req "csc203"))))))
 
 (define passed-123? (pass/req "csc123"))
 
