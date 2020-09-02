@@ -278,7 +278,7 @@
                         g))))
 
 ;; represents the requirement for a technical elective
-(define (passed-technical-elective? [cc : CatalogCycle]) : ReqFun
+(define (passed-csc-technical-elective? [cc : CatalogCycle]) : ReqFun
   (or!/courses/req (hash-ref csc-te-course-table cc)))
 
 ;; represents the requirement for an upper-level technical elective
@@ -374,9 +374,9 @@
                                                   (pass/req "cpe367")))))
      ;; this could be tighter... it fails to really check the 11 unit requirement.
      ;; I think this is good enough for forecasting.
-     (ee-te-1 . ,passed-ee-te-lec-lab-req?)
-     (ee-te-2 . ,passed-ee-te-lec-lab-req?)
-     (ee-te-3 . ,passed-ee-te-open-req?)))))
+     (ee-TE-0 . ,passed-ee-te-lec-lab-req?)
+     (ee-TE-1 . ,passed-ee-te-lec-lab-req?)
+     (ee-TE-2 . ,passed-ee-te-open-req?)))))
 
 (define (req-lookup [spec : (U Symbol String)] [cc : CatalogCycle]) : ReqFun
   ((hash-ref req-table spec) cc))
@@ -398,7 +398,7 @@
 
 
 (define (make-csc-te-reqs [cc : CatalogCycle] [n : Natural]) : (Listof Requirement)
-        (make-TE-requirements "csc" (passed-technical-elective? cc) n))
+        (make-TE-requirements "csc" (passed-csc-technical-elective? cc) n))
 
 
 (define (req [course-id : Course-Id]) : Requirement
@@ -441,10 +441,10 @@
          (list '(upper-level-csc-TE)
                (passed-upper-level-technical-elective? cc))
          (list '(csc-TE/123) (or!/req passed-123?
-                                      (passed-technical-elective? cc)))
+                                      (passed-csc-technical-elective? cc)))
          (list '(csc-TE/special-problems)
                (or!/req got-special-problems-credit?
-                        (passed-technical-elective? cc))))))
+                        (passed-csc-technical-elective? cc))))))
 
 ;; the master list of requirements
 (define (common-se-requirements [cc : CatalogCycle]) : (Listof Requirement)
@@ -582,25 +582,32 @@
              "ee409" "ee449"
              "ee460"
              ee-sp-1 ee-sp-2
-             ee-te-1 ee-te-2 ee-te-3
+             ee-TE-0 ee-TE-1 ee-TE-2
              ))
 
-(define 2019-2020-ee-requirements
-  (append
-   (list (list "csc101" ee-passed-101?))
-   (all-of-these
-    (ann "2019-2020" CatalogCycle)
-    common-ee-requirements-list)))
+;; only valid for 2019-2020 and 2020-2021...
+(define (make-90-ee-requirements [cc : CatalogCycle]) : LACAR
+  (cons (list '(EE) cc)
+          (append
+           (list (list "csc101" ee-passed-101?))
+           (all-of-these
+            cc
+            common-ee-requirements-list))))
 
-(define 2020-2021-ee-requirements
-  (append
-   (list (list "csc101" ee-passed-101?))
-  (all-of-these
-   (ann "2020-2021" CatalogCycle)
-   common-ee-requirements-list)))
+(define (make-9-csc-requirements [cc : CatalogCycle]) : LACAR
+  (cons (list '(CSC) cc)
+        (append
+         (common-csc-requirements cc)
+         (all-of-these
+          cc
+          '(ethics
+            csc-sp-1
+            csc-sp-2))
+         (make-csc-te-reqs cc 5))))
 
 
 (define-type LAC (List Any CatalogCycle))
+(define-type LACAR (Pairof LAC (Listof Requirement)))
 
 
 (define program-requirements
@@ -633,7 +640,7 @@
                       csc-sp-2))
                    (make-csc-te-reqs cc 5))))
           ;; waiting on TE listing
-          #;(let ([cc : CatalogCycle "2020-2021"])
+          (let ([cc : CatalogCycle "2020-2021"])
               (cons (list '(CSC) cc)
                     (append
                      ;; technically 431 is still required; in reality... it's not?
@@ -646,14 +653,16 @@
                      (make-csc-te-reqs cc 5)))))
          (Listof (Pairof LAC (Listof Requirement))))
     (ann (list
+          (make-9-csc-requirements "2019-2020")
+          ;(cons (list '(CSC) (ann "2019-2020" CatalogCycle)) 2019-2020-csc-requirements)
           (cons (list '(SE) (ann "2017-2019" CatalogCycle)) 2017-2019-se-requirements)
           (cons (list '(SE) (ann "2019-2020" CatalogCycle)) 2019-2020-se-requirements)
           #;(cons (list '(SE) (ann "2020-2021" CatalogCycle)) 2020-sereqs)
           (cons (list '(CPE) (ann "2017-2019" CatalogCycle)) 2017-2019-cpe-requirements)
           (cons (list '(CPE) (ann "2019-2020" CatalogCycle)) 2019-2020-cpe-requirements)
           (cons (list '(CPE) (ann "2020-2021" CatalogCycle)) 2020-2021-cpe-requirements)
-          (cons (list '(EE) (ann "2019-2020" CatalogCycle)) 2019-2020-ee-requirements)
-          (cons (list '(EE) (ann "2020-2021" CatalogCycle)) 2020-2021-ee-requirements))
+          (make-90-ee-requirements "2019-2020")
+          (make-90-ee-requirements "2020-2021"))
          (Listof (Pairof LAC (Listof Requirement)))))
    (Listof (Pairof LAC (Listof Requirement))))))
 
