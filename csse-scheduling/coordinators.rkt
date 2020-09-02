@@ -12,7 +12,7 @@
 
 (define-runtime-path here ".")
 
-(define current-catalog : CatalogCycle "2019-2020")
+(define current-catalog : CatalogCycle "2020-2021")
 
 ;; a mapping from canonical course name to the last names of the
 ;; instructors that are the coordinators for that course
@@ -37,7 +37,7 @@
     (define canonical-name
       (match (string-trim (first l))
         ;; 2 ad-hoc fixups:
-        ["CSC 419" (canonicalize current-catalog "CPE" "419")]
+        ;["CSC 419" (canonicalize current-catalog "CPE" "419")]
         [(regexp #px"^([A-Z]+)(/[A-Z]+)? ([0-9]{3})$" (list _ subj _ num))
          (cond [(subject? subj)
                 (canonicalize current-catalog subj (assert num string?))]
