@@ -102,6 +102,8 @@
 
 (define-type Requirement (List ReqName ReqFun))
 
+(define impossible/req : ReqFun (λ (g) '()))
+
 ;; time for some combinators:
 
 ;; given a course id,
@@ -167,13 +169,14 @@
 ;; given a list of courses, return the first success.
 ;; eliminates lots of garbage collection
 (define (passed-one-of/req [courses : (Listof Course-Id)]) : ReqFun
-  (λ ([g : (Listof Grade-Record)])
-    (or (for/or : (U False (Listof (Listof Grade-Record)))
-          ([course (in-list courses)])
-          (define try ((pass/req course) g))
-          (cond [(empty? try) #f]
-                [else try]))
-        '())))
+  (cond [(empty? courses) impossible/req]
+        [else (or!/req (pass/req (first courses))
+                       (passed-one-of/req (rest courses)))]))
+
+(define (took-one-of/req [courses : (Listof Course-Id)]) : ReqFun
+  (cond [(empty? courses) impossible/req]
+        [else (or!/req (took/req (first courses))
+                       (took-one-of/req (rest courses)))]))
 
 ;; make a "ghost" requirement that checks the requirement but
 ;; does not deduct the used courses from the list of grades available.
@@ -194,8 +197,8 @@
 ;; has the student passed the data structures course?
 (define passed-data-structures? : ReqFun
   (or!/req
-   (or!/req (passc/req "csc202")
-            (passc/req "csc103"))
+   (or!/req (passc/req "csc103")
+            (passc/req "csc202"))
    (ghost/req (took/req "csc357"))))
 
 ;; passed-101 : has the student passed 101 or taken a later course
@@ -203,11 +206,7 @@
 (define passed-101?
   (or!/req (passc/req "csc101")
            (ghost/req
-            (or!/req
-             (or!/req passed-bigger-projects?
-                      passed-data-structures?)
-             ;; add a "just took it" requirement
-             (took/req "csc202")))))
+            (took-one-of/req '("csc102" "csc103" "csc202" "csc203" "csc357")))))
 
 (define ee-passed-101?
   (or!/req (pass/req "csc101")
