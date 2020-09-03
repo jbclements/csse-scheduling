@@ -208,14 +208,14 @@
            (ghost/req
             (took-one-of/req '("csc102" "csc103" "csc202" "csc203" "csc357")))))
 
+(define passed-225?
+  (or!/req (pass/req "csc225")
+           (took/req "csc357")))
+
 (define ee-passed-101?
   (or!/req (pass/req "csc101")
            (ghost/req
-            (or!/req
-             (took/req "cpe133")
-             (or!/req
-              (took/req "csc202")
-              (took/req "csc203"))))))
+            (took-one-of/req '("cpe133" "csc202" "csc203" "csc102" "csc103")))))
 
 (define passed-123? (pass/req "csc123"))
 
@@ -230,8 +230,6 @@
   (or!/req (pass/req "csc141")
            (or!/req (pass/req "csc348")
                     (ghost/req (took/req "csc349")))))
-
-(define passed-one-of passed-one-of/req)
 
 ;; did this student get 4 units total from csc400, cpe400, or csc490/496.
 (define got-special-problems-credit? : ReqFun
@@ -353,7 +351,7 @@
      : (Pair Symbol (CatalogCycle -> ReqFun))
      (cons (car (car tup))
            (λ ([cc : CatalogCycle])
-             (passed-one-of (cdr tup)))))
+             (passed-one-of/req (cdr tup)))))
    simple-group-courses))
 
 ;; making a big table prevents bad collisions
@@ -418,16 +416,16 @@
   (append
    computing-common-requirements
    ;; NB: 123 is treated like a TE to allow transfer students not to take it.
-   (list (req  "csc225")
+   (list (list "csc225" passed-225?)
          ;; this is an approximation... apparently, students taking 308
-         ;; are *required* to take 308. We can express this using our
+         ;; are *required* to take 309. We can express this using our
          ;; system, but interpreting the results could be hard, because
          ;; students that are lacking the csc-SE requirement might be
          ;; lacking both, or just 309. It would look somethnig like this...
          #;(list '(csc-SE) (or!/req (and!/req (pass/req "csc307" passed-technical-elective?))
                                     (and!/req (pass/req "csc308" "csc309"))))
          ;; this is the simplified version:
-         (list '(csc-SE) (passed-one-of '("csc307" "csc308")))
+         (list '(csc-SE) (passed-one-of/req '("csc307" "csc308")))
          (req  "cpe315")
          (list "csc348" passed-discrete?)
          (req  "csc349")
