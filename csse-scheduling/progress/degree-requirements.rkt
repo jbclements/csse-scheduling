@@ -166,7 +166,7 @@
 
 ;; given a list of courses, return the first success.
 ;; eliminates lots of garbage collection
-(define (or!/courses/req [courses : (Listof Course-Id)]) : ReqFun
+(define (passed-one-of/req [courses : (Listof Course-Id)]) : ReqFun
   (λ ([g : (Listof Grade-Record)])
     (or (for/or : (U False (Listof (Listof Grade-Record)))
           ([course (in-list courses)])
@@ -232,7 +232,7 @@
            (or!/req (pass/req "csc348")
                     (ghost/req (took/req "csc349")))))
 
-(define passed-one-of or!/courses/req)
+(define passed-one-of passed-one-of/req)
 
 ;; did this student get 4 units total from csc400, cpe400, or csc490/496.
 (define got-special-problems-credit? : ReqFun
@@ -279,38 +279,38 @@
 
 ;; represents the requirement for a technical elective
 (define (passed-csc-technical-elective? [cc : CatalogCycle]) : ReqFun
-  (or!/courses/req (hash-ref csc-te-course-table cc)))
+  (passed-one-of/req (hash-ref csc-te-course-table cc)))
 
 ;; represents the requirement for an upper-level technical elective
 (define (passed-upper-level-technical-elective? [cc : CatalogCycle]) : ReqFun
-  (or!/courses/req (hash-ref csc-ul-te-course-table cc)))
+  (passed-one-of/req (hash-ref csc-ul-te-course-table cc)))
 
 ;; represents the requirement for a technical elective
 (define (passed-se-technical-elective? [cc : CatalogCycle]) : ReqFun
-  (or!/courses/req (hash-ref se-te-course-table cc)))
+  (passed-one-of/req (hash-ref se-te-course-table cc)))
 
 ;; represents the requirement for an upper-level technical elective
 (define (passed-upper-level-se-technical-elective? [cc : CatalogCycle]) : ReqFun
-  (or!/courses/req (hash-ref se-ul-te-course-table cc)))
+  (passed-one-of/req (hash-ref se-ul-te-course-table cc)))
 
 ;; passed one of the lec-lab courses or a lec and a lab separately.
 ;; this abstraction is just barely okay.
 (define (passed-ee-te-lec-lab-req? [cc : CatalogCycle]) : ReqFun
   (or!/req
-   (or!/courses/req (hash-ref ee-te-lec-lab-table cc))
+   (passed-one-of/req (hash-ref ee-te-lec-lab-table cc))
    (and/req
-    (or!/courses/req (hash-ref ee-te-lec-table cc))
-    (or!/courses/req (hash-ref ee-te-lab-table cc)))))
+    (passed-one-of/req (hash-ref ee-te-lec-table cc))
+    (passed-one-of/req (hash-ref ee-te-lab-table cc)))))
 
 ;; passed the "final" ee TE requirement; there's inaccuracy
 ;; in e.g. disallowing taking 3 labs, assuming that the "other"
 ;; courses are all at least 3 units, etc.
 (define (passed-ee-te-open-req? [cc : CatalogCycle]) : ReqFun
   (or!/req
-   (or!/courses/req (hash-ref ee-te-lec-lab-table cc))
+   (passed-one-of/req (hash-ref ee-te-lec-lab-table cc))
    (or!/req
-    (or!/courses/req (hash-ref ee-te-lec-table cc))
-    (or!/courses/req (hash-ref ee-te-other-table cc)))))
+    (passed-one-of/req (hash-ref ee-te-lec-table cc))
+    (passed-one-of/req (hash-ref ee-te-other-table cc)))))
 
 ;; is this just longer because I hadn't built the abstraction yet?
 ;; short-cutting: find a cpe TE and remove it from the list
