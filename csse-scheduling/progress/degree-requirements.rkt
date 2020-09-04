@@ -591,7 +591,7 @@
             cc
             common-ee-requirements-list))))
 
-(define (make-9-csc-requirements [cc : CatalogCycle]) : LACAR
+(define (make-90-csc-requirements [cc : CatalogCycle]) : LACAR
   (cons (list '(CSC) cc)
         (append
          (common-csc-requirements cc)
@@ -626,7 +626,7 @@
                  "csc492"))
               ;; 24 TE units minus upper-level (above) minus special-problems = 4 courses:
               (make-csc-te-reqs cc 4))))
-          (let ([cc : CatalogCycle "2019-2020"])
+          #;(let ([cc : CatalogCycle "2019-2020"])
             (cons (list '(CSC) cc)
                   (append
                    (common-csc-requirements cc)
@@ -637,7 +637,7 @@
                       csc-sp-2))
                    (make-csc-te-reqs cc 5))))
           ;; waiting on TE listing
-          (let ([cc : CatalogCycle "2020-2021"])
+          #;(let ([cc : CatalogCycle "2020-2021"])
               (cons (list '(CSC) cc)
                     (append
                      ;; technically 431 is still required; in reality... it's not?
@@ -650,7 +650,8 @@
                      (make-csc-te-reqs cc 5)))))
          (Listof (Pairof LAC (Listof Requirement))))
     (ann (list
-          (make-9-csc-requirements "2019-2020")
+          (make-90-csc-requirements "2019-2020")
+          (make-90-csc-requirements "2020-2021")
           ;(cons (list '(CSC) (ann "2019-2020" CatalogCycle)) 2019-2020-csc-requirements)
           (cons (list '(SE) (ann "2017-2019" CatalogCycle)) 2017-2019-se-requirements)
           (cons (list '(SE) (ann "2019-2020" CatalogCycle)) 2019-2020-se-requirements)
@@ -863,3 +864,14 @@
                                       '((2178 "csc202" 4 "A")))
                 (remove* '("csc101" "csc202")
                          (map (inst first ReqName Any) 2017-2019-csc-requirements))))
+
+;; what are the requirements of a typical transfer student?
+#;(missing-requirements (hash-ref program-requirements '((CSC) "2020-2021"))
+                      '((2198 "csc123" 4 "A")
+                        (2202 "csc101" 4 "A")
+                        (2204 "csc202" 4 "A")
+                        (2204 "csc225" 4 "A")))
+
+;; what are the requirements of an incoming first-year?
+#;(missing-requirements (hash-ref program-requirements '((CSC) "2020-2021"))
+                      '())
