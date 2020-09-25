@@ -10,7 +10,7 @@
 (provide
  courses-we-schedule ; used?
  ee-scheduled-courses ; used?
- supervisory-courses ; used?
+ supervisory-courses ; used? yep.
  csc-or-cpe
  2017-course-configuration ; used?
  cycle-course-configuration
