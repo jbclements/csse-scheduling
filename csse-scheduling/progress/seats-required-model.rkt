@@ -125,8 +125,8 @@
   : (Listof (Listof Seat-Requirement))
   (define version-str (string-append (number->string model-qtr) "-1"))
   ;; cast could fail...
-  (define start-idx (cast (sub1 (qtr-subtract/no-summer start-qtr model-qtr)) Natural))
-  (define stop-idx (cast (sub1 (qtr-subtract/no-summer stop-qtr model-qtr)) Natural))
+  (define start-idx (cast (sub1 (qtr-subtract/no-summer start-qtr (summer->spring model-qtr))) Natural))
+  (define stop-idx (cast (sub1 (qtr-subtract/no-summer stop-qtr (summer->spring model-qtr))) Natural))
   (define students (get-students version-str))
   (define chosen-students
     (cond [omit-first-year?
@@ -157,6 +157,19 @@
         (cond [(member (second req) constrained-courses) qtr]
               [else #f])
         (third req))))))
+
+;; map summer to the previous spring, leave others alone.
+;; this is our hack to deal with models based on summer
+;; quarter data
+(define (summer->spring [qtr : Natural]) : Natural
+  qtr
+  (cond [(equal? (qtr->season qtr) "Summer")
+         (prev-qtr qtr)]
+        [else qtr]))
+
+(module+ test
+  (check-equal? (summer->spring 2204) 2204)
+  (check-equal? (summer->spring 2206) 2204))
 
 ;; given a list of seat requirements, combine all of those that differ
 ;; only in the seat count.
