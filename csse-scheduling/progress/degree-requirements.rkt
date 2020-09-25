@@ -217,6 +217,16 @@
            (ghost/req
             (took-one-of/req '("cpe133" "csc202" "csc203" "csc102" "csc103")))))
 
+(define ee-passed-211?
+  (or!/req (pass/req "ee211")
+           (ghost/req
+            (took/req "ee212"))))
+
+(define ee-passed-241?
+  (or!/req (pass/req "ee241")
+           (ghost/req
+            (took/req "ee212"))))
+
 (define passed-123? (pass/req "csc123"))
 
 ;; did this csc student pass the SE requirement? (307 OR 308+309)
@@ -562,7 +572,7 @@
              ;; slight approximation, should be (or (and ... ...) (and ... ...))
              circuits circuits-lab
              ;; check to make sure IME courses aren't filtered out
-             "ee211" "ee241"
+             ;"ee211" "ee241"
              "ee212" "ee242"
              "ee228"
              "ee255" "ee295"
@@ -586,7 +596,10 @@
 (define (make-90-ee-requirements [cc : CatalogCycle]) : LACAR
   (cons (list '(EE) cc)
           (append
-           (list (list "csc101" ee-passed-101?))
+           (list (list "csc101" ee-passed-101?)
+                 (list "ee211" ee-passed-211?)
+                 (list "ee241" ee-passed-241?))
+           
            (all-of-these
             cc
             common-ee-requirements-list))))
