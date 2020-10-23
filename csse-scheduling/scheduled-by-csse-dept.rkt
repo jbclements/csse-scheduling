@@ -255,7 +255,11 @@
       "ee462"
       "ee463"
       "ee464"
+      "ee494"
+      "ee495"
       "ee500"
+      "ee594"
+      "ee595"
       "ee599"))))
 
 ;; map numbers to ids to allow short-cuts in schedule description.
