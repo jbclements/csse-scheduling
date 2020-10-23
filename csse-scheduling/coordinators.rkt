@@ -38,9 +38,20 @@
       (match (string-trim (first l))
         ;; 2 ad-hoc fixups:
         ;["CSC 419" (canonicalize current-catalog "CPE" "419")]
-        [(regexp #px"^([A-Z]+)(/[A-Z]+)? ([0-9]{3})$" (list _ subj _ num))
+        [(regexp #px"^([A-Z]+)(/[A-Z]+)? ([0-9]{3})$" (list _ subj subj2 num))
          (cond [(subject? subj)
-                (canonicalize current-catalog subj (assert num string?))]
+                (define canonicalized
+                  (canonicalize current-catalog subj (assert num string?)))
+                (when subj2
+                  (define canonicalized2
+                           (canonicalize current-catalog (substring subj2 1)
+                                         (assert num string?)))
+                  (unless (equal? canonicalized canonicalized2)
+                    (error 'canonicalize
+                           "different subjects lead to different canonical \
+courses: ~e"
+                           (list canonicalized canonicalized2))))
+                canonicalized]
                [else (error 'coordinators
                             "expected subject, got: ~e"
                             subj)]
