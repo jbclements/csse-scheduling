@@ -52,4 +52,9 @@
         [(list _ _ "") #f]))
     (list canonical-name coordinator)))
 
+(define possible-duplicate (check-duplicates (map (inst first String) coordinators)))
+(when possible-duplicate 
+  (error 'duplicate "coordinators list contains duplicate: ~v\n"
+         possible-duplicate))
+
 
