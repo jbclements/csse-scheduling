@@ -4,6 +4,10 @@
 ;; specifically, it maps canonical course names to a
 ;; list of instructor last names. Courses with no coordinator
 ;; are associated with empty lists.
+
+;; checks to make sure no course appears more than once. Does not
+;; check that all courses are listed (see stale-coordinators.rkt)
+
 (require/typed csv-reading
                [csv->list (Input-Port -> (Listof (Listof Any)))])
 
@@ -63,6 +67,7 @@ courses: ~e"
         [(list _ _ "") #f]))
     (list canonical-name coordinator)))
 
+;; ensure that no course is listed more than once:
 (define possible-duplicate (check-duplicates (map (inst first String) coordinators)))
 (when possible-duplicate 
   (error 'duplicate "coordinators list contains duplicate: ~v\n"
