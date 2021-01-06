@@ -26,7 +26,10 @@
 
 (define (major-requirements [major : String] [cc : CatalogCycle])
   : (Listof Requirement)
-  (hash-ref program-requirements (list (list (string->symbol major)) cc)))
+  (define key (list (list (string->symbol major)) cc))
+  (hash-ref program-requirements key
+            (λ () (error "program requirements table doesn't have an entry for ~e"
+                         key))))
 
 (define max-num-requirements
   (apply max (map (inst length Requirement)

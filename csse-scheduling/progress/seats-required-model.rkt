@@ -59,7 +59,10 @@
 ;; of requirements as the flow chart
 (define requirements-keys (hash-keys program-requirements))
 (for ([key (in-list requirements-keys)])
-  (check-req-names key (hash-ref all-flowcharts key)
+  (check-req-names key (hash-ref all-flowcharts key
+                                 (λ ()
+                                   (error 'requirements-keys "no flowchart found for key: ~e"
+                                          key)))
                    (hash-ref program-requirements key)))
 
 (define (first-year? [student : Student])
