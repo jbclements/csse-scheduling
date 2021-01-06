@@ -489,17 +489,13 @@
    (make-TE-requirements "se" (passed-se-technical-elective? "2017-2019") 3)))
 ;; count TEs
 
-(define 2019-2020-se-requirements : (Listof Requirement)
-  (append
-   (common-se-requirements "2019-2020")
-   (all-of-these
-    (ann "2019-2020" CatalogCycle)
-    '(ethics
-      "csc365"))
+(define (make-90-se-requirements [cc : CatalogCycle]) : LACAR
+  (cons (list '(SE) cc)
+        (append
+   (common-se-requirements cc)
+   (all-of-these cc '(ethics "csc365"))
    ;; 16 TE units minus upper-level minus special problems
-   (make-TE-requirements "se" (passed-se-technical-elective? "2019-2020") 2)))
-;; count TEs
-
+   (make-TE-requirements "se" (passed-se-technical-elective? cc) 2))))
 
 
 (define (common-cpe-requirements [cc : CatalogCycle]) : (Listof Requirement)
@@ -667,8 +663,8 @@
           (make-90-csc-requirements "2020-2021")
           ;(cons (list '(CSC) (ann "2019-2020" CatalogCycle)) 2019-2020-csc-requirements)
           (cons (list '(SE) (ann "2017-2019" CatalogCycle)) 2017-2019-se-requirements)
-          (cons (list '(SE) (ann "2019-2020" CatalogCycle)) 2019-2020-se-requirements)
-          #;(cons (list '(SE) (ann "2020-2021" CatalogCycle)) 2020-sereqs)
+          (make-90-se-requirements "2019-2020")
+          (make-90-se-requirements "2020-2021")
           (cons (list '(CPE) (ann "2017-2019" CatalogCycle)) 2017-2019-cpe-requirements)
           (cons (list '(CPE) (ann "2019-2020" CatalogCycle)) 2019-2020-cpe-requirements)
           (cons (list '(CPE) (ann "2020-2021" CatalogCycle)) 2020-2021-cpe-requirements)

@@ -79,24 +79,28 @@
      )))
 
 (define common-se-flowchart/pre : Flowchart-Spec
-  '(("csc101" 2)
+  '(;; year 1
+    ("csc101" 2)
     ("csc202" 3)
+    ;; year 2
     ("csc203" 4)
-    ("csc225" 4)    
+    ("csc225" 4)
+    ("csc348" 5)    
+    ("csc357" 5 6)
+    ;; year 3
     ("csc305" 8)
     ("csc308" 7)
     ("csc309" 8)
-    ("csc348" 5)
     ("csc349" 7)
-    ("csc357" 5 6)
+    ("csc430" 9)
+    ("csc484" 8)
+    ((se-TE-0) 9)
+    ;; year 4
     ("csc402" 10)
     ("csc405" 11)
     ("csc406" 12)
-    ("csc430" 9)
-    ("csc484" 8)
     ((upper-level-se-TE) 11)
     ((special-problems/se-TE) 10)
-    ((se-TE-0) 9)
     ((se-TE-1) 10)
     ))
 
@@ -113,6 +117,10 @@
    common-se-flowchart/pre
    '(((ethics) 4 5 6)
     ("csc365" 7))))
+
+;; looks the same as se-2019-2020
+(define se-2020-2021-flowchart/pre : Flowchart-Spec
+  se-2019-2020-flowchart/pre)
 
 (define common-cpe-flowchart/pre : Flowchart-Spec
   '(("cpe100" 1)
@@ -265,6 +273,11 @@
           (cons (islac '((SE ftf) "2019-2020"))
                 (cons '((se-TE/123) 1) se-2019-2020-flowchart/pre))
           (cons (islac '((SE) "2019-2020"))
+                (append se-2019-2020-flowchart/pre '(((se-TE/123) 12))))
+
+          (cons (islac '((SE ftf) "2020-2021"))
+                (cons '((se-TE/123) 1) se-2020-2021-flowchart/pre))
+          (cons (islac '((SE) "2020-2021"))
                 (append se-2019-2020-flowchart/pre '(((se-TE/123) 12))))
 
           (cons (islac '((CPE ftf) "2017-2019"))
