@@ -115,7 +115,7 @@
 (define se-2019-2020-flowchart/pre : Flowchart-Spec
   (append
    common-se-flowchart/pre
-   '(((ethics) 4 5 6)
+   '(((ethics) 7 8 9)
     ("csc365" 7))))
 
 ;; looks the same as se-2019-2020
