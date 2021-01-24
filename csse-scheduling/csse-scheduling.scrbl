@@ -41,7 +41,9 @@ to and from other representations.}
 @defproc[(qtr->catalog-cycle ...) ...]{}
 @defproc[(qtrs-in-range ...) ...]{}
 @defproc[(qtr->string ...) ...]{}
-@defproc[(year->qtrs ...) ...]{}
+@defproc[(fall-year->qtrs ...) ...]{
+ Given a years such as 2017, return the quarters in that year (2178, 2182, 2184).
+}
 @defproc[(catalog-cycle->qtrs ...) ...]{}
 
 @defproc[(next-qtr [qtr Natural]) Natural]{

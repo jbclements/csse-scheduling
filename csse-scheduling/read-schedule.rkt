@@ -35,7 +35,8 @@
          InstructorA
          QuarterA
          CourseA
-         availability->total-classroom-wtus)
+         availability->total-classroom-wtus
+         assigned-time-flatten)
 
 
 
@@ -407,6 +408,29 @@
                            "known availability format"
                            0 availability)]))
 
+;; given an assigned time spec, return either a real representing flexible
+;; assigned time to be distributed across the year, or a list of three
+;; reals indicating the amount of assigned time for each quarter.
+(define (assigned-time-flatten [assigned-time-spec : Sexp]) : (U Real (List Real Real Real))
+  (match assigned-time-spec
+    [(list 'total (? nn-real? wtu)) wtu]
+    [(list (list (or 'f 'w 's) (? real?)) ...)
+     ;; cast must succeed by pattern above...
+     (define seasons (cast assigned-time-spec (Listof (List Symbol Real))))
+     (when (check-duplicates (map (inst first Symbol) seasons))
+       (error 'assigned-time-flatten "duplicated season name: ~v" assigned-time-spec))
+     ;; I don't think TR can reason about the length of the iterated list like this
+     (cast
+      (for/list : (Listof Real) ([season-name (in-list '(f w s))])
+        (define assoc-result (assoc season-name seasons))
+        (cond [(not assoc-result) 0]
+              [else ((inst cadr Any Real) assoc-result)]))
+      (List Real Real Real))]
+    [other
+     (error 'assigned-time-flatten
+            "unexpected assigned-time format: ~v"
+            other)]))
+
 (module+ test
   (require typed/rackunit)
 
@@ -418,6 +442,9 @@
   (check-equal? (validate-schedule s1 '()) s1)
   (check-equal? (availability->total-classroom-wtus 'lec-standard) 45)
   (check-equal? (availability->total-classroom-wtus '(fall-winter 3.3)) 3.3)
+
+  (check-equal? (assigned-time-flatten '(total 19)) 19)
+  (check-equal? (assigned-time-flatten '((w 3) (s 2))) '(0 3 2))
 
   )
 

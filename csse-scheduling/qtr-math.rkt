@@ -27,7 +27,7 @@
          qtr->year
          qtr->string
          string->qtr
-         year->qtrs
+         fall-year->qtrs
          catalog-cycle->qtrs
          encode-qtr
          season-after-qtr
@@ -272,13 +272,13 @@
 
 ;; given a year, return the quarters of the academic year beginning in
 ;; the fall of the given year.
-(define (year->qtrs [year : Natural]) : (Listof Qtr)
+(define (fall-year->qtrs [year : Natural]) : (Listof Qtr)
   (qtrs-in-range (fall-year->base-qtr year)
                  (fall-year->base-qtr (add1 year))))
 
 ;; given a catalog cycle, return the quarters that fall into it.
 (define (catalog-cycle->qtrs [cycle : CatalogCycle]) : (Listof Qtr)
-  (apply append (map year->qtrs (catalog-cycle->fall-years cycle))))
+  (apply append (map fall-year->qtrs (catalog-cycle->fall-years cycle))))
 
 ;; return the cal poly number of the first quarter following 'qtr'
 ;; that has the season 'season'.
@@ -385,7 +385,7 @@
   (check-equal? (qtr->string 328) "Fall 1932")
   (check-equal? (string->qtr "Fall 1932") 328)
 
-  (check-equal? (year->qtrs 2016) '(2168 2172 2174))
+  (check-equal? (fall-year->qtrs 2016) '(2168 2172 2174))
 
   (check-equal? (encode-qtr 2023 "Fall") 2238)
   (check-equal? (encode-qtr 1984 "Winter") 842)
