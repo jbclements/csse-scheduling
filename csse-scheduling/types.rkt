@@ -1,6 +1,8 @@
-#lang typed/racket
+#lang typed/racket/base
 
 (provide (all-defined-out))
+
+(require (only-in racket/list first second third fourth))
 
 (define-type Qtr Natural)
 (define-type Course-Id String)
