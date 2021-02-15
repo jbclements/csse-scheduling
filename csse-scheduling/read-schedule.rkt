@@ -30,6 +30,7 @@
          sum-sections
          compress-irec
          record-course-sort-str
+         record-filter
          by-num-by-season
          Schedule
          InstructorA
@@ -37,6 +38,7 @@
          CourseA
          availability->total-classroom-wtus
          assigned-time-flatten)
+
 
 
 
@@ -430,6 +432,18 @@
      (error 'assigned-time-flatten
             "unexpected assigned-time format: ~v"
             other)]))
+
+;; select only records with a particular quarter or name
+(define (record-filter [records : (Listof Record)]
+                       #:course [course : (U False CourseID) #f]
+                       #:qtr [qtr : (U False Qtr) #f]) : (Listof Record)
+  (define (qtr-filter [qtr : (U False Qtr)]) : (Record -> Boolean)
+    (cond [(not qtr) (λ ([r : Record]) #t)]
+          [else (λ ([r : Record]) (equal? (record-qtr r) qtr))]))
+  (define (course-filter [id : (U False CourseID)]) : (Record -> Boolean)
+    (cond [(not id) (λ ([r : Record]) #t)]
+          [else (λ ([r : Record]) (equal? (record-course r) id))]))
+  (filter (course-filter course) (filter (qtr-filter qtr) records)))
 
 (module+ test
   (require typed/rackunit)
