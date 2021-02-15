@@ -39,6 +39,7 @@
          qtr-subtract/no-summer
          qtr-add
          qtr-add/no-summer
+         qtrs-per-year/no-summer
          Season
          Qtr)
 
@@ -197,6 +198,8 @@
     ["Spring" 4]
     ["Summer" 6]
     ["Fall" 8]))
+
+(define qtrs-per-year/no-summer 3)
 
 ;; return the year in which a quarter number falls
 (define (qtr->year [qtr : Qtr]) : Natural
