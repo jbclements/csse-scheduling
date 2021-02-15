@@ -2,13 +2,15 @@
 
 (require "types.rkt"
          "canonicalize.rkt"
+         "qtr-math.rkt"
          racket/list
          racket/match)
 
 (require/typed csv-writing
                [display-table ((Listof (Listof Any)) Output-Port -> Void)])
 
-(provide write-seat-requirements-log)
+(provide write-seat-requirements-log
+         seat-requirements-filter-quarters)
 
 ;; utility function for printing out seat requirement lists:
 
@@ -68,3 +70,27 @@
                    (list pop (format "~a" course) qtr (ceiling seats))]))
               (sort seat-requirements seat-requirement-<)))
        port))))
+
+
+;; this function should be somewhere in csse-scheduling
+
+;; the seat model is full-year. filter out only those quarters that we want.
+;; given a list of requirements and a fraction to which to reduce non-quarter-specific
+;; requirements, return a filtered set of requirements
+(define (seat-requirements-filter-quarters [seat-requirements : (Listof Seat-Requirement)]
+                                      [qtrs : (Listof Natural)])
+  : (Listof Seat-Requirement)
+  ;; what fraction of the whole-year requirements should we include?
+  (define frac (/ (length qtrs) qtrs-per-year/no-summer))
+  (filter
+   (ann (λ (x) (not (not x)))
+        ((U False Seat-Requirement) -> Boolean : #:+ Seat-Requirement))
+   (for/list : (Listof (U False Seat-Requirement))
+     ([req (in-list seat-requirements)])
+     (match req
+       [(Seat-Requirement label course qtr-req seats)
+        (match qtr-req
+          [#f (Seat-Requirement label course qtr-req (* frac seats))]
+          [(? exact-integer? n) (cond [(member n qtrs) req]
+                                      [else #f])])]))))
+
