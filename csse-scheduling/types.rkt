@@ -46,6 +46,7 @@
                          'csc-bs-firstyear 'cpe-bs-firstyear 'se-bs-firstyear
                          'csc-new-transfer 'cpe-new-transfer 'se-new-transfer
                          'ee-bs-firstyear
+                         'ee-new-transfer
                          'csc-ms
                          
                          'laes-csc-bs
