@@ -81,7 +81,7 @@
   (map (λ (yr)
          (define cycle (fall-year->catalog-cycle yr))
          (cons cycle (configurations-cache cycle)))
-       '(2017 2019 2020)))
+       '(2017 2019 2020 2021)))
 
 ;; extending this to handle the ad-hoc per-student data as well...
 

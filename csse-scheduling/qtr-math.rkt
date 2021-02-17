@@ -67,7 +67,8 @@
        (define-type type-name (U cycle ...))
        (define list-name (list cycle ...)))]))
 
-;; extend as needed...
+;; extend as needed... Also, add the new year to the configuration-fetcher
+;; in fetch-mappings.rkt
 (cycle-defs
  CatalogCycle
  all-cycles
