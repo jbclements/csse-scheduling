@@ -69,9 +69,12 @@
                          ;; warning! overlaps with other groups:
                          'csse-cia-minor
                          'csse-data-minor
+                         'csse-bioinf-minor
 
                          'non-csse-data-minor
                          'non-csse-cia-minor
+                         'non-csse-bioinf-minor
+
                          ;; laes?
                          ;; represents a once-only load 
                          (List 'one-off Real)
