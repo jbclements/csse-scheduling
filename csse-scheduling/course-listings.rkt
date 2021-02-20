@@ -17,7 +17,7 @@
          ee-te-other-table
          )
 
-(define must-have-these-cycles '("2019-2020" "2020-2021"))
+(define must-have-these-cycles '("2019-2020" "2020-2021" "2021-2022"))
 
 (define-runtime-path here ".")
 
@@ -29,6 +29,17 @@
     (file->lines (build-path here "course-lists"
                              (string-append cc "-" tablename ".txt"))))
   (convert-table-text-lines cc lines))
+
+;; given the cc and tablename, read the corresponding csv file
+;; and return the list of course ids it contains
+(define (read-csv-table [cc : CatalogCycle]
+                        [tablename : String])
+  : (Listof String)
+  (define lines
+    (file->lines (build-path here "course-lists"
+                             (string-append cc "-" tablename ".csv"))))
+  (map ensure-canonical lines)
+  lines)
 
 ;; ensure the list of lines has the expected format, canonicalize
 ;; each one
@@ -58,8 +69,6 @@
                      other)])])))
 
 (define (course-line->id [cc : CatalogCycle] [s : String]) : Course-Id
-
-
   (match s
     ;; EG "CPE 426"
     [(regexp #px"^([A-Z]{2,4}) ([0-9]{3})$" (list _ subject num-str))
@@ -91,42 +100,6 @@
      (canonicalize cc (cast subject String) (cast num-str String))]
     ))
 
-(module+ test
-  (require typed/rackunit)
-  (check-equal?
-   (convert-table-text-lines
-    "2020-2021"
-    (list "CSC 430"
-          "\tfoo"
-          "EE 504"
-          "\tbar"))
-   
-   
-   (list "csc430" "ee504"))
-
-  (check-equal?
-   (convert-table-text-lines
-    "2020-2021"
-    (list
-     "CSC 497" "& CSC 498"
-     "\tResearch Senior Project I"
-     "and Research Senior Project II\t"
-     "CSC 508"
-     "\tSoftware Engineering I\t"))
-   (list "csc497" "csc498" "csc508"))
-
-  (check-equal? (course-line->id "2019-2020" "CSC 430") "csc430")
-  (check-equal? (course-line->id "2019-2020" "CSC/CPE 321")
-                "csc321")
-  (check-equal? (course-line->id "2019-2020" "CPE 488/IME 458/MATE 458"
-                                 )
-                "cpe488")
-  (check-equal? (course-line->id "2020-2021" "EE 431/CPE 441")
-                "cpe441")
-
-  (check-equal? (course-line->id "2019-2020" "IME/MATE 458/CPE 488")
-                "cpe488")
-  )
 
 ;; these classes may be used as technical electives in the 2015-2017 catalog
 (define 2015-csc-te-courses
@@ -364,6 +337,10 @@
   : (Pairof CatalogCycle (Listof String))
   (cons cc (convert-table-text cc table-name)))
 
+(define (table-pair2 [cc : CatalogCycle] [table-name : String])
+  : (Pairof CatalogCycle (Listof String))
+  (cons cc (read-csv-table cc table-name)))
+
 
 (define (cycles->table-pairs [table-name : String]
                              [cycles : (Listof CatalogCycle)])
@@ -378,7 +355,8 @@
     (make-cc-course-hash
      (ann (list (cons "2017-2019" 2017-csc-te-courses)
                 (cons "2019-2020" 2019-2020-csc-te-courses)
-                (table-pair "2020-2021" table-name))
+                (table-pair "2020-2021" table-name)
+                (table-pair2 "2021-2022" table-name))
           (Listof (Pairof String (Listof String)))))))
 
 ;; these classes may be used as the upper-level technical elective in the
@@ -389,7 +367,8 @@
     (make-cc-course-hash
      (ann (list (cons "2017-2019" 2017-csc-ul-te-courses)
                 (cons "2019-2020" 2019-2020-csc-ul-te-courses)
-                (table-pair "2020-2021" table-name))
+                (table-pair "2020-2021" table-name)
+                (table-pair2 "2021-2022" table-name))
           (Listof (Pairof String (Listof String)))))))
 
 (define se-te-course-table : CC-Course-Hash
@@ -398,7 +377,8 @@
     (make-cc-course-hash
      (ann (list (cons "2017-2019" 2017-se-te-courses)
                 (cons "2019-2020" 2019-2020-se-te-courses)
-                (table-pair "2020-2021" table-name))
+                (table-pair "2020-2021" table-name)
+                (table-pair2 "2021-2022" table-name))
           (Listof (Pairof String (Listof String)))))))
 
 (define se-ul-te-course-table : CC-Course-Hash
@@ -407,14 +387,32 @@
     (make-cc-course-hash
      (ann (list (cons "2017-2019" 2017-se-ul-te-courses)
                 (cons "2019-2020" 2019-2020-se-ul-te-courses)
-                (table-pair "2020-2021" table-name))
+                (table-pair "2020-2021" table-name)
+                (table-pair2 "2021-2022" table-name))
           (Listof (Pairof String (Listof String)))))))
 
+;; use this query to compute CPE TE courses for now:
+;; \COPY (SELECT ci.id FROM (course_mappings cm INNER JOIN course_info ci ON
+;; cm.id=ci.id AND cm.cycle=ci.cycle) WHERE cm.cycle='2021-2022' AND
+;; (cm.subject='CPE' OR cm.subject='CSC' OR cm.subject='EE') AND
+;; (cm.num LIKE '3__' OR cm.num LIKE '4__' OR cm.num LIKE '5__')
+;; AND ci.configuration != 'nonstandard') TO '/tmp/cpe-te-ids.tsv';
 (define cpe-te-course-table : CC-Course-Hash
+  (let ()
+    (define table-name "cpe-te-course-table")
   (make-cc-course-hash
    `(("2017-2019" . ,2017-cpe-te-courses)
      ("2019-2020" . ,2019-2020-cpe-te-courses)
-     ("2020-2021" . ,2020-2021-cpe-te-courses))))
+     ("2020-2021" . ,2020-2021-cpe-te-courses)
+     ,(table-pair2 "2021-2022" table-name)))))
+
+(define cpe-extra-te-course-table : CC-Course-Hash
+  (let ()
+    (define table-name "cpe-extra-te-course-table")
+  (make-cc-course-hash
+   `(("2019-2020" . ())
+     ("2020-2021" . ())
+     ,(table-pair2 "2021-2022" table-name)))))
 
 (define csc-ms-500-level-course-table : CC-Course-Hash
   (let ()
@@ -423,36 +421,88 @@
   (make-cc-course-hash
    `(("2017-2019" . ,2017-csc-grad-courses)
      ,(table-pair "2019-2020" table-name)
-     ,(table-pair "2020-2021" table-name)))))
+     ,(table-pair "2020-2021" table-name)
+     ,(table-pair2 "2021-2022" table-name)))))
 
 (define csc-ms-open-level-course-table : CC-Course-Hash
-  (make-cc-course-hash
    ;; this is a pretty good proxy; it's not written down in the catalog, and
    ;; it's technically up to the advisor, I believe
+  (make-cc-course-hash
+   (let ()
+     (define table-name "cpe-te-course-table")
    `(("2017-2019" . ,2017-cpe-te-courses)
      ("2019-2020" . ,2019-2020-cpe-te-courses)
-     ("2020-2021" . ,2020-2021-cpe-te-courses))))
+     ("2020-2021" . ,2020-2021-cpe-te-courses)
+     ,(table-pair2 "2021-2022" table-name)))))
 
 (define cs-minor-course-table  : (Immutable-HashTable String (Listof String))
   (let ()
     (define table-name "cs-minor-course-table")
     (make-cc-course-hash
      `(("2017-2019" . ,2017-cs-minor-courses)
-       ,@(cycles->table-pairs table-name (list "2019-2020" "2020-2021"))))))
+       ,@(cycles->table-pairs table-name (list "2019-2020" "2020-2021"))
+       ,(table-pair2 "2021-2022" table-name)))))
 
 
 (define ee-te-lec-lab-table : CC-Course-Hash
   (make-cc-course-hash
-   (cycles->table-pairs "ee-te-lec-lab" (list "2019-2020" "2020-2021"))))
+   (append
+    (cycles->table-pairs "ee-te-lec-lab" (list "2019-2020" "2020-2021"))
+    (list (table-pair2 "2021-2022" "ee-te-lec-lab")))))
 
 (define ee-te-lec-table : CC-Course-Hash
   (make-cc-course-hash
-   (cycles->table-pairs "ee-te-lec" (list "2019-2020" "2020-2021"))))
+   (append
+    (cycles->table-pairs "ee-te-lec" (list "2019-2020" "2020-2021"))
+    (list (table-pair2 "2021-2022" "ee-te-lec")))))
 
 (define ee-te-lab-table : CC-Course-Hash
   (make-cc-course-hash
-   (cycles->table-pairs "ee-te-lab" (list "2019-2020" "2020-2021"))))
+   (append
+    (cycles->table-pairs "ee-te-lab" (list "2019-2020" "2020-2021"))
+    (list (table-pair2 "2021-2022" "ee-te-lab")))))
 
 (define ee-te-other-table : CC-Course-Hash
   (make-cc-course-hash
-   (cycles->table-pairs "ee-te-other" (list "2019-2020" "2020-2021"))))
+   (append
+    (cycles->table-pairs "ee-te-other" (list "2019-2020" "2020-2021"))
+    (list (table-pair2 "2021-2022" "ee-te-other")))))
+
+
+
+(module+ test
+  (require typed/rackunit)
+  (check-equal?
+   (convert-table-text-lines
+    "2020-2021"
+    (list "CSC 430"
+          "\tfoo"
+          "EE 504"
+          "\tbar"))
+   
+   
+   (list "csc430" "ee504"))
+
+  (check-equal?
+   (convert-table-text-lines
+    "2020-2021"
+    (list
+     "CSC 497" "& CSC 498"
+     "\tResearch Senior Project I"
+     "and Research Senior Project II\t"
+     "CSC 508"
+     "\tSoftware Engineering I\t"))
+   (list "csc497" "csc498" "csc508"))
+
+  (check-equal? (course-line->id "2019-2020" "CSC 430") "csc430")
+  (check-equal? (course-line->id "2019-2020" "CSC/CPE 321")
+                "csc321")
+  (check-equal? (course-line->id "2019-2020" "CPE 488/IME 458/MATE 458"
+                                 )
+                "cpe488")
+  (check-equal? (course-line->id "2020-2021" "EE 431/CPE 441")
+                "cpe441")
+
+  (check-equal? (course-line->id "2019-2020" "IME/MATE 458/CPE 488")
+                "cpe488")
+  )
