@@ -153,7 +153,8 @@
 (define (row-num [r : MappingRow]) : String
   (vector-ref r 2))
 
-;; ensure that a course id is in the canonical list
+;; ensure that a course id is in the canonical list. Signal an error
+;; if not. return it if it's okay
 ;; (this defn must be early to allow its use in courses-we-schedule)
 (define (ensure-canonical [s : String]) : String
   (cond [(canonical-id? s) s]

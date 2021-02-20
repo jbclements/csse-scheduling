@@ -150,6 +150,11 @@ Just dumping this here...}
          courses-in-subject
 }
 
+@defproc[(ensure-canonical [catalog-cycle Catalog-Cycle] [id String]) String]{
+Ensure the given id is a canonical id for the given catalog-cycle. Signal
+an error if it isn't. return it if it is.
+}
+
 @defproc[(course-key [course String]) String]{
   Given a course-id, return a string suitable for sorting
   with @racket[string<?]. This defines the standard
