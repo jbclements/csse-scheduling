@@ -39,13 +39,8 @@
     ("csc203" 4)
     ("csc225" 4 5 6)
     ((csc-SE) 7)
-    ("csc348" 5 6)
     ("csc357" 5 6 7)
-    ((upper-level-csc-TE) 11)
     ((csc-TE-0) 8)
-    ((csc-TE-1) 8)
-    ((csc-TE-2) 9)
-    ((csc-TE-3) 10)
     ))
 
 (define csc-2017-2019-flowchart/pre : Flowchart-Spec
@@ -53,6 +48,7 @@
    csc-core
    '(("csc300" 7 8 9 10 11)
      ("cpe315" 5 6 7 8 9)
+     ("csc348" 5 6)
      ("csc349" 7)
      ("csc430" 8)
      ("csc431" 9)
@@ -61,13 +57,39 @@
      ("csc491" 11)
      ("csc492" 12)
      ((csc-TE/special-problems) 11)
+     ((upper-level-csc-TE) 11)
+    
+    ((csc-TE-1) 8)
+    ((csc-TE-2) 9)
+    ((csc-TE-3) 10)
      )))
+
+(define csc-2021-2022-flowchart/pre : Flowchart-Spec
+  (append
+   csc-core
+   '(("csc348" 5)
+     ("cpe315" 5 6 7)
+     ("csc349" 6)
+     ((security) 8)
+     ("csc430" 8 9)
+     ((ethics) 7 8 9)
+     ((csc-TE-1) 9)
+     ((csc-TE-2) 10)
+     ("csc445" 10)
+     ("csc453" 10 11 12)
+     ((csc-TE-3) 11)
+     ((csc-sp-1) 11)
+     ((csc-sp-2) 12)
+     ((upper-level-csc-TE) 12)
+     ((csc-TE/special-problems) 12))))
 
 (define csc-2020-2021-flowchart/pre : Flowchart-Spec
   (append
    csc-core
    '(((ethics) 7 8 9)
      ("cpe315" 5 6 7)
+     
+     ("csc348" 5 6)
      ("csc349" 6 7) 
      ("csc430" 7 8)
      ((csc-TE-4) 9 10 11)
@@ -76,6 +98,10 @@
      ((csc-sp-1) 11)
      ((csc-sp-2) 12)
      ((csc-TE/special-problems) 12)
+     ((upper-level-csc-TE) 11)
+     ((csc-TE-1) 8)
+     ((csc-TE-2) 9)
+     ((csc-TE-3) 10)
      )))
 
 (define common-se-flowchart/pre : Flowchart-Spec
@@ -246,69 +272,58 @@
 
 (define-type LAC (List Any CatalogCycle))
 
+;; define two separate flow charts, one for those who take 123 at
+;; the beginning and one for those who don't.
+(define (make-flowchart-pair [tag : Symbol] [cc : CatalogCycle]
+                             [prelim-spec : Flowchart-Spec])
+  : (Listof (Pairof LAC Flowchart-Spec))
+  (define tag-123
+    (match tag
+      ['CSC '(csc-TE/123)]
+      ['CPE '(cpe-TE/123)]
+      ['SE  '(se-TE/123)]))
+    (list
+     (cons (islac (list (list tag 'ftf) cc))
+           (cons (list tag-123 1) prelim-spec))
+     (cons (islac (list (list tag) cc))
+           (append prelim-spec (list (list tag-123 12))))))
+
+
 (define all-flowcharts : (Immutable-HashTable LAC Flowchart-Spec)
   (make-immutable-hash
-   (ann
-    ;; for FTF (they must take 123:)
-    (list (cons (islac '((CSC ftf) "2017-2019"))
-                (cons '((csc-TE/123) 1) csc-2017-2019-flowchart/pre))
-          (cons (islac '((CSC) "2017-2019"))
-                (append csc-2017-2019-flowchart/pre '(((csc-TE/123) 12))))
-
-          (cons (islac '((CSC ftf) "2019-2020"))
-                (cons '((csc-TE/123) 1) csc-2020-2021-flowchart/pre))
-          (cons (islac '((CSC) "2019-2020"))
-                (append csc-2020-2021-flowchart/pre '(((csc-TE/123) 12))))
-
-          (cons (islac '((CSC ftf) "2020-2021"))
-                (cons '((csc-TE/123) 1) csc-2020-2021-flowchart/pre))
-          (cons (islac '((CSC) "2020-2021"))
-                (append csc-2020-2021-flowchart/pre '(((csc-TE/123) 12))))
-
-          (cons (islac '((SE ftf) "2017-2019"))
-                (cons '((se-TE/123) 1) se-2017-2019-flowchart/pre))
-          (cons (islac '((SE) "2017-2019"))
-                (append se-2017-2019-flowchart/pre '(((se-TE/123) 12))))
-
-          (cons (islac '((SE ftf) "2019-2020"))
-                (cons '((se-TE/123) 1) se-2019-2020-flowchart/pre))
-          (cons (islac '((SE) "2019-2020"))
-                (append se-2019-2020-flowchart/pre '(((se-TE/123) 12))))
-
-          (cons (islac '((SE ftf) "2020-2021"))
-                (cons '((se-TE/123) 1) se-2020-2021-flowchart/pre))
-          (cons (islac '((SE) "2020-2021"))
-                (append se-2019-2020-flowchart/pre '(((se-TE/123) 12))))
-
-          (cons (islac '((CPE ftf) "2017-2019"))
-                (cons '((cpe-TE/123) 1) cpe-2017-2019-flowchart/pre))
-          (cons (islac '((CPE) "2017-2019"))
-                (append cpe-2017-2019-flowchart/pre '(((cpe-TE/123) 12))))
-
-          (cons (islac '((CPE ftf) "2019-2020"))
-                (cons '((cpe-TE/123) 1) cpe-2019-2020-flowchart/pre))
-          (cons (islac '((CPE) "2019-2020"))
-                (append cpe-2019-2020-flowchart/pre '(((cpe-TE/123) 12))))
-
-          (cons (islac '((CPE ftf) "2020-2021"))
-                (cons '((cpe-TE/123) 1) cpe-2020-2021-flowchart/pre))
-          (cons (islac '((CPE) "2020-2021"))
-                (append cpe-2020-2021-flowchart/pre '(((cpe-TE/123) 12))))
-
-          (cons (islac '((EE) "2019-2020"))
-                ee-common-flowchart)
-          (cons (islac '((EE ftf) "2019-2020"))
-                ee-common-flowchart)
-          (cons (islac '((EE) "2020-2021"))
-                ee-common-flowchart)
-          (cons (islac '((EE ftf) "2020-2021"))
-                ee-common-flowchart))
-    (Listof (Pair LAC Flowchart-Spec)))))
+   ;; for FTF (they must take 123:)
+    (append
+     (make-flowchart-pair 'CSC "2017-2019" csc-2017-2019-flowchart/pre)
+     ;; weird... but apparently correct?
+     (make-flowchart-pair 'CSC "2019-2020" csc-2020-2021-flowchart/pre)
+     (make-flowchart-pair 'CSC "2020-2021" csc-2020-2021-flowchart/pre)
+     (make-flowchart-pair 'CSC "2021-2022" csc-2021-2022-flowchart/pre)
+     ;; SE
+     (make-flowchart-pair 'SE "2017-2019" se-2017-2019-flowchart/pre)
+     (make-flowchart-pair 'SE "2019-2020" se-2019-2020-flowchart/pre)
+     (make-flowchart-pair 'SE "2020-2021" se-2020-2021-flowchart/pre)
+     ;; assuming same as last year?
+     (make-flowchart-pair 'SE "2021-2022" se-2020-2021-flowchart/pre)
+     ;; CPE
+     (make-flowchart-pair 'CPE "2017-2019" cpe-2017-2019-flowchart/pre)
+     (make-flowchart-pair 'CPE "2019-2020" cpe-2019-2020-flowchart/pre)
+     (make-flowchart-pair 'CPE "2020-2021" cpe-2020-2021-flowchart/pre)
+     ;; assuming same as last year?
+     (make-flowchart-pair 'CPE "2021-2022" cpe-2020-2021-flowchart/pre)     
+     (ann
+      (list 
+          (cons (islac '((EE) "2019-2020")) ee-common-flowchart)
+          (cons (islac '((EE ftf) "2019-2020")) ee-common-flowchart)
+          (cons (islac '((EE) "2020-2021")) ee-common-flowchart)
+          (cons (islac '((EE ftf) "2020-2021")) ee-common-flowchart)
+          (cons (islac '((EE) "2021-2022")) ee-common-flowchart)
+          (cons (islac '((EE ftf) "2021-2022")) ee-common-flowchart))
+      (Listof (Pair LAC Flowchart-Spec))))))
 
 
 ;; if only...
 (define max-program-qtrs 12)
-
+;; ensure that all flowchart entries are in the range [1 .. 12]
 (when (not (andmap (λ (x) (and (integer? x)
                                (<= 1 x max-program-qtrs)))
                    (apply
@@ -318,6 +333,12 @@
                                 (hash-values all-flowcharts))))))
   (error 'qtr-check
          "one or more flowchart entries are not in the legal range"))
+
+(for ([spec (in-list (hash-values all-flowcharts))])
+  (define maybe-dup (check-duplicates (map (inst car ReqName) spec)))
+  (when maybe-dup
+    (error 'spec-check "duplicated key ~e in flowchart spec"
+           maybe-dup)))
 
 ;; given a flowchart, split it into a list of tuples
 ;; of the form requirement name x qtr x fraction,
@@ -404,7 +425,7 @@
   (define sum-of-result-reqs (apply + (map tup-seats result)))
   (unless (= (length reqs-left) sum-of-result-reqs)
     (let ([ans reqs-left])
-      (printf "reqs-left: ~s\n" ans)
+      (printf "info for this error: reqs-left: ~s\n" ans)
       ans)
     (error 'filter-flow-chart
            "expected reqs to sum to ~v, got ~v in result ~v"
