@@ -25,6 +25,7 @@
                               "csc596" "csc597" "csc599"))
    (cons '(microcon) (list "cpe329" "cpe316" "cpe336"))
    (cons '(ethics) (list "csc300" "phil323"))
+   (cons '(security) (list "csc321" "csc323" "csc325"))
    (cons '(ee-microcon) '("cpe329" "cpe336"))
    (cons '(circuits) '("ee112" "ee113"))
    (cons '(circuits-lab) '("ee143" "ime156"))
