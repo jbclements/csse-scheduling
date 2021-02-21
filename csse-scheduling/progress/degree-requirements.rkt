@@ -453,6 +453,34 @@
                (or!/req got-special-problems-credit?
                         (passed-csc-technical-elective? cc))))))
 
+
+(define (make-90-csc-requirements [cc : CatalogCycle]) : LACAR
+  (cons (list '(CSC) cc)
+        (append
+         (common-csc-requirements cc)
+         (all-of-these
+          cc
+          '(ethics
+            csc-sp-1
+            csc-sp-2))
+         ;; catalog 6 + 1 (for 431) - ul,csc/123,csc/specialproblems = 4 left: (?)
+         (make-csc-te-reqs cc 5)))) 
+
+(define (make-21-csc-requirements [cc : CatalogCycle]) : LACAR
+  (cons (list '(CSC) cc)
+        (append
+         (common-csc-requirements cc)
+         (all-of-these
+          cc
+          '(ethics
+            security
+            csc-sp-1
+            csc-sp-2))
+         ;; catalog 7 - ul,csc/123,csc/specialproblems = 4 left:
+         (make-csc-te-reqs cc 4))))
+
+;; upcoming: databases becomes required.
+
 ;; the master list of requirements
 (define (common-se-requirements [cc : CatalogCycle]) : (Listof Requirement)
   (append
@@ -489,7 +517,7 @@
    (make-TE-requirements "se" (passed-se-technical-elective? "2017-2019") 3)))
 ;; count TEs
 
-(define (make-90-se-requirements [cc : CatalogCycle]) : LACAR
+(define (make-901-se-requirements [cc : CatalogCycle]) : LACAR
   (cons (list '(SE) cc)
         (append
    (common-se-requirements cc)
@@ -528,39 +556,24 @@
       "cpe461"
       "cpe462"))))
 
-(define 2019-2020-cpe-requirements
-  (append
-   (common-cpe-requirements "2019-2020")
-   (all-of-these
-    (ann "2019-2020" CatalogCycle)
-    '(cpe-arch
-      microcon
-      circuits cpe-circuits-lab
-      "ee211" "ee241"
-      "ee212" "ee242"
-      cpe-signals
-      "ee306" "ee346"
-      "ee307" "ee347"
-      cpe-sp-1
-      cpe-sp-2))
-   ))
 
-
-(define 2020-2021-cpe-requirements
-  (append
-   (common-cpe-requirements "2020-2021")
-   (all-of-these
-    (ann "2020-2021" CatalogCycle)
-    '(cpe-arch
-      microcon
-      circuits cpe-circuits-lab
-      "ee211" "ee241"
-      "ee212" "ee242"
-      cpe-signals
-      "ee306" "ee346"
-      "ee307" "ee347"
-      cpe-sp-1
-      cpe-sp-2))))
+(define (make-901-cpe-requirements [cc : CatalogCycle]) : LACAR
+  (cons (list '(CPE) cc)
+        (append
+         (common-cpe-requirements cc)
+         (all-of-these
+          (ann cc CatalogCycle)
+          '(cpe-arch
+            microcon
+            circuits cpe-circuits-lab
+            "ee211" "ee241"
+            "ee212" "ee242"
+            cpe-signals
+            "ee306" "ee346"
+            "ee307" "ee347"
+            cpe-sp-1
+            cpe-sp-2))
+         )))
 
 (define common-ee-requirements-list
   '("cpe133" "cpe233"
@@ -589,7 +602,7 @@
              ))
 
 ;; only valid for 2019-2020 and 2020-2021...
-(define (make-90-ee-requirements [cc : CatalogCycle]) : LACAR
+(define (make-901-ee-requirements [cc : CatalogCycle]) : LACAR
   (cons (list '(EE) cc)
           (append
            (list (list "csc101" ee-passed-101?)
@@ -600,16 +613,6 @@
             cc
             common-ee-requirements-list))))
 
-(define (make-90-csc-requirements [cc : CatalogCycle]) : LACAR
-  (cons (list '(CSC) cc)
-        (append
-         (common-csc-requirements cc)
-         (all-of-these
-          cc
-          '(ethics
-            csc-sp-1
-            csc-sp-2))
-         (make-csc-te-reqs cc 5))))
 
 
 (define-type LAC (List Any CatalogCycle))
@@ -635,41 +638,28 @@
                  "csc492"))
               ;; 24 TE units minus upper-level (above) minus special-problems = 4 courses:
               (make-csc-te-reqs cc 4))))
-          #;(let ([cc : CatalogCycle "2019-2020"])
-            (cons (list '(CSC) cc)
-                  (append
-                   (common-csc-requirements cc)
-                   (all-of-these
-                    cc
-                    '(ethics
-                      csc-sp-1
-                      csc-sp-2))
-                   (make-csc-te-reqs cc 5))))
-          ;; waiting on TE listing
-          #;(let ([cc : CatalogCycle "2020-2021"])
-              (cons (list '(CSC) cc)
-                    (append
-                     ;; technically 431 is still required; in reality... it's not?
-                     (common-csc-requirements cc)
-                     (all-of-these
-                      cc
-                      '(ethics
-                        csc-sp-1
-                        csc-sp-2))
-                     (make-csc-te-reqs cc 5)))))
+          )
          (Listof (Pairof LAC (Listof Requirement))))
     (ann (list
+          ;; CSC
           (make-90-csc-requirements "2019-2020")
           (make-90-csc-requirements "2020-2021")
+          (make-21-csc-requirements "2021-2022")
           ;(cons (list '(CSC) (ann "2019-2020" CatalogCycle)) 2019-2020-csc-requirements)
+          ;; SE
           (cons (list '(SE) (ann "2017-2019" CatalogCycle)) 2017-2019-se-requirements)
-          (make-90-se-requirements "2019-2020")
-          (make-90-se-requirements "2020-2021")
+          (make-901-se-requirements "2019-2020")
+          (make-901-se-requirements "2020-2021")
+          (make-901-se-requirements "2021-2022")
+          ;; CPE
           (cons (list '(CPE) (ann "2017-2019" CatalogCycle)) 2017-2019-cpe-requirements)
-          (cons (list '(CPE) (ann "2019-2020" CatalogCycle)) 2019-2020-cpe-requirements)
-          (cons (list '(CPE) (ann "2020-2021" CatalogCycle)) 2020-2021-cpe-requirements)
-          (make-90-ee-requirements "2019-2020")
-          (make-90-ee-requirements "2020-2021"))
+          (make-901-cpe-requirements "2019-2020")
+          (make-901-cpe-requirements "2020-2021")
+          (make-901-cpe-requirements "2021-2022")
+          ;; EE
+          (make-901-ee-requirements "2019-2020")
+          (make-901-ee-requirements "2020-2021")
+          (make-901-ee-requirements "2021-2022"))
          (Listof (Pairof LAC (Listof Requirement)))))
    (Listof (Pairof LAC (Listof Requirement))))))
 
