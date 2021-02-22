@@ -154,6 +154,11 @@
 (define (fall-year->base-qtr [year : Natural]) : Qtr
   (encode-qtr year "Fall"))
 
+;; map a year to the summer quarter that occurs in it. (*before* the
+;; fall quarter.)
+(define (fall-year->summer-qtr [year : Natural]) : Qtr
+  (encode-qtr year "Summer"))
+
 ;; map a qtr to the fall year (summer goes forward...)
 (define (qtr->fall-year [qtr : Qtr]) : Natural
   (define base-year (qtr->year qtr))
@@ -262,7 +267,7 @@
 ;; return the quarter numbers greater than or equal
 ;; to the first quarter and less than the second.
 ;; ignore summer quarters.
-(: qtrs-in-range (Natural Natural [#:include-summer? Boolean]-> (Listof Natural)))
+(: qtrs-in-range (Natural Natural [#:include-summer? Boolean] -> (Listof Natural)))
 (define (qtrs-in-range min max #:include-summer? [include-summer? #f])
   (define qtr-pairs
     (map enum-n->qtr
@@ -275,14 +280,25 @@
   (map encode-qtr/2 filtered-pairs))
 
 ;; given a year, return the quarters of the academic year beginning in
-;; the fall of the given year.
+;; the fall of the given year (omitting all summer quarters)
 (define (fall-year->qtrs [year : Natural]) : (Listof Qtr)
   (qtrs-in-range (fall-year->base-qtr year)
                  (fall-year->base-qtr (add1 year))))
 
+;; given a year, return the quarters of the academic year beginning in
+;; the summer of the given year.
+(define (fall-year->qtrs/summer [year : Natural]) : (Listof Qtr)
+  (qtrs-in-range (fall-year->summer-qtr year)
+                 (fall-year->summer-qtr (add1 year))
+                 #:include-summer? #t))
+
 ;; given a catalog cycle, return the quarters that fall into it.
-(define (catalog-cycle->qtrs [cycle : CatalogCycle]) : (Listof Qtr)
-  (apply append (map fall-year->qtrs (catalog-cycle->fall-years cycle))))
+(define (catalog-cycle->qtrs [cycle : CatalogCycle]
+                             #:include-summer? [include-summer? : Boolean #f])
+  : (Listof Qtr)
+  (define enumerator (cond [include-summer? fall-year->qtrs/summer]
+                           [else fall-year->qtrs]))
+  (apply append (map enumerator (catalog-cycle->fall-years cycle))))
 
 ;; return the cal poly number of the first quarter following 'qtr'
 ;; that has the season 'season'.
@@ -356,6 +372,8 @@
 
   (check-equal? (catalog-cycle->qtrs "2015-2017")
                 '(2158 2162 2164 #;2166 2168 2172 2174 #;2176))
+  (check-equal? (catalog-cycle->qtrs (ann "2015-2017" CatalogCycle) #:include-summer? #t)
+                '(2156 2158 2162 2164 2166 2168 2172 2174))
   
   (check-equal? (qtr->year 2018) 2001)
   (check-equal? (qtr->year 976) 1997)
