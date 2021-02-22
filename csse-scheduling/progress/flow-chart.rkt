@@ -265,6 +265,62 @@
     
     ))
 
+(define ee-2021-flowchart : Flowchart-Spec
+  '(;; FIRST YEAR
+    ("ee111" 1)
+    ("ee151" 1)
+    ("csc101" 2)
+    ((circuits) 3)
+    ((circuits-lab) 3)
+    ;; SECOND YEAR
+    ("ee211" 4)
+    ("ee241" 4)
+    ("cpe133" 4)
+
+    ("ee212" 5)
+    ("ee242" 5)
+    ("cpe233" 5)
+
+    ("ee255" 6)
+    ("ee295" 6)
+    ("ee228" 6)
+    ;; this is different:
+    ("ee335" 6)
+    ;; so is this:
+    ("ee375" 6)
+
+    ;; THIRD YEAR
+    ("ee306" 7)
+    ("ee346" 7)
+    ("cpe328" 7)
+    ("cpe368" 7)
+    ;; so is this:
+    ("ee402" 7)
+
+    ("ee307" 8)
+    ("ee347" 8)
+    ("ee302" 8)
+    ("ee342" 8)
+    ("ee314" 8)
+
+    ("ee308" 9)
+    ("ee348" 9)
+    ((ee-microcon) 9)
+
+    ;; FOURTH YEAR
+    ("ee409" 10)
+    ("ee449" 10)
+    ("ee460" 10)
+    ((ee-TE-0) 10)
+
+    ((ee-TE-1) 11)
+    ((ee-sp-1) 11)
+    
+    ((ee-TE-2) 12)
+    ((ee-sp-2) 12)
+    
+    ))
+
 
 (define-syntax islac
   (syntax-rules ()
@@ -316,8 +372,8 @@
           (cons (islac '((EE ftf) "2019-2020")) ee-common-flowchart)
           (cons (islac '((EE) "2020-2021")) ee-common-flowchart)
           (cons (islac '((EE ftf) "2020-2021")) ee-common-flowchart)
-          (cons (islac '((EE) "2021-2022")) ee-common-flowchart)
-          (cons (islac '((EE ftf) "2021-2022")) ee-common-flowchart))
+          (cons (islac '((EE) "2021-2022")) ee-2021-flowchart)
+          (cons (islac '((EE ftf) "2021-2022")) ee-2021-flowchart))
       (Listof (Pair LAC Flowchart-Spec))))))
 
 
