@@ -1,14 +1,15 @@
 #lang typed/racket/base
 
-;; this file lists all of the courses that we schedule.
-
-;; when we add new courses, we need to also add them to this
-;; file. We'll probably notice, though, because attempts to
-;; schedule them will fail. (How?)
-
+;; this file has a bunch of useful functions, but it doesn't
+;; really do what it used to do, so its raison d'etre is kind
+;; of broken.
 
 (provide
+ ;; this is out-of-date. Try to replace it with non-supervisory-computing-courses
  courses-we-schedule ; used?
+ non-supervisory-computing-courses
+ ;; includes any courses cross-listed as csc:
+ non-supervisory-csc-courses
  ee-scheduled-courses ; used?
  supervisory-courses ; used? yep.
  csc-or-cpe
@@ -16,11 +17,17 @@
  cycle-course-configuration
  cycle-course-wtus
  cycle-course-wtus/noerror
+
+ 2021-course-set
  )
 
 ;; cycles before this can be ignored for the purposes of determining
 ;; a subject for a number...
 (define cycle-cutoff : CatalogCycle "2015-2017")
+;; used to determine the list of courses to be scheduled
+(define current-catalog-cycle "2021-2022")
+
+(define computing-subjects '("CSC" "CPE" "SE" "EE"))
 
 (define-type Configuration String)
 
@@ -42,6 +49,14 @@
                 (Listof Course-Mapping)])
 
 (define-type Course-Mapping (Vector CatalogCycle String String Course-Id))
+(define (mapping-cycle [cm : Course-Mapping]) : CatalogCycle
+  (vector-ref cm 0))
+(define (mapping-subject [cm : Course-Mapping]) : String
+  (vector-ref cm 1))
+(define (mapping-num [cm : Course-Mapping]) : String
+  (vector-ref cm 2))
+(define (mapping-id [cm : Course-Mapping]) : Course-Id
+  (vector-ref cm 3))
 
 ;; 2020-06-26 not sure whether *any* of these lists of courses are used any more.
 
@@ -219,7 +234,6 @@
                        courses-we-schedule/db)
          (set-subtract courses-we-schedule/db courses-we-schedule)))
 
-
 ;; these are supervisory courses, so they aren't scheduled
 ;; by the scheduler
 (define supervisory-courses : (Setof String)
@@ -262,18 +276,44 @@
       "ee595"
       "ee599"))))
 
+;; return non-supervisory courses that have one of these subjects
+(define (non-sup-courses-in-subjects [subjects : (Listof String)])
+  : (Setof Course-Id)
+  (set-subtract
+   (list->set
+    (map
+     mapping-id
+     (filter
+      (λ ([cm : Course-Mapping])
+        (and (equal? (mapping-cycle cm) current-catalog-cycle)
+             (member (mapping-subject cm) subjects)))
+      course-mappings)))
+   supervisory-courses))
+
+(define non-supervisory-computing-courses
+  (non-sup-courses-in-subjects computing-subjects))
+(define non-supervisory-csc-courses
+  (non-sup-courses-in-subjects '("CSC")))
+(define non-supervisory-cpe-courses
+  (non-sup-courses-in-subjects '("CPE")))
+(define non-supervisory-ee-courses
+  (non-sup-courses-in-subjects '("EE")))
+
+;; for 2021-2022 planning, I'm going to add together
+;; the csc courses and the CPE courses that aren't cross
+;; listed with ee. Yikes.
+(define cpe-extra
+  (set-subtract non-supervisory-cpe-courses
+                (set-union non-supervisory-csc-courses
+                           non-supervisory-ee-courses)))
+;; this is pretty temporary...
+(define 2021-course-set (set-union non-supervisory-csc-courses cpe-extra))
+
 ;; map numbers to ids to allow short-cuts in schedule description.
 ;; for instance, we can just write "430" rather than "csc430".
 (define num-id-table
   (let ()
-    (define (mapping-cycle [cm : Course-Mapping]) : CatalogCycle
-      (vector-ref cm 0))
-    (define (mapping-subject [cm : Course-Mapping]) : String
-      (vector-ref cm 1))
-    (define (mapping-num [cm : Course-Mapping]) : String
-      (vector-ref cm 2))
-    (define (mapping-id [cm : Course-Mapping]) : Course-Id
-      (vector-ref cm 3))
+    
     (define (newer-than-cutoff [cc : CatalogCycle])  : Boolean
       (not (catalog-cycle-<? cc cycle-cutoff)))
     (define csc-cpe-mappings
