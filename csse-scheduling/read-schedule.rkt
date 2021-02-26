@@ -12,6 +12,7 @@
          schedule->records
          sections-equivalent
          record->sections-equivalent
+         record->wtus
          year-sections-equivalent
          join-sections-tables
          courseA-topic
@@ -365,6 +366,14 @@
   (* (record-size r)
      split-multiplier))
 
+;; how many wtus does is this course worth?
+(: record->wtus (CatalogCycle Record -> Exact-Rational))
+(define (record->wtus cycle r)
+  (define split-multiplier
+    (if (record-split? r) 1/2 1))
+  (* (cycle-course-wtus cycle (record-course r) (record-size r))
+     split-multiplier))
+
 (define (record-course-sort-str [r : (Pair CourseID Any)])
   : String
   (course-key (car r)))
@@ -465,6 +474,6 @@
  
 (module+ test
   (require typed/rackunit)
-  (check-equal? (courseA-wtus "2019-2020" 430) 5.0)
-  (check-equal? (courseA-wtus "2019-2020" '(MM 430)) 9.0)
-  (check-equal? (courseA-wtus "2019-2020" '(X (MM 430) 3.2)) 3.2))
+  (check-equal? (courseA-wtus "2019-2020" 430) 5)
+  (check-equal? (courseA-wtus "2019-2020" '(MM 430)) 9)
+  (check-equal? (courseA-wtus "2019-2020" '(X (MM 430) #e3.2)) #e3.2))

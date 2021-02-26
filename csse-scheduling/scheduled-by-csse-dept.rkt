@@ -13,7 +13,6 @@
  ee-scheduled-courses ; used?
  supervisory-courses ; used? yep.
  csc-or-cpe
- 2017-course-configuration ; used?
  cycle-course-configuration
  cycle-course-wtus
  cycle-course-wtus/noerror
@@ -360,56 +359,41 @@
     [#f #f]
     [(cons id configuration) configuration]))
 
-
-;; given a course, return its 2017 configuration string, or
-;; #f it doesn't appear in the current catalog
-(define (2017-course-configuration [course : Course-Id])
-  (cycle-course-configuration course "2017-2019"))
-
 (define-predicate false? False)
-
-;; the right way to handle this would probably be in a list included in a year's schedule.
-(define cycle-course-exceptions
-  : (Listof (Pair (List CatalogCycle Course-Id) Nonnegative-Real))
-  `((("2019-2020" "csc570") . 4)))
 
 ;; given a course, return the number of WTUs required to teach it
 ;; in the 2019-2021 catalog, or return #f if it's nonstandard
 (define (cycle-course-wtus/noerror [cycle : CatalogCycle] [course : Course-Id] [lab-mult : Natural 1])
-  : (U False Nonnegative-Real)
-  (define maybe-exception (assoc (list cycle course) cycle-course-exceptions))
+  : (U False Nonnegative-Exact-Rational)
+  (define maybe-configuration (cycle-course-configuration course cycle))
   (cond
-    [maybe-exception (cdr maybe-exception)]
+    [(not maybe-configuration) (error 'cycle-course-wtus "no mapping found for course: ~e" course)]
     [else
-     (define maybe-configuration (cycle-course-configuration course cycle))
-     (cond
-       [(not maybe-configuration) (error 'cycle-course-wtus "no mapping found for course: ~e" course)]
-       [else
-        (define maybe-wtus (configuration->wtus maybe-configuration lab-mult))
-        (cond [maybe-wtus maybe-wtus]
-              [else #f])])]))
+     (define maybe-wtus (configuration->wtus maybe-configuration lab-mult))
+     (cond [maybe-wtus maybe-wtus]
+           [else #f])]))
 
 ;; same as above, but signal an error if nonstandard
-(define (cycle-course-wtus [cycle : CatalogCycle] [course : Course-Id] [lab-mult : Natural 1])  : Nonnegative-Real
+(define (cycle-course-wtus [cycle : CatalogCycle] [course : Course-Id] [lab-mult : Natural 1])  : Nonnegative-Exact-Rational
    (or (cycle-course-wtus/noerror cycle course lab-mult)
        (error 'cycle-course-wtus
               "nonstandard configuration for course: ~e"
               course)))
 
-(define lecture-unit-wtus 1.0)
-(define lab-unit-wtus 2.0)
-(define activity-unit-wtus 1.3)
+(define lecture-unit-wtus : Positive-Exact-Rational #e1.0)
+(define lab-unit-wtus : Positive-Exact-Rational #e2.0)
+(define activity-unit-wtus : Positive-Exact-Rational #e1.3)
 
 ;; return the number of wtus associated with a course. For mega-sections, we multiply
 ;; the lab WTUs, on the assumption that mega-sections still have normal-sized labs
-(define (configuration->wtus [c : Configuration] [lab-mult : Natural]) : (U False Nonnegative-Real)
+(define (configuration->wtus [c : Configuration] [lab-mult : Natural]) : (U False Nonnegative-Exact-Rational)
   (match c
     [(regexp #px"^([0-9]+)-([0-9]+)-([0-9]+)$"
              (list _ lectures labs activities))
      ;; casts should all succeed by regexps in pattern
-     (+ (* lecture-unit-wtus      (cast (string->number (cast lectures String))   Nonnegative-Real))
-        (* lab-unit-wtus lab-mult (cast (string->number (cast labs String))       Nonnegative-Real))
-        (* activity-unit-wtus     (cast (string->number (cast activities String)) Nonnegative-Real)))]
+     (+ (* lecture-unit-wtus      (cast (string->number (cast lectures String))   Nonnegative-Exact-Rational))
+        (* lab-unit-wtus lab-mult (cast (string->number (cast labs String))       Nonnegative-Exact-Rational))
+        (* activity-unit-wtus     (cast (string->number (cast activities String)) Nonnegative-Exact-Rational)))]
     [other #f]))
 
 
@@ -423,7 +407,7 @@
   (check-equal? (csc-or-cpe 431) "csc431")
   (check-equal? (csc-or-cpe 315) "cpe315")
 
-  (check-equal? (cycle-course-wtus (ann "2019-2020" CatalogCycle) "csc101") 5.0)
-  (check-equal? (cycle-course-wtus (ann "2019-2020" CatalogCycle) "csc232") 3.3))
+  (check-equal? (cycle-course-wtus (ann "2019-2020" CatalogCycle) "csc101") 5)
+  (check-equal? (cycle-course-wtus (ann "2019-2020" CatalogCycle) "csc232") #e3.3))
 
 
