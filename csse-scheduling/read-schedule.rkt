@@ -66,7 +66,7 @@
 (define-type CourseA (U CourseB WTUCourse SplitCourse))
 
 ;; a course with an explicit specification of WTUs:
-(define-type WTUCourse (List 'X CourseB Nonnegative-Real))
+(define-type WTUCourse (List 'X CourseB Nonnegative-Exact-Rational))
 (define-predicate wtu-course? WTUCourse)
 
 ;; a course that's split with another instructor:
@@ -95,7 +95,7 @@
 
 ;; represents the data in the style of a database:
 ;; instructor quarter size courseID maybe-override-wtus split?
-(define-type Record (List Symbol Natural CourseSize CourseID (U False Nonnegative-Real) Boolean))
+(define-type Record (List Symbol Natural CourseSize CourseID (U False Nonnegative-Exact-Rational) Boolean))
 
 
 ;; represents the output of sections-equivalent.
@@ -175,7 +175,7 @@
 
 ;; if this is an "X" course spec, return the number of wtus
 ;; specified. Otherwise, return #f
-(define (courseA-wtu-override [c : CourseA]) : (U False Nonnegative-Real)
+(define (courseA-wtu-override [c : CourseA]) : (U False Nonnegative-Exact-Rational)
   (cond [(wtu-course? c) (third c)]
         [else #f]))
 
@@ -219,16 +219,34 @@
 ;; # of wtus for a courseA 
 (define (courseA-wtus [this-cycle : CatalogCycle]
                       [courseA : CourseA]) : Real
-  ;; warning: multiplier not used in case of explicit wtu override:
+  (course-wtus-helper
+   this-cycle
+   (canonicalize-topic this-cycle
+                       (course-topic courseA))
+   (split-course? courseA)
+   (courseA-wtu-override courseA)
+   (courseA-size courseA)))
+
+;; used both by courseA-wtus and record->wtus
+(define (course-wtus-helper [this-cycle : CatalogCycle]
+                            [id : Course-Id]
+                            [split? : Boolean]
+                            [maybe-override : (U False
+                                                 Nonnegative-Exact-Rational)]
+                            [size : Natural])
+  (when (and maybe-override split?)
+    ;; you can lift this restriction, you just need to decide
+    ;; whether the nesting order matters, and what it means.
+    (error 'course-wtus-helper
+           "split and override not allowed simultaneously."))
   (define course-split-multiplier
-    (if (split-course? courseA) 1/2 1))  
-  (or (courseA-wtu-override courseA)
+    (if split? 1/2 1))  
+  (or maybe-override
       (* course-split-multiplier
          (cycle-course-wtus
           this-cycle
-          (canonicalize-topic this-cycle
-                              (course-topic courseA))
-          (courseA-size courseA)))))
+          id
+          size))))
 
 (define-predicate instructor? InstructorA)
 
@@ -264,6 +282,10 @@
 
 (: record-size (Record -> CourseSize))
 (define record-size third)
+
+(define (record-maybe-override-wtus [r : Record])
+  : (U False Nonnegative-Exact-Rational)
+  (fifth r))
 
 (define (record-split? [r : Record]) : Boolean
   (sixth r))
@@ -369,10 +391,11 @@
 ;; how many wtus does is this course worth?
 (: record->wtus (CatalogCycle Record -> Exact-Rational))
 (define (record->wtus cycle r)
-  (define split-multiplier
-    (if (record-split? r) 1/2 1))
-  (* (cycle-course-wtus cycle (record-course r) (record-size r))
-     split-multiplier))
+  (course-wtus-helper cycle
+                      (record-course r)
+                      (record-split? r)
+                      (record-maybe-override-wtus r)
+                      (record-size r)))
 
 (define (record-course-sort-str [r : (Pair CourseID Any)])
   : String
