@@ -7,7 +7,9 @@
          latest-student-grades-cache
          majors-cache
          2188-1-student-grades
-         2188-1-majors)
+         2188-1-majors
+         active-faculty
+         offerings)
 
 
 (require db
@@ -126,4 +128,39 @@
 
 (define 2188-1-student-grades (student-grades-cache "2188-1"))
 (define 2188-1-majors (majors-cache "2188-1"))
+
+;; extending yet again for the who-does-what queries...
+
+(define (active-faculty qtr)
+  (cache-query
+   "fad"
+   (~a "active-faculty-" qtr ".withcache")
+   (λ (conn)
+     (query-list
+      conn
+      (~a "SELECT id "
+          " FROM instructorstatuses"
+          ;; FIXME add cpe when it's a department
+          " WHERE (homedept='COMPUTER SCIENCE' OR HOMEDEPT='ELECTRICAL ENGINEERING')"
+          " AND qtr >= $1"
+          ";")
+      qtr))))
+
+(define (offerings last-qtr)
+  (cache-query
+   "fad"
+   (~a "offerings-up-through-" last-qtr ".withcache")
+   (λ (conn)
+     (map vector->list
+          (query-rows
+           conn
+           (~a "SELECT o.instructor, o.qtr, o.subject, o.num, SUM(o.dwtu) "
+               " FROM (offerfacs o JOIN instructorstatuses i"
+               "       ON o.instructor = i.id"
+               "       AND o.qtr = i.qtr)"
+               ;; FIXME add cpe when its a department
+               " WHERE (homedept='COMPUTER SCIENCE' OR homedept='ELECTRICAL ENGINEERING')"
+               " AND o.qtr <= $1"
+               " GROUP BY o.instructor, o.qtr, o.subject, o.num")
+           last-qtr)))))
 
