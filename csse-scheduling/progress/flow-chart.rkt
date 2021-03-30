@@ -27,9 +27,6 @@
 (define-type Flowchart-Spec
   (Listof (Pairof ReqName (Listof Natural))))
 
-(define-type Seats-By-Requirement
-  (Listof (List ReqName Real)))
-
 ;; note that the ordering of the requirements within a quarter
 ;; is not entirely unimportant,
 ;; as it can affect which courses are chosen (but only on the very edge)

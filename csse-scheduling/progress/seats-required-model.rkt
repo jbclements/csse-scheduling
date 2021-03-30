@@ -78,6 +78,14 @@
                           [stop-qtr-idx : Natural]
                           [cc : CatalogCycle])
   : (Listof Seats-By-Requirement)
+  (when (< 100 start-qtr-idx)
+    (raise-argument-error 'student->courses
+                          "reasonable number of quarters"
+                          1 student start-qtr-idx stop-qtr-idx cc))
+  (when (< 100 stop-qtr-idx)
+    (raise-argument-error 'student->courses
+                          "reasonable number of quarters"
+                          2 student start-qtr-idx stop-qtr-idx cc))
   (define unmet-reqs (student->unmet-requirements student cc))
   (student-to-take unmet-reqs (Student-major student)
                    start-qtr-idx
@@ -286,6 +294,8 @@
    (apply
     append
     (seat-requirements/range 2204 2208 2218 "2019-2020" #f)))
+
+  
 
   )
 

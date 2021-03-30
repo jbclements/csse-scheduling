@@ -6,6 +6,9 @@
 
 @(require (for-label racket))
 
+@defmodule[csse-scheduling]{The main require. Actually, maybe don't require
+this one?}
+
 @defmodule[qtr-math]{functions for mapping Cal Poly's goofy quarter system
 to and from other representations.}
 
@@ -84,14 +87,28 @@ Just dumping this here...}
 (define-type Major-Abbr (U "CSC" "CPE" "SE"))
 
 (define-type Course-Or-Group (U Course-Id (List Symbol)))
+ }
 
-;; a requirement for a number of seats
-(struct Seat-Requirement ([label : Category] ;; which requirement is this? (used for prioritizing)
-                          [course : Course-Or-Group] ;; what course do they want?
-                          [qtr-req : (U Natural #f)] ;; when do they want it?
-                          [seats : Real])  ;; how many do they want?
-  #:transparent)
+@defstruct[Seat-Requirement ([label Category]
+                          [course Course-Or-Group] ;; what course do they want?
+                          [qtr-req (U Natural #f)] ;; when do they want it?
+                          [seats Real])]{
+Represents a requirement for a certain number of seats. The @racket[label] indicates
+ which population of students we're discussing, the @racket[course] says what course
+ or course group they need, the @racket[qtr-req] indicates which quarter they need it
+ in (if there's a specific quarter associated with the requirement), and the @racket[seats]
+ indicates how many seats are needed. Note that the number of seats can easily be a non-integer.
+ When a requirement is spread across multiple quarters ("take this course in either of these
+ two quarters..."), the model represents this as a half-seat requirement in each quarter.
+}
 
+@defthing[Seats-By-Requirement type? #:value (Listof (List ReqName Real))]{
+ An association list mapping requirement names to a count of seats.
+}
+
+
+
+@verbatim{
 ;; a requirement for a number of sections
 (struct Section-Requirement ([label : Category] ;; which requirement is this? (used for prioritizing)
                              [course : Course-Or-Group] ;; what course do they want?
@@ -171,3 +188,43 @@ an error if it isn't. return it if it is.
          mappings
          MappingRow
          CatalogCycle)}
+
+@defmodule[progress/seats-required-model]{Functions to examine individual
+students to predict how many seats will be required in each course or group-course.}
+
+@defproc[(seat-requirements/range [model-qtr Qtr]
+                                 [start-qtr Qtr]
+                                 [stop-qtr Qtr]
+                                 [cc CatalogCycle]
+                                 [omit-first-year? Boolean])
+         (Listof (Listof Seat-Requirement))]{
+Given a model qtr (e.g. 2202, indicating data obtained after winter 2020),
+and a 'start' qtr and a 'stop' qtr, return a list of Seat-Requirement's
+indicating the requirements for each modeled quarter, starting in the given start
+qtr and ending one before the given stop qtr. So, for instance,
+start 2208 and stop 2214 would model two quarters, fall 2020 and
+winter 2021.
+
+Some courses are highly depended-on, like 202, 203, and 357.
+When students need these courses in a particular quarter of modeling,
+these requirements should be tagged with the appropriate quarter,
+so that we can see that they don't just need them any old time,
+they need them in the appropriate quarter.
+}
+
+@defproc[(seat-requirements-reduce [losr : (Listof Seat-Requirement)])
+         (Listof Seat-Requirement)]{
+ Combine @racket[Seat-Requirement]s where the label, course, and quarter are the same.
+}
+
+
+@defproc[(student->courses [student Student]
+                          [start-qtr-idx Natural]
+                          [stop-qtr-idx Natural]
+                          [cc CatalogCycle])
+  (Listof Seats-By-Requirement)]{
+Computes the courses a student is expected to take, grouped by quarter. Note that
+the @racket[start-qtr-idx] and @racket[stop-qtr-idx] are zero-based indexes. So, for instance,
+using 0 and 4 would tell you what the student is expected to take over the next four quarters.
+}
+

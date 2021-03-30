@@ -37,6 +37,11 @@
                              [sections : Real])  ;; how many do they want?
   #:transparent)
 
+
+;; an association from requirement-names to seats
+(define-type Seats-By-Requirement
+  (Listof (List ReqName Real)))
+
 ;; a category essentially represents a population, used to tag
 ;; a requirement
 ;; NOTE: there's definitely overlap. csc-bs and csc-bs-firstyear overlap,
