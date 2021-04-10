@@ -3,6 +3,7 @@
 (provide course-mappings
          courses-we-schedule/db
          cycle-course-configurations
+         ee-lab-courses
          student-grades-cache
          latest-student-grades-cache
          majors-cache
@@ -84,6 +85,20 @@
          (define cycle (fall-year->catalog-cycle yr))
          (cons cycle (configurations-cache cycle)))
        '(2017 2019 2020 2021)))
+
+;; all of the lab-only EE courses:
+(define (ee-lab-courses catalog-cycle)
+  (cache-query
+   "scheduling"
+   (~a "ee-lab-courses-"catalog-cycle".withcache")
+   (λ (conn)
+     (query-list
+      conn
+      (~a "SELECT ci.id FROM "
+          "  (course_mappings cm INNER JOIN course_info ci ON cm.id=ci.id AND cm.cycle=ci.cycle)"
+          "  WHERE ci.cycle=$1 AND subject='EE' AND configuration LIKE '0-%-0';")
+      catalog-cycle))))
+
 
 ;; extending this to handle the ad-hoc per-student data as well...
 
