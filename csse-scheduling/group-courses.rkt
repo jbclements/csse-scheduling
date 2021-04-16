@@ -36,6 +36,7 @@
    (cons '(ee-sp-2) '("ee462" "ee464"))
    ))
 
-(define dontcare
-  (map (λ ([vals : (Listof Course-Id)]) (map ensure-canonical vals))
-       (map (inst cdr Any (Listof Course-Id)) simple-group-courses)))
+;; make sure they're all canonical
+(for-each
+ (λ ([vals : (Listof Course-Id)]) (map ensure-canonical vals))
+ (map (inst cdr Any (Listof Course-Id)) simple-group-courses))

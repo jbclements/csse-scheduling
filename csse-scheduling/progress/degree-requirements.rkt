@@ -258,10 +258,12 @@
           ;; no, fail:
           [else '()])))
 
+(define csc-special-problems-courses '("csc400" "cpe400" "csc490" "csc496"))
+(define cpe-special-problems-courses '("cpe400"))
+
 ;; got 4 units of 400?
-(define got-4-units-of-400? : ReqFun
+(define (got-4-units-of-400? [special-problems-courses : (Listof Course-Id)]) : ReqFun
   (λ ([g : (Listof Grade-Record)])
-    (define special-problems-courses '("cpe400"))
     (for-each check-course special-problems-courses)
     (define-values (special-topics-grades other-grades)
       (partition (λ ([g : Grade-Record])
@@ -371,7 +373,7 @@
     simple-req-pairs
    `((cpe-TE/400 . ,(ccparam
                      cc
-                     (or!/req got-4-units-of-400?
+                     (or!/req (got-4-units-of-400? cpe-special-problems-courses)
                               (passed-cpe-technical-elective? cc))))
      (cpe-TE/123 . ,(ccparam cc
                       (or!/req passed-123?
@@ -384,6 +386,18 @@
      (ee-TE-0 . ,passed-ee-te-lec-lab-req?)
      (ee-TE-1 . ,passed-ee-te-lec-lab-req?)
      (ee-TE-2 . ,passed-ee-te-open-req?)))))
+
+;; oof, parallel list. Are these supervisory? (no)
+;; ugh, actually, it's a bit weird; the cpe-TE/400 requirement *could*
+;; be supervisory, but probably isn't, for scheduling purposes.
+(define supervisory-group-table : (Immutable-HashTable Symbol Boolean)
+  (make-immutable-hash
+   '((cpe-TE/400 #f)
+     (cpe-TE/123 #f)
+     (cpe-signals #f)
+     (ee-TE-0 #f)
+     (ee-TE-1 #f)
+     (ee-TE-2 #f))))
 
 (define (req-lookup [spec : (U Symbol String)] [cc : CatalogCycle]) : ReqFun
   ((hash-ref req-table spec) cc))
