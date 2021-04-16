@@ -235,6 +235,7 @@
 
 ;; these are supervisory courses, so they aren't scheduled
 ;; by the scheduler
+;; these could be checked using FAD data, after the fact. maybe that's a FIXME
 (define supervisory-courses : (Setof String)
   (list->set
    (map
