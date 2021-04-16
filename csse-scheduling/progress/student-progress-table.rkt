@@ -2,6 +2,7 @@
 
 ;; looks like this file is where requirements and students come together.
 
+;; FIXME "student-progress-table.rkt" is a terrible name for this file.
 
 (require "../types.rkt"
          "student-progress.rkt"

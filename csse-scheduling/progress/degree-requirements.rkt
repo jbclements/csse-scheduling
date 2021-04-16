@@ -25,7 +25,9 @@
          passed-bigger-projects?
 
          passing-grade?
-         c-passing-grade?)
+         c-passing-grade?
+
+         course-group-names)
 
 ;; given a list of grades, a course id, and a predicate mapping a grade to
 ;; a boolean, return a list of lists of grade-records indicating the
@@ -99,6 +101,8 @@
 
 ;; FIXME: should probably make catalog-cycle an argument to reqfun...
 (define-type ReqFun ((Listof Grade-Record) -> (Listof (Listof Grade-Record))))
+;; FIXME: punting harder on this...
+(define-type CCReqFun (CatalogCycle -> ReqFun))
 
 (define-type Requirement (List ReqName ReqFun))
 
@@ -341,6 +345,18 @@
             ['()]))))
 
 
+;; make a list of technical elective requirements for a given major
+(define (make-TE-requirements [prefix : String] [req : CCReqFun] [n : Natural])
+  : (Listof (Pair Symbol CCReqFun))
+  (for/list
+      ([i : Natural (in-range n)])
+    (cons ((make-TE-requirement-name prefix) i) req)))
+
+(: make-TE-requirement-name (String -> (Natural -> Symbol)))
+(define ((make-TE-requirement-name [prefix : String]) [i : Natural]) : Symbol
+  (string->symbol (~a prefix"-TE-" i)))
+
+
 ;; signal an error if two requirements have the same name
 (define (ensure-distinct-names [reqs : (Listof Requirement)]) : (Listof Requirement)
   (match (check-duplicates (map (inst first ReqName) reqs))
@@ -367,6 +383,8 @@
    simple-group-courses))
 
 ;; making a big table prevents bad collisions
+;; when you add something to this table, also add it to the supervisory
+;; table in supervisory.rkt
 (define req-table : (Immutable-HashTable Symbol (CatalogCycle -> ReqFun))
   (make-immutable-hash
    (append
@@ -385,19 +403,41 @@
      ;; I think this is good enough for forecasting.
      (ee-TE-0 . ,passed-ee-te-lec-lab-req?)
      (ee-TE-1 . ,passed-ee-te-lec-lab-req?)
-     (ee-TE-2 . ,passed-ee-te-open-req?)))))
+     (ee-TE-2 . ,passed-ee-te-open-req?)
+     ;; yikes, let's get ever
+     (upper-level-csc-TE
+      . ,passed-upper-level-technical-elective?)
+     (csc-TE/123
+      . ,(ccparam
+          cc
+          (or!/req passed-123?
+                   (passed-csc-technical-elective? cc))))
+     (csc-TE/special-problems
+      . ,(ccparam
+          cc
+          (or!/req got-special-problems-credit?
+                   (passed-csc-technical-elective? cc))))
+     
+     (upper-level-se-TE
+      . ,passed-upper-level-se-technical-elective?)
+     (special-problems/se-TE
+      . ,(ccparam
+          cc
+          (or!/req got-special-problems-credit?
+                   (passed-se-technical-elective? cc))))
+     (se-TE/123
+      . ,(ccparam
+          cc
+          (or!/req passed-123?
+                   (passed-se-technical-elective? cc))))
+     )
+   ;; n should be the largest number of TE requirements used in a flowchart
+   (make-TE-requirements "csc" passed-csc-technical-elective? 5)
+   (make-TE-requirements "cpe" passed-cpe-technical-elective? 5)
+   (make-TE-requirements "se" passed-se-technical-elective? 3))))
 
-;; oof, parallel list. Are these supervisory? (no)
-;; ugh, actually, it's a bit weird; the cpe-TE/400 requirement *could*
-;; be supervisory, but probably isn't, for scheduling purposes.
-(define supervisory-group-table : (Immutable-HashTable Symbol Boolean)
-  (make-immutable-hash
-   '((cpe-TE/400 #f)
-     (cpe-TE/123 #f)
-     (cpe-signals #f)
-     (ee-TE-0 #f)
-     (ee-TE-1 #f)
-     (ee-TE-2 #f))))
+;; used to check that these names have entries in supervisory.rkt
+(define course-group-names : (Listof Symbol) (hash-keys req-table))
 
 (define (req-lookup [spec : (U Symbol String)] [cc : CatalogCycle]) : ReqFun
   ((hash-ref req-table spec) cc))
@@ -409,18 +449,6 @@
 (define (all-of-these [cc : CatalogCycle]
                       [s : (Listof (U String Symbol))])
   (map (spec->rec cc) s))
-
-;; make a list of technical elective requirements for a given major
-(define (make-TE-requirements [prefix : String] [req : ReqFun] [n : Natural])
-  (for/list : (Listof Requirement)
-          ([i (in-range n)])
-          (list (list (string->symbol (~a prefix"-TE-" i)))
-                req)))
-
-
-(define (make-csc-te-reqs [cc : CatalogCycle] [n : Natural]) : (Listof Requirement)
-        (make-TE-requirements "csc" (passed-csc-technical-elective? cc) n))
-
 
 (define (req [course-id : Course-Id]) : Requirement
   (list course-id (pass/req course-id)))
@@ -456,16 +484,16 @@
          (req "csc430")
          (req "csc445")
          (req "csc453")
-         ;; this must occur before other TE requirements or the greedy
-         ;; nature of matching could mark a satisfied requirement
-         ;; as unsatisfied
-         (list '(upper-level-csc-TE)
-               (passed-upper-level-technical-elective? cc))
-         (list '(csc-TE/123) (or!/req passed-123?
-                                      (passed-csc-technical-elective? cc)))
-         (list '(csc-TE/special-problems)
-               (or!/req got-special-problems-credit?
-                        (passed-csc-technical-elective? cc))))))
+         
+         )
+   (all-of-these
+    cc
+    '(;; this must occur before other TE requirements or the greedy
+      ;; nature of matching could mark a satisfied requirement
+      ;; as unsatisfied
+      upper-level-csc-TE
+      csc-TE/123
+      csc-TE/special-problems))))
 
 
 (define (make-90-csc-requirements [cc : CatalogCycle]) : LACAR
@@ -474,11 +502,13 @@
          (common-csc-requirements cc)
          (all-of-these
           cc
-          '(ethics
-            csc-sp-1
-            csc-sp-2))
-         ;; catalog 6 + 1 (for 431) - ul,csc/123,csc/specialproblems = 4 left: (?)
-         (make-csc-te-reqs cc 5)))) 
+          (append
+           '(ethics
+             csc-sp-1
+             csc-sp-2)
+           ;; catalog 6 + 1 (for 431) - ul,csc/123,csc/specialproblems = 4 left: (?)
+           (build-list 5 (make-TE-requirement-name "csc"))))         
+         ))) 
 
 (define (make-21-csc-requirements [cc : CatalogCycle]) : LACAR
   (cons (list '(CSC) cc)
@@ -486,12 +516,14 @@
          (common-csc-requirements cc)
          (all-of-these
           cc
-          '(ethics
-            security
-            csc-sp-1
-            csc-sp-2))
-         ;; catalog 7 - ul,csc/123,csc/specialproblems = 4 left:
-         (make-csc-te-reqs cc 4))))
+          (append
+           '(ethics
+             security
+             csc-sp-1
+             csc-sp-2)
+           ;; catalog 7 - ul,csc/123,csc/specialproblems = 4 left:
+           (build-list 4 (make-TE-requirement-name "csc"))))
+         )))
 
 ;; upcoming: databases becomes required.
 
@@ -504,21 +536,18 @@
          (req  "csc308")
          (req  "csc309")
          (list "csc348" passed-discrete?)
-         (req "csc349")
-         (req  "csc402")
-         (req  "csc405")
-         (req  "csc406")
-         (req  "csc430")
-         (req  "csc484")
-         
-         (list '(upper-level-se-TE)
-               (passed-upper-level-se-technical-elective? cc))
-         (list '(special-problems/se-TE)
-               (or!/req got-special-problems-credit?
-                        (passed-se-technical-elective? cc)))
-         (list '(se-TE/123)
-               (or!/req passed-123?
-                        (passed-se-technical-elective? cc))))
+         )
+   (all-of-these
+    cc
+    '("csc349"
+      "csc402"
+      "csc405"
+      "csc406"
+      "csc430"
+      "csc484"
+      upper-level-se-TE
+      special-problems/se-TE
+      se-TE/123))
 ))
 
 (define 2017-2019-se-requirements : (Listof Requirement)
@@ -528,16 +557,19 @@
          (req "csc491")
          (req "csc492"))
    ;; 20 TE units minus upper-level (above) minus special problems
-   (make-TE-requirements "se" (passed-se-technical-elective? "2017-2019") 3)))
+   (all-of-these
+    (ann "2017-2019" CatalogCycle)
+    (build-list 3 (make-TE-requirement-name "se")))))
 ;; count TEs
 
 (define (make-901-se-requirements [cc : CatalogCycle]) : LACAR
   (cons (list '(SE) cc)
         (append
    (common-se-requirements cc)
-   (all-of-these cc '(ethics "csc365"))
-   ;; 16 TE units minus upper-level minus special problems
-   (make-TE-requirements "se" (passed-se-technical-elective? cc) 2))))
+   (all-of-these cc (append
+                     '(ethics "csc365")
+                     ;; 16 TE units minus upper-level minus special problems
+                     (build-list 2 (make-TE-requirement-name "se")))))))
 
 
 (define (common-cpe-requirements [cc : CatalogCycle]) : (Listof Requirement)
@@ -546,7 +578,8 @@
    (append
     (all-of-these
      cc
-     `("cpe100"
+     (append
+      `("cpe100"
        "cpe133"
        "cpe233"
        "cpe350"
@@ -555,9 +588,10 @@
        "cpe464"
        "csc348"
        cpe-TE/400
-       cpe-TE/123
-       )))
-   (make-TE-requirements "cpe" (passed-cpe-technical-elective? cc) 2)))
+       cpe-TE/123)
+      (build-list 2 (make-TE-requirement-name "cpe"))
+      )))
+   ))
 
 ;; doesn't include EE requirements
 (define 2017-2019-cpe-requirements
@@ -646,12 +680,14 @@
               (common-csc-requirements cc)
               (all-of-these
                cc
-               '("csc431"
-                 "csc300"
-                 "csc491"
-                 "csc492"))
-              ;; 24 TE units minus upper-level (above) minus special-problems = 4 courses:
-              (make-csc-te-reqs cc 4))))
+               (append
+                '("csc431"
+                  "csc300"
+                  "csc491"
+                  "csc492")
+                ;; 24 TE units minus upper-level (above) minus special-problems = 4 courses:
+                (build-list 4 (make-TE-requirement-name "csc"))))
+              )))
           )
          (Listof (Pairof LAC (Listof Requirement))))
     (ann (list

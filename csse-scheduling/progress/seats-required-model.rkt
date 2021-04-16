@@ -65,6 +65,25 @@
                                           key)))
                    (hash-ref program-requirements key)))
 
+;; check that every group name appears in the table of requirements
+(let ()
+  (define requirement-names
+    (map (inst first ReqName)
+         (remove-duplicates (apply append (hash-values program-requirements)))))
+  (define group-requirement-names
+    (filter list? requirement-names))
+  (define all-defined (list->set group-requirement-names))
+  (define all-in-table (list->set
+                        (map (λ ([n : Symbol]) : (List Symbol) (list n))
+                             course-group-names)))
+  ;; there are some requirements (e.g. CSCMSTHESIS) that don't appear
+  ;; in the flowchart
+  (unless (subset? all-defined all-in-table)
+    (error 'requirement-table-check
+           "sets not equal. used: ~v\nlisted in table: ~v\n"
+           all-defined all-in-table)))
+
+
 (define (first-year? [student : Student])
   (equal? (Student-entry-qtr student) 'pre-poly))
 
