@@ -34,7 +34,9 @@
 ;; these courses should be associated with specific quarters,
 ;; to ensure that students don't fall behind.
 (define constrained-courses
-  '("csc101" "csc202" "csc203" "csc225" "csc357"))
+  '("csc101" "csc202" "csc203" "csc225" "csc357"
+             ;; experimenting?
+             "cpe133" "ee211" "ee241"))
 
 ;; given a major (e.g. "csc", and two lists of pairs of ReqNames + any
 ;; (e.g. a list of requirements), ensure that each set has exactly the
@@ -150,7 +152,7 @@
 (define (seat-requirements/range [model-qtr : Qtr]
                                  [start-qtr : Qtr]
                                  [stop-qtr : Qtr]
-                                 [cc : CatalogCycle]
+                                 [scc : (Student -> CatalogCycle)]
                                  [omit-first-year? : Boolean])
   : (Listof (Listof Seat-Requirement))
   (define version-str (string-append (number->string model-qtr) "-1"))
@@ -166,7 +168,7 @@
   (define all-to-take : (Listof (Listof (Listof (List Major-Abbr ReqName Real))))
     (for/list ([student (in-list chosen-students)])
       (define qtrs-plan (student->courses student start-idx
-                                          stop-idx cc))
+                                          stop-idx (scc student)))
       (for/list : (Listof (Listof (List Major-Abbr ReqName Real)))
         ([qtr-plan (in-list qtrs-plan)])
         (for/list : (Listof (List Major-Abbr ReqName Real))
@@ -312,7 +314,7 @@
              '("cpe350")))
    (apply
     append
-    (seat-requirements/range 2204 2208 2218 "2019-2020" #f)))
+    (seat-requirements/range 2204 2208 2218 (λ (x) "2019-2020") #f)))
 
   
 
