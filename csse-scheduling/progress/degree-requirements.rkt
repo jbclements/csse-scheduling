@@ -601,8 +601,8 @@
     (ann "2017-2019" CatalogCycle)
     '("cpe315"
       "cpe329"
-      "cpe461"
-      "cpe462"))))
+      cpe-sp-1
+      cpe-sp-2))))
 
 
 (define (make-901-cpe-requirements [cc : CatalogCycle]) : LACAR

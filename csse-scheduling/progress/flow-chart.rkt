@@ -165,8 +165,8 @@
           '(("cpe133" 3)
             ("cpe329" 9)
             ("cpe315" 8 9)
-            ("cpe461" 11)
-            ("cpe462" 12)
+            ((cpe-sp-1) 11)
+            ((cpe-sp-2) 12)
             ((cpe-TE-0) 10))))
 
 (define cpe-2019-2020-flowchart/pre : Flowchart-Spec
