@@ -31,12 +31,6 @@
 
 
 
-;; these courses should be associated with specific quarters,
-;; to ensure that students don't fall behind.
-(define constrained-courses
-  '("csc101" "csc202" "csc203" "csc225" "csc357"
-             ;; experimenting?
-             "cpe133" "ee211" "ee241"))
 
 ;; given a major (e.g. "csc", and two lists of pairs of ReqNames + any
 ;; (e.g. a list of requirements), ensure that each set has exactly the
@@ -186,8 +180,7 @@
        (Seat-Requirement
         (major->category (first req))
         (second req)
-        (cond [(member (second req) constrained-courses) qtr]
-              [else #f])
+        qtr
         (third req))))))
 
 ;; map summer to the previous spring, leave others alone.
