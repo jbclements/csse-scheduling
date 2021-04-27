@@ -10,6 +10,8 @@
  non-supervisory-computing-courses
  ;; includes any courses cross-listed as csc:
  non-supervisory-csc-courses
+ non-supervisory-cpe-courses
+ non-supervisory-ee-courses
  ee-scheduled-courses ; used?
  supervisory-courses ; used? yep.
  csc-or-cpe
@@ -22,7 +24,7 @@
 
 ;; cycles before this can be ignored for the purposes of determining
 ;; a subject for a number...
-(define cycle-cutoff : CatalogCycle "2015-2017")
+(define earliest-cycle-cutoff : CatalogCycle "2015-2017")
 ;; used to determine the list of courses to be scheduled
 (define current-catalog-cycle "2021-2022")
 
@@ -315,7 +317,7 @@
   (let ()
     
     (define (newer-than-cutoff [cc : CatalogCycle])  : Boolean
-      (not (catalog-cycle-<? cc cycle-cutoff)))
+      (not (catalog-cycle-<? cc earliest-cycle-cutoff)))
     (define csc-cpe-mappings
       (filter (λ ([cm : Course-Mapping])
                 (and
