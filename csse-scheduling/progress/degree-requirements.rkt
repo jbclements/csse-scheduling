@@ -608,7 +608,6 @@
 (define (make-901-cpe-requirements [cc : CatalogCycle]) : LACAR
   (cons (list '(CPE) cc)
         (append
-         (common-cpe-requirements cc)
          (all-of-these
           (ann cc CatalogCycle)
           '(cpe-arch
@@ -621,6 +620,7 @@
             "ee307" "ee347"
             cpe-sp-1
             cpe-sp-2))
+         (common-cpe-requirements cc)
          )))
 
 (define common-ee-requirements-list

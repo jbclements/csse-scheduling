@@ -58,6 +58,7 @@
 (define (write-seat-requirements-log
          [seat-requirements : (Listof Seat-Requirement)]
          [outfile : Path-String])
+  (printf "writing to file: ~v\n" outfile)
   (call-with-output-file outfile
     #:exists 'truncate
     (λ ([port : Output-Port])
