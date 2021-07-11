@@ -63,14 +63,13 @@
          'upper-level-se-TE
          'csc-TE/123
          'special-problems/se-TE
-         'csc-TE-0
-        
-         )
+         'csc-TE-0)
    '(CSCMS5TE
      CSCMSOTE
      CSMINORELEC
      CSCTE)))
 
+;; are these group courses supervisory?
 (define supervisory-group-table : (Immutable-HashTable Symbol Boolean)
   (make-immutable-hash
    (append
@@ -99,13 +98,13 @@
   ;; in ... um ... that other table
   (require (only-in "progress/degree-requirements.rkt" course-group-names))
 
-  (check-equal? (list->set course-group-names)
-                (set-union
-                 (list->set
-                  (map (inst car Symbol)
-                       (map (inst car (List Symbol)) simple-group-courses)))
-                 (list->set (hash-keys supervisory-group-table))))
-  
+  (check (inst subset? Symbol)
+         (list->set course-group-names)
+         (set-union
+                  (list->set
+                   (map (inst car Symbol)
+                        (map (inst car (List Symbol)) simple-group-courses)))
+                  (list->set (hash-keys supervisory-group-table))))
 
   )
 

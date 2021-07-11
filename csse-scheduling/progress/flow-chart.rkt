@@ -625,8 +625,9 @@
 
   (define example-unmet
     '("cpe315" "cpe329" "cpe350" "cpe450" "csc453"
-               "cpe461" "cpe462" "cpe464" (cpe-TE/400)
-               (cpe-TE/123) (cpe-TE-0) (cpe-TE-1)))
+               "cpe464" (cpe-TE/400)
+               (cpe-TE/123) (cpe-TE-0) (cpe-TE-1)
+               (cpe-sp-1) (cpe-sp-2)))
   (define cpe-qtr-load (flow-chart->qtr-load
                         (hash-ref all-flowcharts '((CPE ftf) "2017-2019"))))
   (check-equal?
