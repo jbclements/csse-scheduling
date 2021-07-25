@@ -27,8 +27,8 @@
    (cons '(ethics) (list "csc300" "phil323"))
    (cons '(security) (list "csc321" "csc323" "csc325"))
    (cons '(ee-microcon) '("cpe329" "cpe336"))
-   (cons '(circuits) '("ee112" "ee113"))
-   (cons '(circuits-lab) '("ee143" "ime156"))
+   ;; removing (circuits), adding ghost requirements of 211 & 212
+   ;; removing (circuits-lab), adding ghost requirements of 211 & 212
    (cons '(cpe-circuits-lab) '("ee143" "ime156" "cpe488"))
    (cons '(ee-microcon) '("cpe329" "cpe336"))
    ;; imprecise, allows 461 + 464

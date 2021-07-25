@@ -70,10 +70,14 @@
      CSCTE)))
 
 ;; are these group courses supervisory?
+;; NB: when you add a group course with a special definition you need
+;; to add it here, too...
 (define supervisory-group-table : (Immutable-HashTable Symbol Boolean)
   (make-immutable-hash
    (append
-    '((cpe-TE/400 . #f)
+    '((circuits . #f)
+      (circuits-lab . #f)
+      (cpe-TE/400 . #f)
      (cpe-TE/123 . #f)
      (cpe-signals . #f)
      (ee-TE-0 . #f)

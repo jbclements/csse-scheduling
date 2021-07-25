@@ -231,6 +231,18 @@
            (ghost/req
             (took/req "ee212"))))
 
+(define passed-circuits?
+  (or!/req (pass/req "ee112")
+           (or!/req
+            (pass/req "ee113")
+            (ghost/req
+             (took-one-of/req '("ee211" "ee212"))))))
+
+(define passed-circuits-lab?
+  (or!/req (passed-one-of/req '("ee143" "ime156"))
+           (ghost/req
+            (took-one-of/req '("ee211" "ee212")))))
+
 (define passed-123? (pass/req "csc123"))
 
 ;; did this csc student pass the SE requirement? (307 OR 308+309)
@@ -389,7 +401,13 @@
   (make-immutable-hash
    (append
     simple-req-pairs
-   `((cpe-TE/400 . ,(ccparam
+   `((circuits . ,(ccparam
+                   cc
+                   passed-circuits?))
+     (circuits-lab . ,(ccparam
+                       cc
+                       passed-circuits-lab?))
+     (cpe-TE/400 . ,(ccparam
                      cc
                      (or!/req (got-4-units-of-400? cpe-special-problems-courses)
                               (passed-cpe-technical-elective? cc))))
