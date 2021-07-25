@@ -579,8 +579,7 @@
     (all-of-these
      cc
      (append
-      `("cpe100"
-       "cpe133"
+      `("cpe133"
        "cpe233"
        "cpe350"
        "cpe450"

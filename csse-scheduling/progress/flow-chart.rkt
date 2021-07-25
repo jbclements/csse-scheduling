@@ -146,8 +146,7 @@
   se-2019-2020-flowchart/pre)
 
 (define common-cpe-flowchart/pre : Flowchart-Spec
-  '(("cpe100" 1)
-    ("csc101" 2)
+  '(("csc101" 2)
     ("csc202" 3)
     ("csc203" 4)
     ("cpe233" 5)
