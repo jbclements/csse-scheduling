@@ -221,6 +221,14 @@
            (ghost/req
             (took-one-of/req '("cpe133" "csc202" "csc203" "csc102" "csc103")))))
 
+(define passed-ee111?
+  (or!/req (pass/req "ee111")
+           (ghost/req (took/req "ee212"))))
+
+(define passed-ee151?
+  (or!/req (pass/req "ee151")
+           (ghost/req (took/req "ee212"))))
+
 (define ee-passed-211?
   (or!/req (pass/req "ee211")
            (ghost/req
@@ -242,6 +250,12 @@
   (or!/req (passed-one-of/req '("ee143" "ime156"))
            (ghost/req
             (took-one-of/req '("ee211" "ee212")))))
+
+(define passed-cpe-circuits-lab?
+  (or!/req (passed-one-of/req '("ee143" "ime156" "cpe488"))
+           (ghost/req
+            (took-one-of/req '("ee211" "ee212")))))
+
 
 (define passed-123? (pass/req "csc123"))
 
@@ -407,6 +421,9 @@
      (circuits-lab . ,(ccparam
                        cc
                        passed-circuits-lab?))
+     (cpe-circuits-lab . ,(ccparam
+                           _
+                           passed-cpe-circuits-lab?))
      (cpe-TE/400 . ,(ccparam
                      cc
                      (or!/req (got-4-units-of-400? cpe-special-problems-courses)
@@ -610,7 +627,6 @@
       )))
    ))
 
-;; doesn't include EE requirements
 (define 2017-2019-cpe-requirements
   (append
    (common-cpe-requirements "2017-2019")
@@ -642,11 +658,9 @@
 
 (define common-ee-requirements-list
   '("cpe133" "cpe233"
-             "ee111" "ee151"
              ;; slight approximation, should be (or (and ... ...) (and ... ...))
              circuits circuits-lab
              ;; check to make sure IME courses aren't filtered out
-             ;"ee211" "ee241"
              "ee212" "ee242"
              "ee228"
              "ee255" "ee295"
@@ -672,7 +686,9 @@
           (append
            (list (list "csc101" ee-passed-101?)
                  (list "ee211" ee-passed-211?)
-                 (list "ee241" ee-passed-241?))
+                 (list "ee241" ee-passed-241?)
+                 (list "ee111" passed-ee111?)
+                 (list "ee151" passed-ee151?))
            
            (all-of-these
             cc

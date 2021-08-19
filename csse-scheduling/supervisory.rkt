@@ -77,6 +77,7 @@
    (append
     '((circuits . #f)
       (circuits-lab . #f)
+      (cpe-circuits-lab . #f)
       (cpe-TE/400 . #f)
      (cpe-TE/123 . #f)
      (cpe-signals . #f)

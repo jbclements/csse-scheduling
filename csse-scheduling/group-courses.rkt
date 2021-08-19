@@ -29,7 +29,7 @@
    (cons '(ee-microcon) '("cpe329" "cpe336"))
    ;; removing (circuits), adding ghost requirements of 211 & 212
    ;; removing (circuits-lab), adding ghost requirements of 211 & 212
-   (cons '(cpe-circuits-lab) '("ee143" "ime156" "cpe488"))
+   ;; removing (cpe-circuits-lab), adding ghost requirements of 211 & 212
    (cons '(ee-microcon) '("cpe329" "cpe336"))
    ;; imprecise, allows 461 + 464
    (cons '(ee-sp-1) '("ee461" "ee463"))
