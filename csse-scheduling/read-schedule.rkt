@@ -42,6 +42,9 @@
 
 
 
+;; appears in schedules.rkt as well... I think with dynamic require
+;; I just have to put it in both places...
+(define-type Omits (Listof (U Symbol (List Symbol (Listof (U 'f 'w 's))))))
 
 ;; represents a year's teaching assignments.. subtype of Sexp
 (define-type Schedule (Pairof Natural (Listof InstructorA)))
@@ -293,7 +296,7 @@
 
 ;; validate that this is a legal schedule sexp, remove omitted instructors
 (define (validate-schedule [schedule-sexp : Sexp]
-                           [instructors-to-omit : (Listof Symbol)])
+                           [instructors-to-omit : Omits])
   : Schedule
   (match schedule-sexp
     [(cons (? natural? fall-qtr) (? list? instructor-sexps))
@@ -312,28 +315,61 @@
 ;; remove records corresponding to the named instructors.
 ;; signal an error if these instructors don't appear in the list.
 (define (subtract-instructors [instructors : (Listof InstructorA)]
-                              [to-omit : (Listof Symbol)])
-  (for ([i (in-list to-omit)])
+                              [to-omit : Omits])
+  (define to-omit-names
+    (map (λ ([i : (U Symbol (List Symbol Any))])
+           (cond [(symbol? i) i]
+                 [else (first i)]))
+         to-omit))
+  (define partial-year-omits
+    (filter (ann pair? (-> (U Symbol (List Symbol (Listof Symbol)))
+                           Boolean : (List Symbol (Listof Symbol))))
+            to-omit))
+  (for ([i (in-list to-omit-names)])
     (unless (assoc i instructors)
       (error 'subtract-instructors
              "can't omit non-existent instructor: ~e"
              i)))
-  (filter (λ ([i : InstructorA]) (not (member (first i) to-omit)))
-          instructors))
+  (filter-map
+   (λ ([i : InstructorA]) : (U False InstructorA)
+     (cond [(member (first i) to-omit-names)
+            ;; could be whole-year, or just some quarters
+            (cond [(member (first i) to-omit)
+                   ;; whole year... just drop it
+                   #f]
+                  [else
+                   (match (assoc (first i) partial-year-omits)
+                     [#f (error 'subtract-instructors "internal error, can't find record")]
+                     [(list _ quarters)
+                      (subtract-some-quarters i quarters)])])]
+           [else
+            i]))
+   instructors))
 
+(define (subtract-some-quarters [i : InstructorA] [drop-quarters : (Listof Symbol)])
+  : InstructorA
+  (list (first i)
+        (cons 'f (maybe-drop (rest (second i)) 'f drop-quarters))
+        (cons 'w (maybe-drop (rest (third i)) 'w drop-quarters))
+        (cons 's (maybe-drop (rest (fourth i)) 's drop-quarters))))
+
+(define (maybe-drop [qtr : (Listof CourseA)] [qtr-sym : Symbol] [to-drop : (Listof Symbol)])
+  : (Listof CourseA)
+  (cond [(member qtr-sym to-drop) '()]
+        [else qtr]))
 
 (module+ test
   (require typed/rackunit)
 
-  (check-equal? (subtract-instructors '((a (f) (w) (s))
-                                        (b (f) (w) (s))
-                                        (c (f) (w) (s))
-                                        (d (f) (w) (s))
-                                        (e (f) (w) (s)))
-                                      '(d b))
-                '((a (f) (w) (s))
-                  (c (f) (w) (s))
-                  (e (f) (w) (s))))
+  (check-equal? (subtract-instructors '((a (f 1) (w 3) (s 4))
+                                        (b (f 2) (w 4) (s 3))
+                                        (c (f 3) (w 5) (s 9))
+                                        (d (f 4) (w 6) (s 1234))
+                                        (e (f 5) (w 8) (s 17)))
+                                      '(d (e (w)) b))
+                '((a (f 1) (w 3) (s 4))
+                  (c (f 3) (w 5) (s 9))
+                  (e (f 5) (w) (s 17))))
 
   (check-exn #px"non-existent instructor"
              (λ ()
