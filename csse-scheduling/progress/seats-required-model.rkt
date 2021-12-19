@@ -83,16 +83,15 @@
 (define (first-year? [student : Student])
   (equal? (Student-entry-qtr student) 'pre-poly))
 
-;; given a student, return the courses she'd be expected to take
+;; given a student, return the courses they'd be expected to take in each quarter
 ;; from qtr 'start-qtr' stopping just before 'stop-qtr'
 ;; NOTE: In this context, qtrs are naturals such as 0 or 1, counting the number of
 ;; quarters from the current one.
-;; returns a "Seats-By-Requirement" : (Listof (List Requirement Nonnegative-Real))
 (define (student->courses [student : Student]
                           [start-qtr-idx : Natural]
                           [stop-qtr-idx : Natural]
                           [cc : CatalogCycle])
-  : (Listof Seats-By-Requirement)
+  : (Listof Seats-By-Requirement) ;; each element is for one quarter of their schedule
   (when (< 100 start-qtr-idx)
     (raise-argument-error 'student->courses
                           "reasonable number of quarters"
