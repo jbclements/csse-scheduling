@@ -11,14 +11,14 @@
 
 (provide emplid->hashed)
 
+(require "config.rkt")
 (require/typed sha
                [sha256 (Bytes -> Bytes)])
 
 (define hash-text
   (string-trim
    (file->string
-    "/Users/clements/OneDrive - California Polytechnic State \
-University/student-data-hash/student-hash-key.txt")))
+    (build-path (cast (config-env 'onedrive-directory) String) "student-data-hash/student-hash-key.txt"))))
 
 ;; convert to hex string, add leading zero if necessary
 (define (hexpair [n : Byte]) : String
