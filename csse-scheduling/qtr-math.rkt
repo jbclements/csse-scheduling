@@ -195,7 +195,8 @@
     [2 "Winter"]
     [4 "Spring"]
     [6 "Summer"]
-    [8 "Fall"]))
+    [8 "Fall"]
+    [other (error 'qtr->season "not a legal last quarter digit: ~e" other)]))
 
 ;; given a season, return its quarter offset
 (define (season->qtr-offset [season : Season]) : Natural
@@ -203,7 +204,8 @@
     ["Winter" 2]
     ["Spring" 4]
     ["Summer" 6]
-    ["Fall" 8]))
+    ["Fall" 8]
+    [other (error 'season->qtr-offset "not a legal season: ~v\n" other)]))
 
 (define qtrs-per-year/no-summer 3)
 

@@ -33,7 +33,7 @@
          (only-in racket/list remove-duplicates))
 
 (define-type Subject
-  (U "AEPS" "AERO" "AG" "AGB" "ANT" "ARCE" "ARCH" "ART" "ASCI" "ASTR" "BIO"
+  (U "AEPS" "AERO" "AG" "AGB" "AGC" "ANT" "ARCE" "ARCH" "ART" "ASCI" "ASTR" "BIO"
      "BMED" "BOT" "BRAE" "BUS" "CD" "CE" "CHEM" "CHIN" "CM" "COMS" "CPE" "CRP"
      "CSC" "DANC" "DATA" "DSCI" "ECON" "EDES" "EDUC" "EE" "ENGL" "ENGR" "ENVE" "ERSC"
      "ES" "ESE" "FPE" "FR" "FSN" "GEOG" "GEOL" "GER" "GRC" "GS" "GSA" "GSB" "GSE" "HCS" "HIST" "HLTH" "HNRC"
