@@ -79,9 +79,16 @@
            "sets not equal. used: ~v\nlisted in table: ~v\n"
            all-defined all-in-table)))
 
+(define (make-first-year-filter [model-qtr : Qtr])
+  ;; NB not including summer. This means that students who take their first of our courses
+  ;; in Summer won't be considered first-year. I believe this is the conservative choice.
+  (define this-year-entry-qtrs (cons 'pre-poly (fall-year->qtrs (qtr->fall-year model-qtr))))
+  (define (first-year? [student : Student]) : Boolean
+    (and (member (Student-entry-qtr student) this-year-entry-qtrs) #t))
+  first-year?
+  )
 
-(define (first-year? [student : Student])
-  (equal? (Student-entry-qtr student) 'pre-poly))
+
 
 ;; given a student, return the courses they'd be expected to take in each quarter
 ;; from qtr 'start-qtr' stopping just before 'stop-qtr'
@@ -104,7 +111,7 @@
   (student-to-take unmet-reqs (Student-major student)
                    start-qtr-idx
                    stop-qtr-idx
-                   (first-year? student)
+                   (equal? (Student-entry-qtr student) 'pre-poly)
                    cc))
 
 
@@ -155,7 +162,7 @@
   (define students (get-students version-str))
   (define chosen-students
     (cond [omit-first-year?
-           (filter (compose not first-year?) students)]
+           (filter (compose not (make-first-year-filter start-qtr)) students)]
           [else students]))
   ;; tuples of (list major (listof (listof requirement))) (one for each student).
   (define all-to-take : (Listof (Listof (Listof (List Major-Abbr ReqName Real))))
@@ -303,10 +310,10 @@
   (filter
    (λ ([sr : Seat-Requirement])
      (member (Seat-Requirement-course sr)
-             '("cpe350")))
+             '("csc202")))
    (apply
     append
-    (seat-requirements/range 2204 2208 2218 (λ (x) "2019-2020") #f)))
+    (seat-requirements/range 2218 2222 2228 (λ (x) (ann "2021-2022" CatalogCycle)) #t)))
 
   
 
