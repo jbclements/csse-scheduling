@@ -501,17 +501,17 @@
             "unexpected assigned-time format: ~v"
             other)]))
 
-;; select only records with a particular quarter or name
+;; select only records in particular quarters or with a given name
 (define (record-filter [records : (Listof Record)]
                        #:course [course : (U False CourseID) #f]
-                       #:qtr [qtr : (U False Qtr) #f]) : (Listof Record)
-  (define (qtr-filter [qtr : (U False Qtr)]) : (Record -> Boolean)
-    (cond [(not qtr) (λ ([r : Record]) #t)]
-          [else (λ ([r : Record]) (equal? (record-qtr r) qtr))]))
-  (define (course-filter [id : (U False CourseID)]) : (Record -> Boolean)
-    (cond [(not id) (λ ([r : Record]) #t)]
-          [else (λ ([r : Record]) (equal? (record-course r) id))]))
-  (filter (course-filter course) (filter (qtr-filter qtr) records)))
+                       #:qtr [qtrs : (U False (Listof Qtr)) #f]) : (Listof Record)
+  (define qtr-filter : (Record -> Boolean)
+    (cond [(not qtrs) (λ ([r : Record]) #t)]
+          [else (λ ([r : Record]) (and (member (record-qtr r) qtrs) #t))]))
+  (define course-filter : (Record -> Boolean)
+    (cond [(not course) (λ ([r : Record]) #t)]
+          [else (λ ([r : Record]) (equal? (record-course r) course))]))
+  (filter course-filter (filter qtr-filter records)))
 
 (module+ test
   (require typed/rackunit)
