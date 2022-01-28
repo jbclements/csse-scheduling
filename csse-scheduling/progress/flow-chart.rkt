@@ -667,37 +667,40 @@
                 ()
                 ()))
   (check-equal? (student-to-take '() "CSC" 0 3 #f "2017-2019")
-                '(() () ())))
+                '(() () ()))
+
+  (check-equal? 
+ (student-to-take '((csc-TE/123)
+                    "csc101"
+                    "csc202"
+                    "csc225"
+                    "csc203"
+                    "csc357"
+                    (csc-SE)
+                    "cpe315"
+                    "csc348"
+                    "csc349"
+                    "csc430"
+                    "csc445"
+                    "csc453"
+                    (upper-level-csc-TE)
+                    (csc-TE/special-problems)
+                    (ethics)
+                    (csc-sp-1)
+                    (csc-sp-2)
+                    (csc-TE-0)
+                    (csc-TE-1)
+                    (csc-TE-2)
+                    (csc-TE-3)
+                    (csc-TE-4))
+                  "CSC"
+                  0
+                  3
+                  #f
+                  "2020-2021")
+ '((("csc101" 1)) (("csc202" 1)) (("csc203" 1)))))
 
 
 
 
 
-(student-to-take '((csc-TE/123)
-                   "csc101"
-                   "csc202"
-                   "csc225"
-                   "csc203"
-                   "csc357"
-                   (csc-SE)
-                   "cpe315"
-                   "csc348"
-                   "csc349"
-                   "csc430"
-                   "csc445"
-                   "csc453"
-                   (upper-level-csc-TE)
-                   (csc-TE/special-problems)
-                   (ethics)
-                   (csc-sp-1)
-                   (csc-sp-2)
-                   (csc-TE-0)
-                   (csc-TE-1)
-                   (csc-TE-2)
-                   (csc-TE-3)
-                   (csc-TE-4))
-                 "CSC"
-                 0
-                 3
-                 #f
-                 "2020-2021")
