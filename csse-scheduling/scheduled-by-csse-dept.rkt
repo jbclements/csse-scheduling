@@ -26,7 +26,7 @@
 ;; a subject for a number...
 (define earliest-cycle-cutoff : CatalogCycle "2015-2017")
 ;; used to determine the list of courses to be scheduled
-(define current-catalog-cycle "2021-2022")
+(define current-catalog-cycle "2022-2023")
 
 (define computing-subjects '("CSC" "CPE" "SE" "EE"))
 
