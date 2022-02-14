@@ -513,7 +513,6 @@
                                     (and!/req (pass/req "csc308" "csc309"))))
          ;; this is the simplified version:
          (list '(csc-SE) (passed-one-of/req '("csc307" "csc308")))
-         (req  "cpe315")
          (list "csc348" passed-discrete?)
          (req  "csc349")
          (req "csc430")
@@ -535,6 +534,7 @@
   (cons (list '(CSC) cc)
         (append
          (common-csc-requirements cc)
+         (list (req  "cpe315"))
          (all-of-these
           cc
           (append
@@ -549,6 +549,7 @@
   (cons (list '(CSC) cc)
         (append
          (common-csc-requirements cc)
+         (list (req "cpe315"))
          (all-of-these
           cc
           (append
@@ -558,6 +559,23 @@
              csc-sp-2)
            ;; catalog 7 - ul,csc/123,csc/specialproblems = 4 left:
            (build-list 4 (make-TE-requirement-name "csc"))))
+         )))
+
+(define (make-22-csc-requirements [cc : CatalogCycle]) : LACAR
+  (cons (list '(CSC) cc)
+        (append
+         (common-csc-requirements cc)
+         (all-of-these
+          cc
+          (append
+           '(ethics
+             "csc365"
+             distributed
+             security
+             csc-sp-1
+             csc-sp-2)
+           ;; catalog 6 - ul,csc/123,csc/specialproblems = 3 left:
+           (build-list 3 (make-TE-requirement-name "csc"))))
          )))
 
 ;; upcoming: databases becomes required.
@@ -714,7 +732,8 @@
               (all-of-these
                cc
                (append
-                '("csc431"
+                '("cpe315"
+                  "csc431"
                   "csc300"
                   "csc491"
                   "csc492")
@@ -728,21 +747,27 @@
           (make-90-csc-requirements "2019-2020")
           (make-90-csc-requirements "2020-2021")
           (make-21-csc-requirements "2021-2022")
+          (make-22-csc-requirements "2022-2023")
+          ;; - must take 364 OR 464+469
           ;(cons (list '(CSC) (ann "2019-2020" CatalogCycle)) 2019-2020-csc-requirements)
           ;; SE
           (cons (list '(SE) (ann "2017-2019" CatalogCycle)) 2017-2019-se-requirements)
           (make-901-se-requirements "2019-2020")
           (make-901-se-requirements "2020-2021")
           (make-901-se-requirements "2021-2022")
+          ;; FIXME need 2022 SE
           ;; CPE
           (cons (list '(CPE) (ann "2017-2019" CatalogCycle)) 2017-2019-cpe-requirements)
           (make-901-cpe-requirements "2019-2020")
           (make-901-cpe-requirements "2020-2021")
           (make-901-cpe-requirements "2021-2022")
+          ;; FIXME need 2022 CPE
           ;; EE
           (make-901-ee-requirements "2019-2020")
           (make-901-ee-requirements "2020-2021")
-          (make-901-ee-requirements "2021-2022"))
+          (make-901-ee-requirements "2021-2022")
+          ;; etc EE
+          )
          (Listof (Pairof LAC (Listof Requirement)))))
    (Listof (Pairof LAC (Listof Requirement))))))
 
