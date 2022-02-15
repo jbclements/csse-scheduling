@@ -465,6 +465,12 @@
           cc
           (or!/req passed-123?
                    (passed-se-technical-elective? cc))))
+     (distributed
+      . ,(ccparam
+          _
+          (or!/req (pass/req "csc364")
+                   (and/req (pass/req "cpe464")
+                            (pass/req "csc469")))))
      )
    ;; n should be the largest number of TE requirements used in a flowchart
    (make-TE-requirements "csc" passed-csc-technical-elective? 5)
@@ -475,7 +481,11 @@
 (define course-group-names : (Listof Symbol) (hash-keys req-table))
 
 (define (req-lookup [spec : (U Symbol String)] [cc : CatalogCycle]) : ReqFun
-  ((hash-ref req-table spec) cc))
+  ((hash-ref req-table spec (λ ()
+                              (error 'req-lookup
+                                     "no such symbolic requirement: ~e"
+                                     spec)))
+   cc))
 
 (define ((spec->rec [cc : CatalogCycle]) [spec : (U String Symbol)]) : Requirement
   (cond [(string? spec) (req spec)]
@@ -748,8 +758,6 @@
           (make-90-csc-requirements "2020-2021")
           (make-21-csc-requirements "2021-2022")
           (make-22-csc-requirements "2022-2023")
-          ;; - must take 364 OR 464+469
-          ;(cons (list '(CSC) (ann "2019-2020" CatalogCycle)) 2019-2020-csc-requirements)
           ;; SE
           (cons (list '(SE) (ann "2017-2019" CatalogCycle)) 2017-2019-se-requirements)
           (make-901-se-requirements "2019-2020")
