@@ -684,6 +684,23 @@
          (common-cpe-requirements cc)
          )))
 
+(define (make-2022-cpe-requirements [cc : CatalogCycyle]) : LACAR
+  (cons (list '(CPE) "2022-2023")
+        (cons (list '(CPE) cc)
+              (append
+               (all-of-these
+                (ann cc CatalogCycle)
+                '(cpe-arch
+                  microcon2
+                  "ee115" "ee145"
+                  "ee215" "ee245"
+                  "ee315"
+                  cpe-signals
+                  cpe-sp-1
+                  cpe-sp-2))
+               (common-cpe-requirements cc)
+               ))))
+
 (define common-ee-requirements-list
   '("cpe133" "cpe233"
              ;; slight approximation, should be (or (and ... ...) (and ... ...))
@@ -763,7 +780,7 @@
           (make-901-se-requirements "2019-2020")
           (make-901-se-requirements "2020-2021")
           (make-901-se-requirements "2021-2022")
-          ;; FIXME need 2022 SE
+          (make-901-se-requirements "2022-2023")
           ;; CPE
           (cons (list '(CPE) (ann "2017-2019" CatalogCycle)) 2017-2019-cpe-requirements)
           (make-901-cpe-requirements "2019-2020")
