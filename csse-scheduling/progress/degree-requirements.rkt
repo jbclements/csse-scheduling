@@ -684,22 +684,21 @@
          (common-cpe-requirements cc)
          )))
 
-(define (make-2022-cpe-requirements [cc : CatalogCycyle]) : LACAR
-  (cons (list '(CPE) "2022-2023")
-        (cons (list '(CPE) cc)
-              (append
-               (all-of-these
-                (ann cc CatalogCycle)
-                '(cpe-arch
-                  microcon2
-                  "ee115" "ee145"
-                  "ee215" "ee245"
-                  "ee315"
-                  cpe-signals
-                  cpe-sp-1
-                  cpe-sp-2))
-               (common-cpe-requirements cc)
-               ))))
+(define (make-2022-cpe-requirements [cc : CatalogCycle]) : LACAR
+  (cons (list '(CPE) (ann "2022-2023" CatalogCycle))
+        (append
+         (all-of-these
+          (ann cc CatalogCycle)
+          '(cpe-arch
+            microcon2
+            "ee115" "ee145"
+            "ee215" "ee245"
+            "ee315"
+            cpe-signals
+            cpe-sp-1
+            cpe-sp-2))
+         (common-cpe-requirements cc)
+         )))
 
 (define common-ee-requirements-list
   '("cpe133" "cpe233"
@@ -786,12 +785,12 @@
           (make-901-cpe-requirements "2019-2020")
           (make-901-cpe-requirements "2020-2021")
           (make-901-cpe-requirements "2021-2022")
-          ;; FIXME need 2022 CPE
+          (make-2022-cpe-requirements "2022-2023")
           ;; EE
           (make-901-ee-requirements "2019-2020")
           (make-901-ee-requirements "2020-2021")
           (make-901-ee-requirements "2021-2022")
-          ;; etc EE
+          (make-901-ee-requirements "2022-2023")
           )
          (Listof (Pairof LAC (Listof Requirement)))))
    (Listof (Pairof LAC (Listof Requirement))))))
