@@ -27,6 +27,7 @@
    (cons '(microcon2) (list "cpe329" "cpe316"))
    (cons '(ethics) (list "csc300" "phil323"))
    (cons '(security) (list "csc321" "csc323" "csc325"))
+   (cons '(cpe-security) (list "csc321" "csc422" "cpe426"))
    (cons '(ee-microcon) '("cpe329" "cpe336"))
    ;; removing (circuits), adding ghost requirements of 211 & 212
    ;; removing (circuits-lab), adding ghost requirements of 211 & 212
