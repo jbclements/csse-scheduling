@@ -61,16 +61,12 @@
     ((csc-TE-3) 10)
      )))
 
-(define csc-2021-2022-flowchart/pre : Flowchart-Spec
-  (append
-   csc-core
-   '(("csc348" 5)
-     ("cpe315" 5 6 7)
+(define csc-2021-2023-shared
+  '(("csc348" 5)
      ("csc349" 6)
      ((security) 8)
      ("csc430" 8 9)
      ((ethics) 7 8 9)
-     ((csc-TE-1) 9)
      ((csc-TE-2) 10)
      ("csc445" 10)
      ("csc453" 10 11 12)
@@ -78,7 +74,16 @@
      ((csc-sp-1) 11)
      ((csc-sp-2) 12)
      ((upper-level-csc-TE) 12)
-     ((csc-TE/special-problems) 12))))
+     ((csc-TE/special-problems) 12)))
+
+(define csc-2021-2022-flowchart/pre : Flowchart-Spec
+  (append
+   csc-core
+   csc-2021-2023-shared
+   '(
+     ("cpe315" 5 6 7) ;; becomes 364
+     ((csc-TE-1) 9) ;; no?
+     )))
 
 (define csc-2020-2021-flowchart/pre : Flowchart-Spec
   (append
