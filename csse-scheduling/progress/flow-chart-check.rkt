@@ -18,12 +18,18 @@
    (for/list : (Listof (Pair Any Any))
      ([key (in-list (hash-keys all-flowcharts))])
      (ann
-      (cons key (map (inst first Any)
-                     (hash-ref all-flowcharts key)))
+      (cons key
+            (list->set
+             (map (inst first Any)
+                  (hash-ref all-flowcharts key))))
       (Pair Any Any)))))
 
 (define expected-val : (Immutable-HashTable Any Any)
   (make-immutable-hash
+   (map
+    ;; convert lists to sets to disregard order
+    (λ ([pr : (Pair Any (Listof Any))]) : (Pair Any (Setof Any))
+      (cons (car pr) (list->set (cdr pr))))
    '((((SE ftf) "2022-2023")
         .
         ((se-TE/123)
@@ -1129,7 +1135,12 @@
          (se-TE-1)
          (ethics)
          "csc365"
-         (se-TE/123))))))
+         (se-TE/123)))))))
+
+  (check-equal? (list->set (hash-keys test-val))
+                (list->set (hash-keys expected-val)))
 
 (check-equal? test-val expected-val))
+
+
 
