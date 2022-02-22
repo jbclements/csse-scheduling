@@ -18,12 +18,18 @@
    (for/list : (Listof (Pair Any Any))
      ([key (in-list (hash-keys program-requirements))])
      (ann
-      (cons key (map (inst first Any)
-                     (hash-ref program-requirements key)))
+      (cons key
+            (list->set
+             (map (inst first Any)
+                  (hash-ref program-requirements key))))
       (Pair Any Any)))))
 
 (define expected-val : (Immutable-HashTable Any Any)
   (make-immutable-hash
+   (map
+    ;; convert lists to sets to disregard order
+    (λ ([pr : (Pair Any (Listof Any))]) : (Pair Any (Setof Any))
+      (cons (car pr) (list->set (cdr pr))))
    '((((SE) "2021-2022")
       .
       ("csc101"
@@ -350,6 +356,7 @@
        "ee245"
        "ee315"
        (cpe-signals)
+       (cpe-security)
        (cpe-sp-1)
        (cpe-sp-2)
        "csc101"
@@ -366,7 +373,9 @@
        (cpe-TE/400)
        (cpe-TE/123)
        (cpe-TE-0)
-       (cpe-TE-1)))
+       (cpe-TE-1)
+       (cpe-TE-2)
+       ))
      (((CSC) "2019-2020")
       .
       ("csc101"
@@ -570,8 +579,15 @@
        (ethics)
        "csc365"
        (se-TE-0)
-       (se-TE-1))))))
+       (se-TE-1)))))))
 
-(check-equal? test-val expected-val)
+  (check-equal? (list->set (hash-keys test-val))
+                (list->set (hash-keys expected-val))
+                "hash table keys")
 
+  (for ([k (in-list (set-intersect (hash-keys test-val) (hash-keys expected-val)))])
+    (check-equal?
+     (hash-ref test-val k)
+     (hash-ref expected-val k)
+     (format "value for key ~e" k)))
 )

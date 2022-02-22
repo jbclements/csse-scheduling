@@ -41,15 +41,18 @@
   (define set1-names (map (inst car ReqName) flowchart-set))
   (define set2-names (map (inst car ReqName) degree-requirement-set))
   (unless (empty? (set-subtract set1-names set2-names))
-    (error 'name-check "name-check for ~a failed: flowchart set has ~e"
-           label
-           (set-subtract set1-names set2-names)))
+    (fprintf (current-error-port)
+             "name-check for ~a failed: flowchart set has ~e\n"
+             label
+             (set-subtract set1-names set2-names)))
   (unless (empty? (set-subtract set2-names set1-names))
-    (error 'name-check "name-check for ~a failed: degree requirement set has ~e"
-           label
-           (set-subtract set2-names set1-names)))
+    (fprintf (current-error-port)
+             "name-check for ~a failed: degree requirement set has ~e\n"
+             label
+             (set-subtract set2-names set1-names)))
   (unless (equal? (list->set set1-names) (list->set set2-names))
-    (error 'name-check "something else failed... duplicated req name?")))
+    (error 'name-check "names don't match"))
+  )
 
 ;; check that the list of degree requirements has the same set
 ;; of requirements as the flow chart

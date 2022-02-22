@@ -29,6 +29,8 @@
 
          course-group-names)
 
+(define 2017cc : CatalogCycle "2017-2019")
+
 ;; given a list of grades, a course id, and a predicate mapping a grade to
 ;; a boolean, return a list of lists of grade-records indicating the
 ;; ways that the requirement could be satisfied.
@@ -615,13 +617,13 @@
 
 (define 2017-2019-se-requirements : (Listof Requirement)
   (append
-   (common-se-requirements "2017-2019")
+   (common-se-requirements 2017cc)
    (list (req "csc300")
          (req "csc491")
          (req "csc492"))
    ;; 20 TE units minus upper-level (above) minus special problems
    (all-of-these
-    (ann "2017-2019" CatalogCycle)
+    2017cc
     (build-list 3 (make-TE-requirement-name "se")))))
 ;; count TEs
 
@@ -651,26 +653,27 @@
        "csc348"
        cpe-TE/400
        cpe-TE/123)
-      (build-list 2 (make-TE-requirement-name "cpe"))
       )))
    ))
 
 (define 2017-2019-cpe-requirements
   (append
-   (common-cpe-requirements "2017-2019")
+   (common-cpe-requirements 2017cc)
    (all-of-these
-    (ann "2017-2019" CatalogCycle)
+    2017cc
     '("cpe315"
       "cpe329"
       cpe-sp-1
-      cpe-sp-2))))
+      cpe-sp-2))
+   (all-of-these 2017cc (build-list 2 (make-TE-requirement-name "cpe")))
+      ))
 
 
 (define (make-901-cpe-requirements [cc : CatalogCycle]) : LACAR
   (cons (list '(CPE) cc)
         (append
          (all-of-these
-          (ann cc CatalogCycle)
+          cc
           '(cpe-arch
             microcon
             circuits cpe-circuits-lab
@@ -682,23 +685,30 @@
             cpe-sp-1
             cpe-sp-2))
          (common-cpe-requirements cc)
+         (all-of-these
+          cc
+          (build-list 2 (make-TE-requirement-name "cpe")))
+      
          )))
 
 (define (make-2022-cpe-requirements [cc : CatalogCycle]) : LACAR
-  (cons (list '(CPE) (ann "2022-2023" CatalogCycle))
+  (cons (list '(CPE) cc)
         (append
          (all-of-these
-          (ann cc CatalogCycle)
+          cc
           '(cpe-arch
             microcon2
             "ee115" "ee145"
             "ee215" "ee245"
             "ee315"
             cpe-signals
+            cpe-security
             cpe-sp-1
             cpe-sp-2))
          (common-cpe-requirements cc)
-         )))
+         (all-of-these
+          cc
+          (build-list 3 (make-TE-requirement-name "cpe"))))))
 
 (define common-ee-requirements-list
   '("cpe133" "cpe233"
