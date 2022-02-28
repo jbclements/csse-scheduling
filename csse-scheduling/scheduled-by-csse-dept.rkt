@@ -334,6 +334,7 @@
           (group-by mapping-num csc-cpe-mappings)))))
 
 (module+ test
+  (require typed/rackunit)
   (check-equal? (hash-ref num-id-table "100") '("cpe100"))
   (check-equal? (hash-ref num-id-table "350") '("csc350" "cpe350")))
 
@@ -402,7 +403,6 @@
 
 
 (module+ test
-  (require typed/rackunit)
 
   
   (check-equal? (csc-or-cpe 123) "csc123")

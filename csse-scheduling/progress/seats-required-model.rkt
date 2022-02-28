@@ -202,6 +202,7 @@
         [else qtr]))
 
 (module+ test
+  (require typed/rackunit)
   (check-equal? (summer->spring 2204) 2204)
   (check-equal? (summer->spring 2206) 2204))
 
@@ -269,7 +270,6 @@
                                (symbol->string (first b)))])]))
 
 (module+ test
-  (require typed/rackunit)
 
   (check-equal?
    (transpose '((a b c) (d e f)))
