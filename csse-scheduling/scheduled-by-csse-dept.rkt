@@ -18,8 +18,9 @@
  cycle-course-configuration
  cycle-course-wtus
  cycle-course-wtus/noerror
-
+ "ownership.rkt"
  2021-course-set
+ 2022-course-set
  )
 
 ;; cycles before this can be ignored for the purposes of determining
@@ -311,6 +312,9 @@
                            non-supervisory-ee-courses)))
 ;; this is pretty temporary...
 (define 2021-course-set (set-union non-supervisory-csc-courses cpe-extra))
+;; for 2022-2023 planning, we have an explicit list of CPE courses from Lynne
+(define 2022-course-set (set-union non-supervisory-csc-courses
+                                   2022-cpe-courses))
 
 ;; map numbers to ids to allow short-cuts in schedule description.
 ;; for instance, we can just write "430" rather than "csc430".

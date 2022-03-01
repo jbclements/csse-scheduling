@@ -8,6 +8,8 @@
          shelly/discard-bom
          csse-scheduling/canonicalize)
 
+(provide 2022-cpe-courses)
+
 (define-runtime-path here ".")
 
 (define cc "2022-2023")
@@ -71,5 +73,12 @@
    (map (λ (subject) (canonicalize cc subject num))
         subjects)))
 
-(map (λ (pr) (apply my-canonicalize pr))
-     (map parse-line (apply append (map rest groups))))
+(define courses
+  (map (λ (pr) (apply my-canonicalize pr))
+       (map parse-line (apply append (map rest groups)))))
+
+(unless (equal? '(1) (remove-duplicates (map length courses)))
+  (error 'courses "two courses listed as one. add info here"))
+
+(define 2022-cpe-courses
+  (apply append courses))
