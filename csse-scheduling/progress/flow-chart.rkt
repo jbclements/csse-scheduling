@@ -13,6 +13,7 @@
 
 (provide all-flowcharts
          flow-chart->qtr-load
+         major->qtr-load
          student-to-take
 
          Seats-By-Requirement)
@@ -490,6 +491,8 @@
     ([qtr (in-range 1 13)])
     (cdr (or (assoc qtr table) (cons #f 0)))))
 
+;; use the major and the catalog cycle to return the quarter load
+;; (# of requirements satisfied each quarter, by a student following the flow chart)
 (define (major->qtr-load [major : Major-Abbr] [cc : CatalogCycle]) : Qtr-Load
   (define key (list (list (string->symbol major) 'ftf) cc))
   (define flow-chart (hash-ref all-flowcharts key))

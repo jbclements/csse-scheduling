@@ -18,7 +18,6 @@
  cycle-course-configuration
  cycle-course-wtus
  cycle-course-wtus/noerror
- "ownership.rkt"
  2021-course-set
  2022-course-set
  )
@@ -41,6 +40,7 @@
          racket/list
          racket/match)
 
+
 (require/typed "fetch-mapping.rkt"
                [courses-we-schedule/db
                 (Setof Course-Id)]
@@ -49,6 +49,9 @@
                               (Listof (Pair Course-Id Configuration))))]
                [course-mappings
                 (Listof Course-Mapping)])
+(require/typed "ownership.rkt"
+               [2022-cpe-courses
+                (Listof Course-Id)])
 
 (define-type Course-Mapping (Vector CatalogCycle String String Course-Id))
 (define (mapping-cycle [cm : Course-Mapping]) : CatalogCycle
@@ -314,7 +317,7 @@
 (define 2021-course-set (set-union non-supervisory-csc-courses cpe-extra))
 ;; for 2022-2023 planning, we have an explicit list of CPE courses from Lynne
 (define 2022-course-set (set-union non-supervisory-csc-courses
-                                   2022-cpe-courses))
+                                   (list->set 2022-cpe-courses)))
 
 ;; map numbers to ids to allow short-cuts in schedule description.
 ;; for instance, we can just write "430" rather than "csc430".

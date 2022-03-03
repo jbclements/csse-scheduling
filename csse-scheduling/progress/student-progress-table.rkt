@@ -42,8 +42,6 @@
   (map (inst first ReqName Any) (major-requirements major cc)))
 
 
-;; requirements no longer produce booleans, so this is all commented out for now:
-
 ;; given a student, produce a list of booleans representing their
 ;; satisfaction of the requirements. A #t indicates the requirement has been met.
 (define (student->bools [student : Student] [cc : CatalogCycle]) : (Listof Boolean)

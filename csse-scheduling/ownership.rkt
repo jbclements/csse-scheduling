@@ -14,7 +14,7 @@
 
 (define cc "2022-2023")
 
-(directory-list here)
+
 ;(file->lines (build-path here "CPE-housed courses.csv"))
 
 (define table
