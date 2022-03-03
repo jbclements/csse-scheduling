@@ -1,6 +1,6 @@
 #lang racket
 
-;; which courses are "owned" by which departments?
+;; right now, this just parses the list of CPE-owned courses.
 
 (require racket/runtime-path
          csv-reading
@@ -13,9 +13,6 @@
 (define-runtime-path here ".")
 
 (define cc "2022-2023")
-
-
-;(file->lines (build-path here "CPE-housed courses.csv"))
 
 (define table
   (call-with-input-file (build-path here "CPE-housed courses.csv") 
