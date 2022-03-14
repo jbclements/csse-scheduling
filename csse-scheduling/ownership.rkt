@@ -5,7 +5,7 @@
 (require racket/runtime-path
          csv-reading
          sugar
-         shelly/discard-bom
+         "discard-bom.rkt"
          csse-scheduling/canonicalize)
 
 (provide 2022-cpe-courses)
