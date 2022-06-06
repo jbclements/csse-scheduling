@@ -97,6 +97,8 @@
 ;; from qtr 'start-qtr' stopping just before 'stop-qtr'
 ;; NOTE: In this context, qtrs are naturals such as 0 or 1, counting the number of
 ;; quarters from the current one.
+;; so, for instance, using start-qtr-idx 0 and stop-qtr-idx 1 will tell you the courses
+;; the student is expected to take in the next quarter.
 (define (student->courses [student : Student]
                           [start-qtr-idx : Natural]
                           [stop-qtr-idx : Natural]

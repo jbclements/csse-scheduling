@@ -216,7 +216,8 @@
 
 (define passed-225?
   (or!/req (pass/req "csc225")
-           (took/req "csc357")))
+           (ghost/req
+            (took/req "csc357"))))
 
 (define ee-passed-101?
   (or!/req (pass/req "csc101")
@@ -596,7 +597,7 @@
 (define (common-se-requirements [cc : CatalogCycle]) : (Listof Requirement)
   (append
    computing-common-requirements
-   (list (req  "csc225")
+   (list (list "csc225" passed-225?)
          (req  "csc305")
          (req  "csc308")
          (req  "csc309")
@@ -637,6 +638,9 @@
                      (build-list 2 (make-TE-requirement-name "se")))))))
 
 
+;; NB: These include TE requirements which will soak up e.g. 315, but
+;; also non-TE requirements, so be sure to put them between concrete requirements
+;; and TE requirements
 (define (common-cpe-requirements [cc : CatalogCycle]) : (Listof Requirement)
   (append
    computing-common-requirements
@@ -658,13 +662,13 @@
 
 (define 2017-2019-cpe-requirements
   (append
-   (common-cpe-requirements 2017cc)
    (all-of-these
     2017cc
     '("cpe315"
       "cpe329"
       cpe-sp-1
       cpe-sp-2))
+   (common-cpe-requirements 2017cc)
    (all-of-these 2017cc (build-list 2 (make-TE-requirement-name "cpe")))
       ))
 
