@@ -188,6 +188,12 @@
 ;; does not deduct the used courses from the list of grades available.
 ;; useful as e.g. when passing 102 is used as evidence that student
 ;; has 101 credit
+;; WHOA... I see now that this design makes everything much more order-sensitive;
+;; if you check the later course first, then the ghost-req won't see it. A better
+;; solution would be to allow the ghost/req to see the full list of courses taken.
+;; unfortunately, I think that requires changing the type of reqfun, and would
+;; probably be a lot of work. Are there other bad uses of ghost/req hiding out
+;; there besides 225/357?
 (define (ghost/req [rf : ReqFun]) : ReqFun
   (λ ([g : (Listof Grade-Record)])
     (cond [(not (empty? (rf g))) (list g)]
@@ -505,8 +511,7 @@
   : (Listof Requirement)
   (list (list "csc101" passed-101?)
         (list "csc202" passed-data-structures?)
-        (list "csc203" passed-bigger-projects?)
-        (req "csc357")))
+        (list "csc203" passed-bigger-projects?)))
 
 ;; NB because of the "cut" style of checking, it's important to put
 ;; technical electives last; otherwise, a course like 307 could be
@@ -517,6 +522,8 @@
    computing-common-requirements
    ;; NB: 123 is treated like a TE to allow transfer students not to take it.
    (list (list "csc225" passed-225?)
+         ;; 357 must appear after 225
+         (req "csc357")
          ;; this is an approximation... apparently, students taking 308
          ;; are *required* to take 309. We can express this using our
          ;; system, but interpreting the results could be hard, because
@@ -598,6 +605,7 @@
   (append
    computing-common-requirements
    (list (list "csc225" passed-225?)
+         (req "csc357")
          (req  "csc305")
          (req  "csc308")
          (req  "csc309")
@@ -644,6 +652,7 @@
 (define (common-cpe-requirements [cc : CatalogCycle]) : (Listof Requirement)
   (append
    computing-common-requirements
+   (list (req "csc357"))
    (append
     (all-of-these
      cc
@@ -975,6 +984,31 @@
    '(((2178 "csc100" 4 "A")
       (2178 "csc101" 4 "A")
       (2178 "csc100" 4 "A"))))
+
+  (check-equal? (missing-requirements
+                 (hash-ref program-requirements '((CSC) "2019-2020"))
+                 '((2198 "csc203" 4000 "A")
+                   (2202 "cpe315" 4000 "B")
+                   (2202 "csc357" 4000 "A")
+                   (2202 "csc348" 4000 "A")
+                   (2202 "math344" 4000 "B-")
+                   (2204 "csc300" 0 "W")
+                   (2204 "csc307" 4000 "A-")
+                   (2204 "csc349" 4000 "C+")
+                   (2212 "csc321" 4000 "CR")
+                   (2212 "csc430" 4000 "A")
+                   (2212 "csc445" 4000 "A-")
+                   (2214 "cpe419" 4000 "CR")
+                   (2214 "csc453" 4000 "B-")
+                   (2214 "csc365" 4000 "B+")
+                   (2218 "csc300" 4000 "A")
+                   (2218 "csc480" 4000 "B+")
+                   (2222 "csc366" 4000 "B")
+                   (2222 "csc431" 4000 "C+")
+                   (2222 "csc481" 4000 "A-")
+                   (2222 "csc491" 2000 "A")))
+                ;; wrong but should not contain 225...
+                '((csc-sp-2) (csc-TE-3) (csc-TE-4)))
 
   ;; not a part of this file any more...
   #;((check-equal? (apply
