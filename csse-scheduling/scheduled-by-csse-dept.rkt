@@ -284,6 +284,7 @@
       "ee599"))))
 
 ;; return non-supervisory courses that have one of these subjects
+;; (these lists will overlap for cross-listed courses)
 (define (non-sup-courses-in-subjects [subjects : (Listof String)])
   : (Setof Course-Id)
   (set-subtract
@@ -305,6 +306,9 @@
   (non-sup-courses-in-subjects '("CPE")))
 (define non-supervisory-ee-courses
   (non-sup-courses-in-subjects '("EE")))
+
+;;; okay, interesting. CLSS can generate spreadsheets. Use Export, then be sure to include
+;; term code, subject code, and course.
 
 ;; for 2021-2022 planning, I'm going to add together
 ;; the csc courses and the CPE courses that aren't cross
