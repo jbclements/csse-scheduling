@@ -36,41 +36,45 @@
                      "expected csv where each line has 3 strings, got: ~e"
                      raw-coordinators)]))
 
-(define coordinators
-  (for/list : CoordinatorList ([l (in-list coordinator-strs)])
-    (define canonical-name
-      (match (string-trim (first l))
-        ;; 2 ad-hoc fixups:
-        ;["CSC 419" (canonicalize current-catalog "CPE" "419")]
-        [(regexp #px"^([A-Z]+)(/[A-Z]+)? ([0-9]{3})$" (list _ subj subj2 num))
-         (cond [(subject? subj)
-                (define canonicalized
-                  (canonicalize current-catalog subj (assert num string?)))
-                (when subj2
-                  (define canonicalized2
-                           (canonicalize current-catalog (substring subj2 1)
-                                         (assert num string?)))
-                  (unless (equal? canonicalized canonicalized2)
-                    (error 'canonicalize
-                           "different subjects lead to different canonical \
+(define (coordinators [cc : CatalogCycle])
+  (define coordinators-list
+    (for/list : CoordinatorList ([l (in-list coordinator-strs)])
+      (define canonical-name
+        (match (string-trim (first l))
+          ;; 2 ad-hoc fixups:
+          ;["CSC 419" (canonicalize current-catalog "CPE" "419")]
+          [(regexp #px"^([A-Z]+)(/[A-Z]+)? ([0-9]{3})$" (list _ subj subj2 num))
+           (cond [(subject? subj)
+                  (define canonicalized
+                    (canonicalize cc subj (assert num string?)))
+                  (when subj2
+                    (define canonicalized2
+                      (canonicalize cc (substring subj2 1)
+                                    (assert num string?)))
+                    (unless (equal? canonicalized canonicalized2)
+                      (error 'canonicalize
+                             "different subjects lead to different canonical \
 courses: ~e"
-                           (list canonicalized canonicalized2))))
-                canonicalized]
-               [else (error 'coordinators
-                            "expected subject, got: ~e"
-                            subj)]
-         )]))
-    (define coordinator
-      (match l
-        [(list _ _ name)
-         (regexp-split #px"/" name)]
-        [(list _ _ "") #f]))
-    (list canonical-name coordinator)))
+                             (list canonicalized canonicalized2))))
+                  canonicalized]
+                 [else (error 'coordinators
+                              "expected subject, got: ~e"
+                              subj)]
+                 )]))
+      (define coordinator
+        (match l
+          [(list _ _ name)
+           (regexp-split #px"/" name)]
+          [(list _ _ "") #f]))
+      (list canonical-name coordinator)))
+  ;; ensure that no course is listed more than once:
+  (define possible-duplicate (check-duplicates (map (inst first String) coordinators-list)))
+  (when possible-duplicate 
+    (error 'duplicate "coordinators list contains duplicate: ~v\n"
+           possible-duplicate))
 
-;; ensure that no course is listed more than once:
-(define possible-duplicate (check-duplicates (map (inst first String) coordinators)))
-(when possible-duplicate 
-  (error 'duplicate "coordinators list contains duplicate: ~v\n"
-         possible-duplicate))
+  coordinators-list)
+
+
 
 
