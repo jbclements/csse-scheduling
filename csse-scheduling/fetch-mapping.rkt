@@ -10,8 +10,8 @@
          2188-1-student-grades
          2188-1-majors
          ;; just use dept-faculty-offerings instead:
-         ;active-faculty
-         ;offerings
+         active-faculty
+         offerings
          )
 
 
@@ -150,7 +150,7 @@
 
 ;; actually, adding this was arguably a mistake... should be combined with dept-faculty-offerings.
 
-#;(define (active-faculty qtr)
+(define (active-faculty qtr)
   (cache-query
    "fad"
    (~a "active-faculty-" qtr ".withcache")
@@ -166,7 +166,7 @@
       qtr))))
 
 
-#;(define (offerings last-qtr)
+(define (offerings last-qtr)
   (cache-query
    "fad"
    (~a "offerings-up-through-" last-qtr ".withcache")
