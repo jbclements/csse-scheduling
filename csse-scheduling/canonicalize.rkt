@@ -40,8 +40,8 @@
      "ES" "ESE" "FPE" "FR" "FSN" "GEOG" "GEOL" "GER" "GRC" "GS" "GSA" "GSB" "GSE" "HCS" "HIST" "HLTH" "HNRC"
      "HNRS" "HUM" "IME" "ISLA" "IT" "ITAL" "ITP" "JOUR" "JPNS" "KINE" "LA"
      "LAES" "LS" "MATE" "MATH" "MCRO" "ME" "MLL" "MSCI" "MSL" "MU" "NR" "PEM" "PEW"
-     "PHIL" "PHYS" "POLS" "PSC" "PSY" "RELS" "RPTA" "SCM" "SOC" "SPAN" "SS"
-     "STAT" "TH" "UNIV" "WGS" "WLC" "WVIT" "ZOO"))
+     "PHIL" "PHYS" "PLSC" "POLS" "PSC" "PSY" "RELS" "RPTA" "SCM" "SOC" "SPAN" "SS"
+     "STAT" "TH" "UNIV" "WGS" "WGQS" "WLC" "WVIT" "ZOO"))
 
 (define-type CourseNum String) ;; such as "123" or "0123"
 
