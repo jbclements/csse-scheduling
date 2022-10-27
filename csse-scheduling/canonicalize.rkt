@@ -14,6 +14,7 @@
          courses-in-subject
          course-key
          id-mappings
+         id->mapping
          Subject
          CourseNum
          Course-Id
@@ -190,6 +191,37 @@
                (vector-ref r 2)))
        rows))
 
+;; given an id, choose a mapping
+(: id->mapping (Course-Id CatalogCycle -> (List Subject CourseNum)))
+(define (id->mapping id cc)
+  (define mappings
+    (filter (λ ([mapping : (List CatalogCycle Subject CourseNum)]) : Boolean
+              (equal? (car mapping) cc))
+            (id-mappings id)))
+  (match mappings
+    ['() (error 'id->mapping "no mapping for course ~v in cycle ~v" id cc)]
+    [other
+     (define best-mapping
+       (for/fold : (List CatalogCycle Subject CourseNum)
+         ([best : (List CatalogCycle Subject CourseNum) (car mappings)])
+         ([m : (List CatalogCycle Subject CourseNum) (cdr mappings)])
+         (cond [(better-mapping? m best) m]
+               [else best])))
+     (list (cadr best-mapping) (caddr best-mapping))]))
+
+(define (better-mapping? [a : (List CatalogCycle Subject CourseNum)]
+                         [b : (List CatalogCycle Subject CourseNum)]) : Boolean
+  (cond [(equal? (cadr a) (cadr b))
+         (error 'better-mapping? "comparing two mappings with same subject: ~e and ~e"
+                a b)]
+        [(equal? (cadr a) "CSC") #t]
+        [(equal? (cadr b) "CSC") #f]
+        [(equal? (cadr a) "CPE") #t]
+        [(equal? (cadr b) "CPE") #f]
+        [else
+         (string<? (cadr a) (cadr b))]))
+
+
 
 ;; defines a mapping from course ids to strings for the purposes
 ;; of sorting. Interleaves CSC and CPE, and other majors
@@ -204,6 +236,9 @@
 (module+ test
   (require typed/rackunit)
 
+  
+(check-equal? (id->mapping "csc348" "2022-2023") (list "CSC" "248"))
+(check-equal? (id->mapping "csc202" "2022-2023") (list "CSC" "202"))
   
 
   (check-equal? (canonicalize "2015-2017" "CPE" "430") "csc430")
