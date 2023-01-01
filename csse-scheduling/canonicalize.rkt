@@ -9,6 +9,7 @@
          canonicalize/qtr
          canonicalize/noerr
          canonicalize/qtr/noerr
+         canonicalize/num
          canonical-id?
          ensure-canonical
          courses-in-subject
@@ -139,6 +140,24 @@
       [other number]))
   (hash-ref mapping-hash (vector cycle subject trimmed-number) #f))
 
+;; using the CPE and CSC subjects, try canonicalizing a number.
+(: canonicalize/num (CatalogCycle (U Natural CourseNum) -> Course-Id))
+(define (canonicalize/num cycle number-input)
+  (define try1 (canonicalize/noerr cycle 'CSC number-input))
+  (define try2 (canonicalize/noerr cycle 'CPE number-input))
+  ;; match reads better here, but doesn't type-check cleanly
+  (cond [try1
+         (cond [try2 (cond [(equal? try1 try2) try1]
+                           [else (error 'canonicalize/num
+                                        "different matches for number ~v in the two subjects"
+                                        number-input)])]
+               [else try1])]
+        [else
+         (cond [try2 try2]
+               [else (error 'canonicalize/num
+                            "no match for number ~v in either of the subjects"
+                            number-input)])]))
+
 
 
 ;; is this string the canonical id of some course?
@@ -241,6 +260,11 @@
 (check-equal? (id->mapping "csc202" "2022-2023") (list "CSC" "202"))
   
 
+  (check-equal? (canonicalize/num "2015-2017" 430) "csc430")
+  (check-equal? (canonicalize/num "2015-2017" "430") "csc430")
+  (check-exn #px"no match" (λ () (canonicalize/num "2015-2017" "433")))
+  (check-exn #px"different matches" (λ () (canonicalize/num "2015-2017" "400")))
+  
   (check-equal? (canonicalize "2015-2017" "CPE" "430") "csc430")
 
   (check-equal? (canonicalize "2015-2017" 'CPE "0430") "csc430")

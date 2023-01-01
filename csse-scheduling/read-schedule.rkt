@@ -37,6 +37,7 @@
          InstructorA
          QuarterA
          CourseA
+         course-a?
          availability->total-classroom-wtus
          assigned-time-flatten)
 
@@ -66,7 +67,12 @@
 ;; '(M 123) : a 2x section of 123
 ;; '(X (MM cpe464) 2) : a 2x section of 123 in which the instructor gets only 2 wtus
 ;; '(S 430) ; a split course of 430 (not allowing both split and X for now...
-(define-type CourseA (U CourseB WTUCourse SplitCourse))
+(define-type CourseA (U CourseB WTUCourse SplitCourse NoprintCourse))
+(define-predicate course-a? CourseA)
+
+;; a course that's set to not print
+(define-type NoprintCourse (List 'N CourseB))
+(define-predicate noprint-course? NoprintCourse)
 
 ;; a course with an explicit specification of WTUs:
 (define-type WTUCourse (List 'X CourseB Nonnegative-Exact-Rational))
@@ -174,6 +180,7 @@
 (define (courseA->courseB [c : CourseA]) : CourseB
   (cond [(wtu-course? c) (second c)]
         [(split-course? c) (second c)]
+        [(noprint-course? c) (second c)]
         [else c]))
 
 ;; if this is an "X" course spec, return the number of wtus
@@ -216,7 +223,7 @@
 (: canonicalize-topic (CatalogCycle CourseTopic -> CourseID))
 (define (canonicalize-topic cycle topic)
   (match topic
-    [(? natural? n) (cast (csc-or-cpe n) CourseID)]
+    [(? natural? n) (cast (canonicalize/num cycle n) CourseID)]
     [(? symbol? s) (ensure-canonical (symbol->string s))]))
 
 ;; # of wtus for a courseA 

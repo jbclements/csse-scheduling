@@ -352,6 +352,7 @@
 ;; determine the canonical name from just the number, when possible.
 (: csc-or-cpe (Natural [#:noerr Boolean] -> (U String False)))
 (define (csc-or-cpe coursenum #:noerr [noerr? #f])
+  (eprintf "deprecated, please use num-canonicalize instead\n")
   (define hits (hash-ref num-id-table (number->string coursenum) (λ () '())))
   (match hits
     [(list) (cond [noerr? #f]
@@ -363,6 +364,7 @@
            [else (error 'csc-or-cpe
                         "more than one hit (~e) for course number: ~e"
                         hits coursenum)])]))
+
 
 ;; given a course and a catalog cycle, return its configuration string
 (define (cycle-course-configuration [course : Course-Id] [cycle : CatalogCycle]) : (U False Configuration)
