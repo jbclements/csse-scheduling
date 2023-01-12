@@ -352,7 +352,7 @@
 ;; determine the canonical name from just the number, when possible.
 (: csc-or-cpe (Natural [#:noerr Boolean] -> (U String False)))
 (define (csc-or-cpe coursenum #:noerr [noerr? #f])
-  (eprintf "deprecated, please use num-canonicalize instead\n")
+  (eprintf "deprecated, please use canonicalize/num instead\n")
   (define hits (hash-ref num-id-table (number->string coursenum) (λ () '())))
   (match hits
     [(list) (cond [noerr? #f]
