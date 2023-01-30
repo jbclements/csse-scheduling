@@ -256,8 +256,8 @@
   (require typed/rackunit)
 
   
-(check-equal? (id->mapping "csc348" "2022-2023") (list "CSC" "248"))
-(check-equal? (id->mapping "csc202" "2022-2023") (list "CSC" "202"))
+(check-equal? (id->mapping "csc348" "2022-2026") (list "CSC" "248"))
+(check-equal? (id->mapping "csc202" "2022-2026") (list "CSC" "202"))
   
 
   (check-equal? (canonicalize/num "2015-2017" 430) "csc430")

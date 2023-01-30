@@ -89,7 +89,7 @@
 
 
 
-(define csc-2022-2023-flowchart/pre : Flowchart-Spec
+(define csc-2022-2026-flowchart/pre : Flowchart-Spec
   (append
    csc-core
    csc-2021-2023-shared
@@ -228,7 +228,7 @@
             ((cpe-sp-2) 12)
             ((cpe-TE-0) 11))))
 
-(define cpe-2022-2023-flowchart/pre : Flowchart-Spec
+(define cpe-2022-2026-flowchart/pre : Flowchart-Spec
   '(;("cpe123" 1) gets added later
     ;("cpe100" 1) looks like 100 has never been listed here ...
     ("csc101" 2)
@@ -402,7 +402,7 @@
      (make-flowchart-pair 'CSC "2019-2020" csc-2020-2021-flowchart/pre)
      (make-flowchart-pair 'CSC "2020-2021" csc-2020-2021-flowchart/pre)
      (make-flowchart-pair 'CSC "2021-2022" csc-2021-2022-flowchart/pre)
-     (make-flowchart-pair 'CSC "2022-2023" csc-2022-2023-flowchart/pre)
+     (make-flowchart-pair 'CSC "2022-2026" csc-2022-2026-flowchart/pre)
      ;; SE
      (make-flowchart-pair 'SE "2017-2019" se-2017-2019-flowchart/pre)
      (make-flowchart-pair 'SE "2019-2020" se-2019-2020-flowchart/pre)
@@ -410,13 +410,13 @@
      ;; assuming same as last year?
      (make-flowchart-pair 'SE "2021-2022" se-2020-2021-flowchart/pre)
      ;; ditto...
-     (make-flowchart-pair 'SE "2022-2023" se-2020-2021-flowchart/pre)
+     (make-flowchart-pair 'SE "2022-2026" se-2020-2021-flowchart/pre)
      ;; CPE
      (make-flowchart-pair 'CPE "2017-2019" cpe-2017-2019-flowchart/pre)
      (make-flowchart-pair 'CPE "2019-2020" cpe-2019-2020-flowchart/pre)
      (make-flowchart-pair 'CPE "2020-2021" cpe-2020-2021-flowchart/pre)
      (make-flowchart-pair 'CPE "2021-2022" cpe-2020-2021-flowchart/pre)
-     (make-flowchart-pair 'CPE "2022-2023" cpe-2022-2023-flowchart/pre)
+     (make-flowchart-pair 'CPE "2022-2026" cpe-2022-2026-flowchart/pre)
      (ann
       (list 
           (cons (islac '((EE) "2019-2020")) ee-common-flowchart)
@@ -425,8 +425,8 @@
           (cons (islac '((EE ftf) "2020-2021")) ee-common-flowchart)
           (cons (islac '((EE) "2021-2022")) ee-2021-flowchart)
           (cons (islac '((EE ftf) "2021-2022")) ee-2021-flowchart)
-          (cons (islac '((EE) "2022-2023")) ee-2021-flowchart)
-          (cons (islac '((EE ftf) "2022-2023")) ee-2021-flowchart)
+          (cons (islac '((EE) "2022-2026")) ee-2021-flowchart)
+          (cons (islac '((EE ftf) "2022-2026")) ee-2021-flowchart)
           )
       (Listof (Pair LAC Flowchart-Spec))))))
 

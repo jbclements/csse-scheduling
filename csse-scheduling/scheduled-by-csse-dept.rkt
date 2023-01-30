@@ -26,7 +26,7 @@
 ;; a subject for a number...
 (define earliest-cycle-cutoff : CatalogCycle "2015-2017")
 ;; used to determine the list of courses to be scheduled
-(define current-catalog-cycle "2022-2023")
+(define current-catalog-cycle "2022-2026")
 
 (define computing-subjects '("CSC" "CPE" "SE" "EE"))
 
@@ -319,7 +319,7 @@
                            non-supervisory-ee-courses)))
 ;; this is pretty temporary...
 (define 2021-course-set (set-union non-supervisory-csc-courses cpe-extra))
-;; for 2022-2023 planning, we have an explicit list of CPE courses from Lynne
+;; for 2022-2026 planning, we have an explicit list of CPE courses from Lynne
 (define 2022-course-set (set-union non-supervisory-csc-courses
                                    (list->set 2022-cpe-courses)))
 

@@ -12,7 +12,7 @@
 
 (define-runtime-path here ".")
 
-(define cc "2022-2023")
+(define cc "2022-2026")
 
 (define table
   (call-with-input-file (build-path here "CPE-housed courses.csv") 
