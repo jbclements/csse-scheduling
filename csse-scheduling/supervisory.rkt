@@ -64,6 +64,16 @@
          'csc-TE/123
          'special-problems/se-TE
          'csc-TE-0)
+   '(circuits
+     circuits-lab
+     cpe-circuits-lab
+     distributed
+     cpe-TE/400
+     cpe-TE/123
+     cpe-signals
+     ee-TE-0
+     ee-TE-1
+     ee-TE-2)
    '(CSCMS5TE
      CSCMSOTE
      CSMINORELEC
@@ -75,19 +85,25 @@
 (define supervisory-group-table : (Immutable-HashTable Symbol Boolean)
   (make-immutable-hash
    (append
-    '((circuits . #f)
-      (circuits-lab . #f)
-      (cpe-circuits-lab . #f)
-      (cpe-TE/400 . #f)
-     (cpe-TE/123 . #f)
-     (cpe-signals . #f)
-     (ee-TE-0 . #f)
-     (ee-TE-1 . #f)
-     (ee-TE-2 . #f))
     (map (λ ([s : Symbol]) (cons s #f))
          not-supervisory)
     (map (λ ([s : Symbol]) (cons s #t))
          supervisory))))
+
+;; check that supervisory-group-table has an entry for everything
+  ;; in ... um ... that other table
+  (require (only-in "progress/degree-requirements.rkt" course-group-names))
+(let ()
+  (define missing-courses
+    (set-subtract (list->set course-group-names)
+                  (set-union
+                   (list->set
+                    (map (inst car Symbol)
+                         (map (inst car (List Symbol)) simple-group-courses)))
+                   (list->set (hash-keys supervisory-group-table)))))
+  (when (not (set-empty? missing-courses))
+    (error "courses missing from supervisory-group-table: ~e\n"
+           missing-courses)))
 
 
 (module+ test
@@ -99,17 +115,7 @@
   (check-equal? (supervisory? '(microcon)) #f)
   (check-equal? (supervisory? '(cpe-signals)) #f)
 
-  ;; check that supervisory-group-table has an entry for everything
-  ;; in ... um ... that other table
-  (require (only-in "progress/degree-requirements.rkt" course-group-names))
-
-  (check (inst subset? Symbol)
-         (list->set course-group-names)
-         (set-union
-                  (list->set
-                   (map (inst car Symbol)
-                        (map (inst car (List Symbol)) simple-group-courses)))
-                  (list->set (hash-keys supervisory-group-table))))
+  
 
   )
 
