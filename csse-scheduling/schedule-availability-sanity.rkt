@@ -76,6 +76,8 @@
         [(list 'winter-spring (? real? wtus))
          (+ (checky '(f) 0)
             (checky '(w s) wtus))]
+        ;; perform no checks, return zero.
+        ['not-ours 0]
         [other (error 'spare-wtus "unrecognized availability format: ~e" other)]))
     (list name (round-to-hundredth spare-wtus))))
 

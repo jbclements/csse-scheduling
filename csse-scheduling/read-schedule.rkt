@@ -475,13 +475,14 @@
     ['tt-second-year 20]
     ['lec-standard 45]
     ['absent 0]
+    ['not-ours 0]
     [(list 'fall-winter (? nn-real? fwwtu)) fwwtu]
     [(list 'winter-spring (? nn-real? wswtu)) wswtu]
     [(list 'total (? nn-real? wtu)) wtu]
     [(list (list 'f (? nn-real? fwtu)) (list 'w (? nn-real? wwtu)) (list 's (? nn-real? swtu)))
      (+ fwtu wwtu swtu)]
     [else
-     (raise-argument-error 'availability->total-wtus
+     (raise-argument-error 'availability->total-classroom-wtus
                            "known availability format"
                            0 availability)]))
 
