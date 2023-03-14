@@ -34,9 +34,9 @@
 "CSC 290","Selected Topics","((csse-dept-chair))"
 "CSC 300","Professional Responsibilities","Turner"
 "CSC 305","Individual Software Design and Development","Keen"
-"CSC 307","Introduction to Software Engineering","((csse-dept-chair))"
-"CSC 308","Software Engineering I",((csse-dept-chair))
-"CSC 309","Software Engineering II",((csse-dept-chair))
+"CSC 307","Introduction to Software Engineering","Gonzalez-Sanchez"
+"CSC 308","Software Engineering I","Gonzalez-Sanchez"
+"CSC 309","Software Engineering II","Gonzalez-Sanchez"
 "CSC 313","Teaching Computing","Wood"
 "CSC 320","Practical Computer Security for Everyone","Peterson"
 "CSC 323","Cryptography Engineering","Peterson"
