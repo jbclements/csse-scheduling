@@ -67,20 +67,22 @@
 ;; '(M 123) : a 2x section of 123
 ;; '(X (MM cpe464) 2) : a 2x section of 123 in which the instructor gets only 2 wtus
 ;; '(S 430) ; a split course of 430 (not allowing both split and X for now...
-(define-type CourseA (U CourseB WTUCourse SplitCourse NoprintCourse))
+(define-type CourseA (U NoprintCourse MaybeSplitCourse))
 (define-predicate course-a? CourseA)
 
 ;; a course that's set to not print
-(define-type NoprintCourse (List 'N CourseB))
+(define-type NoprintCourse (List 'N MaybeSplitCourse))
 (define-predicate noprint-course? NoprintCourse)
 
+(define-type MaybeSplitCourse (U SplitCourse MaybeWTUCourse))
+;; a course that's split with another instructor:
+(define-type SplitCourse (List 'S MaybeWTUCourse))
+(define-predicate split-course? SplitCourse)
+
+(define-type MaybeWTUCourse (U WTUCourse CourseB))
 ;; a course with an explicit specification of WTUs:
 (define-type WTUCourse (List 'X CourseB Nonnegative-Exact-Rational))
 (define-predicate wtu-course? WTUCourse)
-
-;; a course that's split with another instructor:
-(define-type SplitCourse (List 'S CourseB))
-(define-predicate split-course? SplitCourse)
 
 ;; represents a course assignment, optionally mega or 2xmega
 ;; this format is chosen for ease of entry in schedule.rkt, not as a nice internal representation
@@ -172,16 +174,30 @@
           (courseA-split? c))))
 
 ;; is this a split section?
-(define (courseA-split? c)
-  (cond [(and (list? c) (equal? (first c) 'S)) #t]
-        [else #f]))
+(: courseA-split? (CourseA -> Boolean : SplitCourse))
+(define (courseA-split? c) 
+  (and (list? c) (equal? (first c) 'S)))
+
+(: courseA-wtuspec? (CourseA -> Boolean : WTUCourse))
+(define (courseA-wtuspec? c)
+  (and (list? c) (equal? (first c) 'X)))
 
 ;; return the courseB contained inside a courseA
 (define (courseA->courseB [c : CourseA]) : CourseB
-  (cond [(wtu-course? c) (second c)]
-        [(split-course? c) (second c)]
-        [(noprint-course? c) (second c)]
+  (define stripped
+    (cond [(noprint-course? c) (second c)]
+          [else c]))
+  (MaybeSplitCourse->courseB stripped))
+
+(define (MaybeSplitCourse->courseB [c : MaybeSplitCourse]) : CourseB
+  (MaybeWTUCourse->courseB
+   (cond [(courseA-split? c) (second c)]
+         [else c])))
+
+(define (MaybeWTUCourse->courseB [c : MaybeWTUCourse]) : CourseB
+  (cond [(courseA-wtuspec? c) (second c)]
         [else c]))
+
 
 ;; if this is an "X" course spec, return the number of wtus
 ;; specified. Otherwise, return #f
