@@ -1,4 +1,4 @@
-#lang typed/racket
+#lang typed/racket/base
 
 ;; this file parses the content of the schedule file, and rearranges
 ;; the data to show what's happening by quarter by course.
@@ -6,7 +6,11 @@
 (require racket/runtime-path
          "canonicalize.rkt"
          "scheduled-by-csse-dept.rkt"
-         "qtr-math.rkt")
+         "qtr-math.rkt"
+         [only-in racket/list first second third fourth fifth sixth rest
+                  group-by check-duplicates filter-map]
+         racket/match
+         [only-in racket/math natural?])
 
 (provide validate-schedule
          schedule->records
