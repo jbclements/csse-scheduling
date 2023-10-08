@@ -21,19 +21,22 @@
 
 (define-type Major-Abbr (U "CSC" "CPE" "SE" "EE"))
 
-(define-type Course-Or-Group (U Course-Id (List Symbol)))
+(define-type Course-Or-Group (U Course-Id CourseGroup))
+(define-type CourseGroup (Listof Symbol))
+
+(define-type Maybe-Qtr (U Natural #f))
 
 ;; a requirement for a number of seats
 (struct Seat-Requirement ([label : Category] ;; which requirement is this? (used for prioritizing)
                           [course : Course-Or-Group] ;; what course do they want?
-                          [qtr-req : (U Natural #f)] ;; when do they want it?
+                          [qtr-req : Maybe-Qtr] ;; when do they want it?
                           [seats : Real])  ;; how many do they want?
   #:transparent)
 
 ;; a requirement for a number of sections
 (struct Section-Requirement ([label : Category] ;; which requirement is this? (used for prioritizing)
                              [course : Course-Or-Group] ;; what course do they want?
-                             [qtr-req : (U Natural #f)] ;; when do they want it?
+                             [qtr-req : Maybe-Qtr] ;; when do they want it?
                              [sections : Real])  ;; how many do they want?
   #:transparent)
 
