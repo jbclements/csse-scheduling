@@ -94,10 +94,10 @@
    csc-core
    csc-2021-2023-shared
    '(
-     ((distributed) 5 6 7) ;; 364 or 464+469
+     ((distributed) 11 12) ;; 364 or 464+469
      ("csc365" 7)
-     ((csc-TE-1) 10)
-     ((csc-TE-2) 11)
+     ((csc-TE-1) 9)
+     ((csc-TE-2) 10)
      )))
 
 (define csc-2020-2021-flowchart/pre : Flowchart-Spec
