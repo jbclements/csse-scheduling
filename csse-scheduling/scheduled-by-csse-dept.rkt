@@ -6,13 +6,12 @@
 
 (provide
  ;; this is out-of-date. Try to replace it with non-supervisory-computing-courses
- courses-we-schedule ; used?
+ ;courses-we-schedule ; used?
  non-supervisory-computing-courses
  ;; includes any courses cross-listed as csc:
  non-supervisory-csc-courses
  non-supervisory-cpe-courses
  non-supervisory-ee-courses
- ee-scheduled-courses ; used?
  supervisory-courses ; used? yep.
  cycle-course-configuration
  cycle-course-wtus
@@ -62,181 +61,12 @@
 (define (mapping-id [cm : Course-Mapping]) : Course-Id
   (vector-ref cm 3))
 
-;; 2020-06-26 not sure whether *any* of these lists of courses are used any more.
-
-;; NOTE: it would probably be much more robust to list the ones
-;; that we *don't* schedule. That way, new courses will by default
-;; be listed in the yes column.
-(define ee-scheduled-courses : (Setof String)
-  (list->set
-   (map
-    ensure-canonical
-    '("cpe100" ; "Computer Engineering Orientation"
-      "cpe133" ; "Digital Design"
-      "cpe233" ; "Computer Design and Assembly Language Programming"
-      "cpe316" ; microcontroller mumble
-      "cpe328" ; "Discrete Time Signals and Systems"
-      "cpe329" ; "Programmable Logic and Microprocessor-Based Systems Design"
-      "cpe336" ; "Microprocessor System Design"
-      "cpe368" ; "Signals and Systems Laboratory"
-      "cpe428" ; "Computer Vision"
-      "cpe432" ; "Digital Control Systems"
-      "cpe439" ; "Introduction to Real-Time Operating Systems"
-      "cpe441" ; "Computer-Aided Design of VLSI Devices"
-      "cpe472" ; "Digital Control Systems Laboratory"
-      "cpe488" ; "Microelectronics and Electronics Packaging"
-      "cpe521" ; "Computer Systems"
-      "cpe522" ; "Advanced Real-Time Operating Systems Design"
-      "cpe523" ; "Digital Systems Design"
-      ))))
 
 ;; should this be parameterized by the catalog cycle? sigh...
-
-;; these are the courses we schedule. It's not entirely clear
-;; to me where this is used aside from in csc-or-cpe below, which
-;; allows me to write in the schedule e.g. "430" instead of "csc430"
-;; I believe this list is now mostly unused.
-
-;; NOTE: THIS LIST MUST BE IN SYNC WITH THE ONE IN THE DATABASE.
-;; (you should get an error message from the check below if not.)
-;; the list of courses we schedule is not quite as straightforward
-;; as it could be. See the notes in "which-ones-are-ours.rkt"
-;; for more discussion of this. In fact, it seems like the best
-;; way to manage this is to just write them down explicitly. Like
-;; this:
-(define courses-we-schedule : (Setof String)
-  (list->set
-   (map
-    ensure-canonical
-    (map
-     (inst first String (Listof String))
-     '(("csc101" "Fundamentals of Computer Science")
-       ("csc105" "Fundamentals of Computer Science I Supplemental Instruction")
-       ("csc108" "Accelerated Introduction to Computer Science")
-       ("csc121" "Computing for All 1")
-       ("csc123" "Introduction to Computing")
-       ("csc171" "Introduction to Interactive Entertainment")
-       ("csc202" "Data Structures")
-       ("csc203" "Project-Based Object-Oriented Programming and Design")
-       ("csc209" "Problem Solving with Computers")
-       ("csc225" "Introduction to Computer Organization")
-       ("csc231" "Programming for Engineering Students")
-       ("csc232" "Computer Programming for Scientists and Engineers")
-       ("csc234" "C and Unix")
-       ("csc235"
-        "Fundamentals of Computer Science for Scientists and Engineers I")
-       ("csc236"
-        "Fundamentals of Computer Science for Scientists and Engineers II")
-       ("csc290" "Selected Topics")
-       ("csc300" "Professional Responsibilities")
-       ("csc301" "Personal Software Process")
-       ("csc302" "Computers and Society")
-       ("csc303" "Teaching Computer Science")
-       ("csc305" "Individual Software Design and Development")
-       ("csc307" "Introduction to Software Engineering")
-       ("csc308" "Software Engineering I")
-       ("csc309" "Software Engineering II")
-       ("csc310" "Computers for Poets")
-       ("csc311" "Computational Art")
-       ("csc313" "Teaching Computing")
-       ("csc320" "Practical Computer Security for Everyone")
-       ("csc321" "Introduction to Computer Security")
-       ("csc323" "Cryptography Engineering")
-       ("csc325" "Introduction to Privacy: Policy and Technology")
-       ("csc344" "Music Programming")
-       ("csc348" "Discrete Structures")
-       ("csc349" "Design and  Analysis of Algorithms")
-       ("csc350" "Computing for Interactive Arts Capstone I")
-       ("csc357" "Systems Programming")
-       ("csc365" "Introduction to Database Systems")
-       ("csc366" "Database Modeling, Design and Implementation")
-       ("csc369" "Introduction to Distributed Computing")
-       ("csc371" "Game Design")
-       ("csc377" "Introduction to Mixed Reality")
-       ("csc378" "Interactive Entertainment Engineering")
-       ("csc402" "Software Requirements Engineering")
-       ("csc405" "Software Construction")
-       ("csc406" "Software Deployment")
-       ("csc409" "Current Topics in Software Engineering")
-       ("csc410" "Software Evaluation")
-       ("csc422" "Network and Web Security")
-       ("csc424" "Software Security")
-       ("csc429" "Current Topics in Computer Security")
-       ("csc430" "Programming Languages I")
-       ("csc431" "Programming Languages II")
-       ("csc435"
-        "Introduction to Object Oriented Design Using Graphical User Interfaces")
-       ("csc436" "Mobile Application Development")
-       ("csc437" "Dynamic Web Development")
-       ("csc445" "Theory of Computation I")
-       ("csc448" "Bioinformatics Algorithms")
-       ("csc450" "Computing for Interactive Arts Capstone II")
-       ("csc453" "Introduction to Operating Systems")
-       ("csc454" "Implementation of Operating Systems")
-       ("csc458" "Current Topics in Computer Systems")
-       ("csc466" "Knowledge Discovery from Data")
-       ("csc468" "Database Management Systems Implementation")
-       ("csc469" "Distributed Systems")
-       ("csc471" "Introduction to Computer Graphics")
-       ("csc473" "Advanced Rendering Techniques")
-       ("csc474" "Computer Animation")
-       ("csc476" "Real-Time 3D Computer Graphics Software")
-       ("csc477" "Scientific and Information Visualization")
-       ("csc478" "Current Topics in Computer Graphics")
-       ("csc480" "Artificial Intelligence")
-       ("csc481" "Knowledge Based Systems")
-       ("csc482" "Speech and Language Processing")
-       ("csc483" "Current Topics in Human-Computer Interaction")
-       ("csc484" "User-Centered Interface Design and Development")
-       ("csc486" "Human-Computer Interaction Theory and Design")
-       ("csc487" "Deep Learning")
-       ("csc489" "Current Topics in Artificial Intelligence")
-       ("csc490" "Selected Advanced Topics")
-       ("csc496" "Selected Advanced Laboratory")
-       ("csc508" "Software Engineering I")
-       ("csc509" "Software Engineering II")
-       ("csc515" "Computer Architecture")
-       ("csc521" "Computer Security")
-       ("csc530" "Languages and Translators")
-       ("csc540" "Theory of Computation II")
-       ("csc549" "Advanced Algorithm Design and Analysis")
-       ("csc550" "Operating Systems")
-       ("csc560" "Database Systems")
-       ("csc564" "Computer Networks: Research Topics")
-       ("csc566" "Topics in Advanced Data Mining")
-       ("csc569" "Distributed Computing")
-       ("csc570" "Current Topics in Computer Science")
-       ("csc572" "Computer Graphics")
-       ("csc580" "Artificial Intelligence")
-       ("csc581" "Computer Support for Knowledge Management")
-       ("csc582" "Introduction to Natural Language Processing")
-       ("csc590" "Thesis Seminar")
-       ("cpe290" "Selected Topics")
-       ("cpe315" "Computer Architecture")
-       ("cpe350" "Capstone I")
-       ("cpe416" "Autonomous Mobile Robotics")
-       ("cpe419" "Applied Parallel Computing")
-       ("cpe450" "Capstone II")
-       ("cpe464" "Introduction to Computer Networks")
-       ("cpe465" "Advanced Computer Networks")
-       ("cpe470" "Selected Advanced Topics")
-       ("cpe479" "Selected Advanced Laboratory")
-       ("cpe482" "Advanced Topics in Systems for Computer Engineering")
-       ("cpe485" "Autonomous Robot Navigation")
-       ;; extras from the past:
-       ("csc102")
-       ("csc103"))))))
 
 ;; the list of courses in the 
 
 
-(unless (equal? courses-we-schedule
-                courses-we-schedule/db)
-  (error 'courses-we-schedule
-         "database doesn't match local list: missing ~e, extra ~e"
-         (set-subtract courses-we-schedule
-                       courses-we-schedule/db)
-         (set-subtract courses-we-schedule/db courses-we-schedule)))
 
 ;; these are supervisory courses, so they aren't scheduled
 ;; by the scheduler
