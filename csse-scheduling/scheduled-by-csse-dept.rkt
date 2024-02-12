@@ -14,7 +14,6 @@
  non-supervisory-ee-courses
  ee-scheduled-courses ; used?
  supervisory-courses ; used? yep.
- csc-or-cpe
  cycle-course-configuration
  cycle-course-wtus
  cycle-course-wtus/noerror
@@ -349,23 +348,6 @@
   (check-equal? (hash-ref num-id-table "100") '("cpe100"))
   (check-equal? (hash-ref num-id-table "350") '("csc350" "cpe350")))
 
-;; determine the canonical name from just the number, when possible.
-(: csc-or-cpe (Natural [#:noerr Boolean] -> (U String False)))
-(define (csc-or-cpe coursenum #:noerr [noerr? #f])
-  (eprintf "deprecated, please use canonicalize/num instead\n")
-  (define hits (hash-ref num-id-table (number->string coursenum) (λ () '())))
-  (match hits
-    [(list) (cond [noerr? #f]
-                  [else (error 'csc-or-cpe "no courses in CSC or CPE that we schedule with number ~e"
-                               coursenum)])]
-    [(list name) name]
-    [(list _ ...)
-     (cond [noerr? #f]
-           [else (error 'csc-or-cpe
-                        "more than one hit (~e) for course number: ~e"
-                        hits coursenum)])]))
-
-
 ;; given a course and a catalog cycle, return its configuration string
 (define (cycle-course-configuration [course : Course-Id] [cycle : CatalogCycle]) : (U False Configuration)
   (define configurations
@@ -418,11 +400,11 @@
 (module+ test
 
   
-  (check-equal? (csc-or-cpe 123) "csc123")
-  (check-exn #px"more than one hit"
-             (λ () (csc-or-cpe 290)))
-  (check-equal? (csc-or-cpe 431) "csc431")
-  (check-equal? (csc-or-cpe 315) "cpe315")
+  (check-equal? (canonicalize/num "2022-2026" 123) "csc123")
+  (check-exn #px"different matches for number"
+             (λ () (canonicalize/num "2022-2026" 290)))
+  (check-equal? (canonicalize/num "2022-2026" 431) "csc431")
+  (check-equal? (canonicalize/num "2022-2026" 315) "cpe315")
 
   (check-equal? (cycle-course-wtus (ann "2019-2020" CatalogCycle) "csc101") 5)
   (check-equal? (cycle-course-wtus (ann "2019-2020" CatalogCycle) "csc232") #e3.3))
