@@ -15,11 +15,11 @@
 ;; mismatches between the lists of instructors, then provide
 ;; warnings about instructors that are over their specified
 ;; availabilities, then return an association list from instructor
-;; to spare wtus
+;; to spare wtus and total wtus
 (define (spare-capacity-check [schedule : Schedule]
                               [availability : (Listof (List Symbol
                                                             Sexp))])
-  : (Listof (List Symbol Real))
+  : (Listof (List Symbol Real Real))
 
   (define this-cycle (qtr->catalog-cycle (first schedule)))
   (define scheduled (rest schedule))
@@ -46,8 +46,13 @@
   (define instructors (set-intersect scheduled-names available-names))
 
 
+  (define tt-standard-wtus 30)
+  (define tt-first-year-wtus 20)
+  (define tt-second-year-wtus 20)
+  (define lec-standard-wtus 45)
+  (define absent-wtus 0)
 
-  (for/list : (Listof (List Symbol Real))
+  (for/list : (Listof (List Symbol Real Real))
     ([name (in-list instructors)])
     ;; cast can't fail by earlier intersection check:
     (define schedule (cast (assoc name scheduled) InstructorA))
@@ -58,11 +63,11 @@
       ;; cast must succeed by earlier intersection check:
       (match (second (cast (assoc name availability)
                            (List Symbol Sexp)))
-        ['tt-standard (checky '(f w s) 30)]
-        ['tt-first-year (checky '(f w s) 20)]
-        ['tt-second-year (checky '(f w s) 20)]
-        ['lec-standard (checky '(f w s) 45)]
-        ['absent (checky '(f w s) 0)]
+        ['tt-standard (checky '(f w s) tt-standard-wtus)]
+        ['tt-first-year (checky '(f w s) tt-first-year-wtus)]
+        ['tt-second-year (checky '(f w s) tt-second-year-wtus)]
+        ['lec-standard (checky '(f w s) lec-standard-wtus)]
+        ['absent (checky '(f w s) absent-wtus)]
         [(list 'total (? real? wtus)) (checky '(f w s) wtus)]
         [(list (list 'f (? real? fall-wtus))
                (list 'w (? real? winter-wtus))
@@ -79,7 +84,34 @@
         ;; perform no checks, return zero.
         ['not-ours 0]
         [other (error 'spare-wtus "unrecognized availability format: ~e" other)]))
-    (list name (round-to-hundredth spare-wtus))))
+    ;; total wtus. could probably abstract over this & the previous, by making checky
+    ;; an argument to a HO function...
+    (define total-wtus
+      ;; cast must succeed by earlier intersection check:
+      (match (second (cast (assoc name availability)
+                           (List Symbol Sexp)))
+        ['tt-standard tt-standard-wtus]
+        ['tt-first-year tt-first-year-wtus]
+        ['tt-second-year tt-second-year-wtus]
+        ['lec-standard lec-standard-wtus]
+        ['absent absent-wtus]
+        [(list 'total (? real? wtus)) wtus]
+        [(list (list 'f (? real? fall-wtus))
+               (list 'w (? real? winter-wtus))
+               (list 's (? real? spring-wtus)))
+         (+ fall-wtus
+            winter-wtus
+            spring-wtus)]
+        [(list 'fall-winter (? real? wtus))
+         wtus]
+        [(list 'winter-spring (? real? wtus))
+         wtus]
+        ;; perform no checks, return zero.
+        ['not-ours 0]
+        [other (error 'spare-wtus "unrecognized availability format: ~e" other)]))
+    (list name
+          (round-to-hundredth spare-wtus)
+          (round-to-hundredth total-wtus))))
 
 
 
