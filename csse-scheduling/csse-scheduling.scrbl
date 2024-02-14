@@ -167,8 +167,8 @@ Just dumping this here...}
          courses-in-subject
 }
 
-@defproc[(ensure-canonical [catalog-cycle Catalog-Cycle] [id String]) String]{
-Ensure the given id is a canonical id for the given catalog-cycle. Signal
+@defproc[(ensure-canonical [id String]) String]{
+Ensure the given id is a canonical id. Signal
 an error if it isn't. return it if it is.
 }
 
