@@ -77,7 +77,8 @@
    '(CSCMS5TE
      CSCMSOTE
      CSMINORELEC
-     CSCTE)))
+     CSCTE
+     CPETE)))
 
 ;; are these group courses supervisory?
 ;; NB: when you add a group course with a special definition you need
