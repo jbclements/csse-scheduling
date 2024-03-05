@@ -167,6 +167,10 @@ Just dumping this here...}
          courses-in-subject
 }
 
+@defproc[(canonicalize [cc CatalogCycle] [subject (U Symbol String)] [number (U Natural CourseNum)]) Course-Id]{
+   Returns the course id to which this subject and number are mapped in the given catalog cycle.
+}
+
 @defproc[(ensure-canonical [id String]) String]{
 Ensure the given id is a canonical id. Signal
 an error if it isn't. return it if it is.
