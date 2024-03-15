@@ -59,8 +59,8 @@
                          
                          'laes-csc-bs
 
-                         'stat-bs
-                         'math-bs
+                         'stat-bs-firstyear
+                         'math-bs-firstyear
 
                          'arce-bs
                          'brae-bs
