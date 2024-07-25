@@ -42,7 +42,6 @@
          QuarterA
          CourseA
          course-a?
-         availability->total-classroom-wtus
          assigned-time-flatten)
 
 
@@ -487,25 +486,6 @@
 
 (define-predicate nn-real? Nonnegative-Real)
 
-;; given an availability record, return a total number of wtus
-(define (availability->total-classroom-wtus [availability : Sexp]) : Nonnegative-Real
-  (match availability
-    ['tt-standard 30]
-    ['tt-first-year 20]
-    ['tt-second-year 20]
-    ['lec-standard 45]
-    ['absent 0]
-    ['not-ours 0]
-    [(list 'fall-winter (? nn-real? fwwtu)) fwwtu]
-    [(list 'winter-spring (? nn-real? wswtu)) wswtu]
-    [(list 'total (? nn-real? wtu)) wtu]
-    [(list (list 'f (? nn-real? fwtu)) (list 'w (? nn-real? wwtu)) (list 's (? nn-real? swtu)))
-     (+ fwtu wwtu swtu)]
-    [else
-     (raise-argument-error 'availability->total-classroom-wtus
-                           "known availability format"
-                           0 availability)]))
-
 ;; given an assigned time spec, return either a real representing flexible
 ;; assigned time to be distributed across the year, or a list of three
 ;; reals indicating the amount of assigned time for each quarter.
@@ -550,8 +530,6 @@
       (cronkite (f 101 231 231 231) (w cpe450) (s (X (MM 490) 22)))))
 
   (check-equal? (validate-schedule s1 '()) s1)
-  (check-equal? (availability->total-classroom-wtus 'lec-standard) 45)
-  (check-equal? (availability->total-classroom-wtus '(fall-winter 3.3)) 3.3)
 
   (check-equal? (assigned-time-flatten '(total 19)) 19)
   (check-equal? (assigned-time-flatten '((w 3) (s 2))) '(0 3 2))
