@@ -86,7 +86,7 @@
             (checky '(f s) wtus))]
         ;; perform no checks, return zero.
         ['not-ours 0]
-        [other (error 'spare-wtus "unrecognized availability format: ~e" other)]))
+        [other (error 'spare-wtus "unrecognized availability format (1): ~e" other)]))
     ;; total wtus. could probably abstract over this & the previous, by making checky
     ;; an argument to a HO function...
     (define total-wtus
@@ -105,13 +105,11 @@
          (+ fall-wtus
             winter-wtus
             spring-wtus)]
-        [(list 'fall-winter (? real? wtus))
-         wtus]
-        [(list 'winter-spring (? real? wtus))
+        [(list (or 'fall-winter 'fall-spring 'winter-spring) (? real? wtus))
          wtus]
         ;; perform no checks, return zero.
         ['not-ours 0]
-        [other (error 'spare-wtus "unrecognized availability format: ~e" other)]))
+        [other (error 'spare-wtus "unrecognized availability format (2): ~e" other)]))
     (list name
           (round-to-hundredth spare-wtus)
           (round-to-hundredth total-wtus))))
