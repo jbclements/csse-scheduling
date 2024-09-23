@@ -11,7 +11,8 @@
     "sha"
     "data-enumerate-lib"
     "csv-writing"
-    "sugar"))
+    "sugar"
+    "rackunit-typed"))
 
 (define build-deps
   '("rackunit-lib"
