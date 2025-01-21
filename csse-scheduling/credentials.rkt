@@ -7,9 +7,17 @@
 (require racket/runtime-path)
 (define-runtime-path here ".")
 
+;; when false, don't try to look up credentials
+(define enable-credentials? #f)
+
 (define credentials-sexp
-  (cast (file->value (build-path here "credentials-prvt.rktd"))
-        (Listof (Pairof Symbol (U Natural String)))))
+  (cond [enable-credentials?
+         (cast (file->value (build-path here "credentials-prvt.rktd"))
+               (Listof (Pairof Symbol (U Natural String))))]
+        [else
+         '((username . "bogus")
+           (password . "bogus"))
+         ]))
 
 
 (define db-username : String
