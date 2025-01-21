@@ -7,14 +7,15 @@
 (require racket/runtime-path)
 (define-runtime-path here ".")
 
-;; when false, don't try to look up credentials
-(define enable-credentials? #f)
+(define private-credentials-file
+  (build-path here "credentials-prvt.rktd"))
 
 (define credentials-sexp
-  (cond [enable-credentials?
-         (cast (file->value (build-path here "credentials-prvt.rktd"))
+  (cond [(file-exists? private-credentials-file)
+         (cast (file->value private-credentials-file)
                (Listof (Pairof Symbol (U Natural String))))]
         [else
+         (eprintf "can't find private credentials file, no cache refresh possible\n")
          '((username . "bogus")
            (password . "bogus"))
          ]))
