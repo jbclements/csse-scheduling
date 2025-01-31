@@ -67,6 +67,9 @@
 ;; these are supervisory courses, so they aren't scheduled
 ;; by the scheduler
 ;; just checked this using the code in one-off-scripts/supervisory-courses
+;; NB EE 463 is both supervisory and a lab, essentially. Ugh. For our purposes
+;; it makes sense to categorize it as supervisory, since it's not scheduled.
+;; And honestly, it's EE so this probably doesn't matter at all...
 (define supervisory-courses : (Setof String)
   (list->set
    (map
@@ -98,6 +101,8 @@
       "ee400"
       "ee461"
       "ee462"
+      "ee463"
+      "ee464"
       "ee493"
       "ee494"
       "ee495"

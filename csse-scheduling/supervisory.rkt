@@ -28,7 +28,9 @@
           [(list #f) #f]
           [other (error 'supervisory?
                         "internal error: group ~v contains both supervisory\
- and non-supervisory courses.")])]
+ and non-supervisory courses: ~v."
+                        sym
+                        course-ids)])]
        [#f
         ;; not in simple-groups, use the table below:
         (hash-ref supervisory-group-table sym)])]))
