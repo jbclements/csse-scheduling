@@ -57,6 +57,7 @@
       conn
       (~a "SELECT * FROM course_mappings")))))
 
+;; FIXME revisit... what is this used for?
 (define courses-we-schedule/db
   (cache-query
    "scheduling"

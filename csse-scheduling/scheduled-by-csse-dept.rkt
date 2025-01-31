@@ -1,8 +1,5 @@
 #lang typed/racket/base
 
-;; this file has a bunch of useful functions, but it doesn't
-;; really do what it used to do, so its raison d'etre is kind
-;; of broken.
 
 (provide
  ;; this is out-of-date. Try to replace it with non-supervisory-computing-courses
@@ -26,7 +23,7 @@
 ;; used to determine the list of courses to be scheduled
 (define current-catalog-cycle "2022-2026")
 
-(define computing-subjects '("CSC" "CPE" "SE" "EE"))
+(define computing-subjects '("CSC" "CPE" "SE" "EE" "DATA"))
 
 (define-type Configuration String)
 
@@ -34,22 +31,23 @@
          "canonicalize.rkt"
          "qtr-math.rkt"
          "credentials.rkt"
+         "ownership.rkt"
          racket/set
          racket/list
          racket/match)
 
 
+
 (require/typed "fetch-mapping.rkt"
-               [courses-we-schedule/db
-                (Setof Course-Id)]
                [cycle-course-configurations
                 (Listof (Pair CatalogCycle
                               (Listof (Pair Course-Id Configuration))))]
                [course-mappings
                 (Listof Course-Mapping)])
-(require/typed "ownership.rkt"
+#;(require/typed "ownership.rkt"
                [2022-cpe-courses
                 (Listof Course-Id)])
+(define 2022-cpe-courses : (Listof Course-Id) '("bogus"))
 
 (define-type Course-Mapping (Vector CatalogCycle String String Course-Id))
 (define (mapping-cycle [cm : Course-Mapping]) : CatalogCycle
@@ -64,13 +62,11 @@
 
 ;; should this be parameterized by the catalog cycle? sigh...
 
-;; the list of courses in the 
 
-
-
+;; wait... can't this be determined by informatino from fetch-mapping? Urg, maybe not.
 ;; these are supervisory courses, so they aren't scheduled
 ;; by the scheduler
-;; these could be checked using FAD data, after the fact. maybe that's a FIXME
+;; just checked this using the code in one-off-scripts/supervisory-courses
 (define supervisory-courses : (Setof String)
   (list->set
    (map
@@ -102,8 +98,6 @@
       "ee400"
       "ee461"
       "ee462"
-      "ee463"
-      "ee464"
       "ee493"
       "ee494"
       "ee495"
@@ -129,15 +123,47 @@
 
 (define non-supervisory-computing-courses
   (non-sup-courses-in-subjects computing-subjects))
-(define non-supervisory-csc-courses
-  (non-sup-courses-in-subjects '("CSC")))
-(define non-supervisory-cpe-courses
-  (non-sup-courses-in-subjects '("CPE")))
-(define non-supervisory-ee-courses
-  (non-sup-courses-in-subjects '("EE")))
 
-;;; okay, interesting. CLSS can generate spreadsheets. Use Export, then be sure to include
-;; term code, subject code, and course.
+(define known-non-schedulable-courses (set "cpe345" "cpe488"))
+;; checking up on this mapping
+;; these are courses in our catalogs with one of the given subjects
+;; that are not supervisory but do not appear on any of the CLSS pages;
+;; in other words, they cannot be scheduled by any of the four departments.;
+;; It turns out there *are* some of theses
+(unless
+    (subset?
+     (set-subtract non-supervisory-computing-courses
+                   (list->set
+                    (set-union cs-dept-courses
+                               cpe-dept-courses
+                               ee-dept-courses
+                               data-dept-courses)))
+     known-non-schedulable-courses)
+  (error 'ouch "there are apparently other courses that can't be scheduled 12442312"))
+
+;; are there courses that can be scheduled that don't appear in our catalog?
+(unless (set-empty?
+         (set-subtract (set-subtract
+                        (list->set
+                         (set-union cs-dept-courses
+                                    cpe-dept-courses
+                                    ee-dept-courses
+                                    data-dept-courses))
+                        supervisory-courses)
+                       non-supervisory-computing-courses))
+  (error 'ouch "moreinfo3412341"))
+
+
+(define non-supervisory-csc-courses
+  (set-subtract (list->set cs-dept-courses) supervisory-courses))
+(define non-supervisory-cpe-courses
+  (set-subtract (list->set cpe-dept-courses) supervisory-courses))
+;; Lynne is confident that the overlaps belong to CPE:
+(define non-supervisory-ee-courses
+  (set-subtract
+   (set-subtract (list->set ee-dept-courses) supervisory-courses)
+   (list->set cpe-dept-courses)))
+
 
 ;; for 2021-2022 planning, I'm going to add together
 ;; the csc courses and the CPE courses that aren't cross
@@ -148,9 +174,10 @@
                            non-supervisory-ee-courses)))
 ;; this is pretty temporary...
 (define 2021-course-set (set-union non-supervisory-csc-courses cpe-extra))
+
 ;; for 2022-2026 planning, we have an explicit list of CPE courses from Lynne
 (define 2022-course-set (set-union non-supervisory-csc-courses
-                                   (list->set 2022-cpe-courses)))
+                                   non-supervisory-cpe-courses))
 
 ;; map numbers to ids to allow short-cuts in schedule description.
 ;; for instance, we can just write "430" rather than "csc430".

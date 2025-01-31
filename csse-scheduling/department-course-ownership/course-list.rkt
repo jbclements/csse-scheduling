@@ -1,4 +1,4 @@
-#lang racket
+#lang typed/racket
 
 (require scramble/regexp
          csse-scheduling/canonicalize)
@@ -8,11 +8,11 @@
          ee-dept-courses
          data-dept-courses)
 
-(define catalog "2022-2026")
+(define catalog : CatalogCycle "2022-2026")
 
 ;; list copy-pasted from the result of running extract-course-list.rkt
 
-(define (parse-clss-course-desc-row row)
+(define (parse-clss-course-desc-row [row : String]) : (U False Course-Id)
   (match row
     [(regexp (px ^
                  (report (+ (chars [#\A #\Z])))
@@ -22,29 +22,31 @@
                  " – " ;; that's not a regular hyphen...
                  )
              (list _ subject num))
+     ;; subject cannot be false, by defn of regexp
      (match (list subject num)
        [(list _ "2IP") #f] ;; EE has "study abroad" courses in their catalog?
        [(list "EE" "4IP") #f]
        [(list "STAT" _) #f] ;; ignore all stats courses
        [other
-        (canonicalize catalog subject num)])]
+        (canonicalize catalog (cast subject String) (cast num String))])]
     ))
 
 ;; are these two sets non-intersecting?
+(: separate? (All (T) ((Listof T) (Listof T) -> Boolean)))
 (define (separate? a b)
   (set-empty? (set-intersect a b)))
 
 ;; are all of the sets in the list independent?
-(define (all-independent? los)
+(define (all-independent? [los : (Listof (Listof String))]) : Boolean
   (cond [(empty? los) #t]
         [else
-         (and (andmap (λ (s) (separate? s (first los))) (rest los))
+         (and (andmap (λ ([s : (Listof String)]) (separate? s (first los))) (rest los))
               (all-independent? (rest los)))]))
 
 ;; the courses scheduled by the CS department
 ;; this list captured on 2025-01-29
 (define cs-dept-courses
-  (map
+  (filter-map
    parse-clss-course-desc-row
    '("CPE 101 – Fundamentals of Computer Science"
      "CPE 123 – Introduction to Computing"
@@ -166,7 +168,7 @@
 
 ;; this list captured on 2025-01-29
 (define cpe-dept-courses
-  (map
+  (filter-map
    parse-clss-course-desc-row
    '("CPE 100 – Computer Engineering Orientation"
      "CPE 133 – Digital Design"
@@ -452,7 +454,7 @@
      "STAT 599 – Thesis")))
 
 ;; ouch, not empty:
-(set-intersect cpe-dept-courses
+#;(set-intersect cpe-dept-courses
                ee-dept-courses)
 
 (unless (all-independent?
