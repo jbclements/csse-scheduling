@@ -24,7 +24,7 @@
 (define-runtime-path here-path ".")
 
 (define week-seconds (* 7 86400))
-(define cache-weeks 8)
+(define cache-weeks 80)
 
 
 ;; given a cache file name and a function from connection to value,
