@@ -160,8 +160,7 @@
       conn
       (~a "SELECT id "
           " FROM instructorstatuses"
-          ;; FIXME add cpe when it's a department
-          " WHERE (homedept='COMPUTER SCIENCE' OR HOMEDEPT='ELECTRICAL ENGINEERING')"
+          " WHERE (homedept='COMPUTER SCIENCE' OR HOMEDEPT='ELECTRICAL ENGINEERING' or homedept='COMPUTER ENGINEERING')"
           " AND qtr >= $1"
           ";")
       qtr))))
@@ -179,8 +178,7 @@
                " FROM (offerfacs o JOIN instructorstatuses i"
                "       ON o.instructor = i.id"
                "       AND o.qtr = i.qtr)"
-               ;; FIXME add cpe when its a department
-               " WHERE (homedept='COMPUTER SCIENCE' OR homedept='ELECTRICAL ENGINEERING')"
+               " WHERE (homedept='COMPUTER SCIENCE' OR homedept='ELECTRICAL ENGINEERING' OR homedept='COMPUTER ENGINEERING')"
                " AND o.qtr <= $1"
                " GROUP BY o.instructor, o.qtr, o.subject, o.num")
            last-qtr)))))
