@@ -320,7 +320,8 @@
   (sixth r))
 
 
-;; validate that this is a legal schedule sexp, remove omitted instructors
+;; validate that this is a legal schedule sexp, remove omitted instructors, return a schedule
+;; (which is still an S-expression. IOW, this function can be the identity.
 (define (validate-schedule [schedule-sexp : Sexp]
                            [instructors-to-omit : Omits])
   : Schedule

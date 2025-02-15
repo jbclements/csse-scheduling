@@ -32,7 +32,7 @@
          racket/set
          "types.rkt"
          "qtr-math.rkt"
-         (only-in racket/list remove-duplicates))
+         (only-in racket/list remove-duplicates filter-map))
 
 (define-type Subject
   (U "AEPS" "AERO" "AG" "AGB" "AGC" "ANT" "ARCE" "ARCH" "ART" "ASCI" "ASTR" "BIO"
@@ -143,20 +143,23 @@
 ;; using the CPE and CSC subjects, try canonicalizing a number.
 (: canonicalize/num (CatalogCycle (U Natural CourseNum) -> Course-Id))
 (define (canonicalize/num cycle number-input)
-  (define try1 (canonicalize/noerr cycle 'CSC number-input))
-  (define try2 (canonicalize/noerr cycle 'CPE number-input))
-  ;; match reads better here, but doesn't type-check cleanly
-  (cond [try1
-         (cond [try2 (cond [(equal? try1 try2) try1]
-                           [else (error 'canonicalize/num
-                                        "different matches for number ~v in the two subjects"
-                                        number-input)])]
-               [else try1])]
-        [else
-         (cond [try2 try2]
-               [else (error 'canonicalize/num
-                            "no match for number ~v in either of the subjects"
-                            number-input)])]))
+  ;; we want to allow numbers like 430 to be used without prefixes, but
+  ;; only when there's no conflict:
+  (define no-prefix-subjects '(CSC CPE DATA))
+  (define possibilities
+    (remove-duplicates
+     (filter-map (λ ([prefix : Symbol]) (canonicalize/noerr cycle prefix number-input))
+                 no-prefix-subjects)))
+  (cond [(null? possibilities)
+         (error 'canonicalize/num
+                "no matches for number ~v across these subjects: ~e"
+                number-input no-prefix-subjects)]
+        [(null? (cdr possibilities))
+         (car possibilities)]
+        [else ;; too many matches
+         (error 'canonicalize/num
+           "different matches for number ~v in different subjects: ~e"
+           number-input possibilities)]))
 
 
 
@@ -264,6 +267,7 @@
   (check-equal? (canonicalize/num "2015-2017" "430") "csc430")
   (check-exn #px"no match" (λ () (canonicalize/num "2015-2017" "433")))
   (check-exn #px"different matches" (λ () (canonicalize/num "2015-2017" "400")))
+  (check-exn #px"different matches" (λ () (canonicalize/num "2022-2026" "441")))
   
   (check-equal? (canonicalize "2015-2017" "CPE" "430") "csc430")
 
