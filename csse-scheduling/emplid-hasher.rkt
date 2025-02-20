@@ -34,6 +34,10 @@
 ;; I'm ignoring the possibility of collisions.
 
 (define (emplid->hashed [emplid : String])
+  ;; shorter than 5 is probably an implausibly large number of leading zeros
+  (when (not (regexp-match #px"^[0-9]{5,9}$" emplid))
+    (error 'emplid->hashed "expected 9-digit string possibly with leading zeros trimmed, got: ~e"
+           emplid))
   (define padding-string
     (cond [(<= (string-length emplid) 9)
            (apply string-append
