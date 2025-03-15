@@ -1,5 +1,7 @@
 #lang typed/racket/base
 
+(require threading
+         (only-in racket/format ~r))
 
 (provide
  ;; this is out-of-date. Try to replace it with non-supervisory-computing-courses
@@ -13,8 +15,10 @@
  cycle-course-configuration
  cycle-course-wtus
  cycle-course-wtus/noerror
+ ;; these 2 should disappear, probably:
  2021-course-set
  2022-course-set
+ course-id->names
  )
 
 ;; cycles before this can be ignored for the purposes of determining
@@ -49,10 +53,10 @@
                 (Listof Course-Id)])
 (define 2022-cpe-courses : (Listof Course-Id) '("bogus"))
 
-(define-type Course-Mapping (Vector CatalogCycle String String Course-Id))
+(define-type Course-Mapping (Vector CatalogCycle Subject String Course-Id))
 (define (mapping-cycle [cm : Course-Mapping]) : CatalogCycle
   (vector-ref cm 0))
-(define (mapping-subject [cm : Course-Mapping]) : String
+(define (mapping-subject [cm : Course-Mapping]) : Subject
   (vector-ref cm 1))
 (define (mapping-num [cm : Course-Mapping]) : String
   (vector-ref cm 2))
@@ -209,6 +213,66 @@
   (require typed/rackunit)
   (check-equal? (hash-ref num-id-table "100") '("cpe100"))
   (check-equal? (hash-ref num-id-table "350") '("csc350" "cpe350")))
+
+;; map ids to subject/num.
+(define id-to-subj/num-table : (Immutable-HashTable (List CatalogCycle Course-Id)
+                                                    (Listof (List Subject String)))
+  (~> course-mappings
+      (group-by (λ ([v : Course-Mapping]) (list (mapping-cycle v) (mapping-id v))) _)
+      (map (λ ([g : (Listof Course-Mapping)]) : (Pairof (List CatalogCycle Course-Id)
+                                                        (Listof (List Subject String)))
+             (cons (list (mapping-cycle (first g)) (mapping-id (first g)))
+                   (map (λ ([v : Course-Mapping]) (list (mapping-subject v) (mapping-num v))) g))) _)
+      ((inst make-immutable-hash
+             (List CatalogCycle Course-Id)
+             (Listof (List Subject String))))))
+
+;; given a course id, return a list of lists of subject/num pairs, preferring CSC (for now, refactor if
+;; desired)
+(define (course-id->names [cc : CatalogCycle] [id : Course-Id]) : (Listof (List Subject String))
+  (subject-pref-sort (hash-ref id-to-subj/num-table (list cc id))))
+
+;; sort alphabetically, but prefer subjects in the order specified in the subject-pref-ordering
+(define (subject-pref-sort [names : (Listof (List Subject String))]) : (Listof (List Subject String))
+  ((inst sort (List Subject String) String) names string<? #:key name-sort-key))
+
+(define (name-sort-key [name : (List Subject String)]) : String
+  (string-append (hash-ref subject-pref-ordering-lookup (first name)
+                           (λ () (~r (add1 (length subject-pref-ordering)))))
+                 " "
+                 (first name)
+                 " "
+                 (second name)))
+
+
+(define subject-pref-ordering : (Listof Subject)
+  '("CSC" "CPE" "DATA" "EE"))
+
+;; a table of e.g. CSC -> 00, CPE -> 01, etc
+(define subject-pref-ordering-lookup : (Immutable-HashTable Subject String)
+  (let ()
+    ;; add one to make sure there's space for a number one higher, for unlisted subjects...
+    (define subject-count (add1 (length subject-pref-ordering)))
+    ;; digits necessary to be sure that all subject ranking indices fit:
+    (define subject-index-len (assert
+                               ;; seems like you want a ceiling that returns an exact number...
+                               (inexact->exact (ceiling (/ (log subject-count) (log 10))))
+                               exact-nonnegative-integer?))
+    (for/hash : (Immutable-HashTable Subject String)
+      ([subject : Subject subject-pref-ordering]
+       [i (in-naturals)])
+      (values subject (~r #:pad-string "0" #:min-width subject-index-len i)))))
+
+(module+ test
+  (check-equal? (subject-pref-sort '(("DATA" "242") ("CSC" "442") ("CPE" "492")
+                                                    ("EE" "827") ("MATH" "410")
+                                                    ("CSC" "123")))
+                '(("CSC" "123") ("CSC" "442") ("CPE" "492")
+                                 ("DATA" "242") ("EE" "827")
+                                 ("MATH" "410")))
+  (check-equal? (course-id->names "2022-2026" "csc348") '(("CSC" "248")))
+  #;(check-equal? (course-id->names "csc348") '(("CSC" "248")))
+  )
 
 ;; given a course and a catalog cycle, return its configuration string
 (define (cycle-course-configuration [course : Course-Id] [cycle : CatalogCycle]) : (U False Configuration)
