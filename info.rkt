@@ -12,7 +12,15 @@
     "data-enumerate-lib"
     "csv-writing"
     "sugar"
-    "rackunit-typed"))
+    "rackunit-typed"
+
+    "explorer"
+    "html-parsing"
+    "scramble-lib"
+    "sxml"
+    "threading-lib"
+
+    ))
 
 (define build-deps
   '("rackunit-lib"
