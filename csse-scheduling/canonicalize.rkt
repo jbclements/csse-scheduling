@@ -13,6 +13,7 @@
          canonical-id?
          ensure-canonical
          courses-in-subject
+         coursenum?
          course-key
          id-mappings
          id->mapping
@@ -23,7 +24,8 @@
          mappings
          MappingRow
          CatalogCycle
-         last-mapped-qtr)
+         last-mapped-qtr
+         )
 
 (require/typed "fetch-mapping.rkt"
                [course-mappings Any])
@@ -34,6 +36,7 @@
          "qtr-math.rkt"
          (only-in racket/list remove-duplicates filter-map))
 
+;; if any of these are not in #px"^[A-Z]+$", serious collision problems could occur
 (define-type Subject
   (U "AEPS" "AERO" "AG" "AGB" "AGC" "ANT" "ARCE" "ARCH" "ART" "ASCI" "ASTR" "BIO"
      "BMED" "BOT" "BRAE" "BUS" "CD" "CE" "CHEM" "CHIN" "CM" "COMS" "CPE" "CRP"
@@ -44,6 +47,7 @@
      "PHIL" "PHYS" "PLSC" "POLS" "PSC" "PSY" "RELS" "RPTA" "SCM" "SOC" "SPAN" "SS"
      "STAT" "TH" "UNIV" "WGS" "WGQS" "WLC" "WVIT" "ZOO"))
 
+;; if any of these don't start with a digit, serious problems could occur
 (define-type CourseNum String) ;; such as "123" or "0123"
 
 (define-type MappingRow (Vector CatalogCycle Subject CourseNum Course-Id))
@@ -57,8 +61,12 @@
 ;; this can't be captured by a TR type
 (: coursenum? (String -> Boolean))
 (define (coursenum? s)
-  ;; turns out there are two-digit course numbers.
-  (regexp-match? #px"^[0PS]?[0-9]{2,3}( +X)?$" s))
+  (and (string? s)
+       ;; turns out there are two-digit course numbers.
+       ;; 2025-09-25 this is kind of scary, I'd like the numbers to start with
+       ;; numbers so that they can definitely be separated from subjects for
+       ;; the construction of canonical ids:
+       (regexp-match? #px"^[0PS]?[0-9]{2,4}[AL]?( +X)?$" s)))
 
 ;; the rows in the table, representing mappings from offering
 ;; to canonical name
@@ -284,5 +292,7 @@
   (check-true (string<? (course-key "cpe100") (course-key "csc300")))
   (check-true (string<? (course-key "csc123") (course-key "cpe450")))
   (check-true (string<? (course-key "csc590") (course-key "data301")))
-  (check-equal? (course-key "csc243") "243-csc243"))
+  (check-equal? (course-key "csc243") "243-csc243")
+
+  (check-true (coursenum? "1000L")))
 
