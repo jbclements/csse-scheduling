@@ -87,7 +87,7 @@
   (map (λ (yr)
          (define cycle (fall-year->catalog-cycle yr))
          (cons cycle (configurations-cache cycle)))
-       '(2017 2019 2020 2021 2022)))
+       '(2017 2019 2020 2021 2022 2026)))
 
 ;; all of the lab-only EE courses:
 (define (ee-lab-courses catalog-cycle)

@@ -19,6 +19,7 @@
  2021-course-set
  2022-course-set
  course-id->names
+ configuration->wtus
  )
 
 ;; cycles before this can be ignored for the purposes of determining
