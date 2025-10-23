@@ -10,8 +10,8 @@
 (define (enum-n->s-term n)
   (from-nat s-term/e n))
 
-(define (enum-s-term->n qtr)
-  (to-nat s-term/e qtr))
+(define (enum-s-term->n term)
+  (to-nat s-term/e term))
 
 
 ;; could definitely abstract between this and qtr-enum-nosummer.rkt...
@@ -54,5 +54,8 @@
      (from-nat s-term/e s-term-n))
    '((2034 . "Spring") (2034 . "Summer") (2034 . "Fall")
                        (2035 . "Spring") (2035 . "Summer") (2035 . "Fall")
-                       (2036 . "Spring"))))
+                       (2036 . "Spring")))
+
+  (check-equal? (enum-n->s-term (enum-s-term->n '(2027 . "Spring")))
+                '(2027 . "Spring")))
 

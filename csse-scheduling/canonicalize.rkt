@@ -110,7 +110,13 @@
 ;; like canonicalize, but accepts qtr rather than catalog cycle
 (: canonicalize/qtr (Natural (U Symbol String) (U Natural String) -> Course-Id))
 (define (canonicalize/qtr qtr subject number)
+  ;; SEMESTER FIXME this should be deprecated...
   (canonicalize (qtr->catalog-cycle qtr) subject number))
+
+;; should have named this term, sigh...
+(: canonicalize/term (Natural (U Symbol String) (U Natural String) -> Course-Id))
+(define (canonicalize/term term subject number)
+  (canonicalize (term->catalog-cycle term) subject number))
 
 
 ;; like canonicalize, but accepts qtr rather than catalog cycle
@@ -289,10 +295,14 @@
 
   (check-equal? (canonicalize/qtr 2158 'CPE 430) "csc430")
 
+  (check-equal? (canonicalize "2026-2028" 'CSC "2001") "csc2001")
+
   (check-true (string<? (course-key "cpe100") (course-key "csc300")))
   (check-true (string<? (course-key "csc123") (course-key "cpe450")))
   (check-true (string<? (course-key "csc590") (course-key "data301")))
   (check-equal? (course-key "csc243") "243-csc243")
 
-  (check-true (coursenum? "1000L")))
+  (check-true (coursenum? "1000L"))
+
+  )
 

@@ -3,56 +3,65 @@
 (require data/enumerate
          data/enumerate/lib)
 
-(provide enum-n->qtr
-         enum-qtr->n)
+(provide enum-n->term
+         enum-term->n)
 
-(define (enum-n->qtr n)
-  (from-nat qtr/e n))
+(define (enum-n->term n)
+  (from-nat term/e n))
 
-(define (enum-qtr->n qtr)
-  (to-nat qtr/e qtr))
+(define (enum-term->n term)
+  (to-nat term/e term))
 
-
-;; could definitely abstract between this and qtr-enum-nosummer.rkt...
 
 ;; WE ARE DISALLOWING YEARS BEFORE THE BIRTH OF CHRIST.
 
-;; these should be defined in one...
-(define (nth-season n)
-  (match n
-    [0 "Winter"]
-    [1 "Spring"]
-    [2 "Summer"]
-    [3 "Fall"]))
+(define qtr-season/e (fin/e "Winter" "Spring" "Summer" "Fall"))
+(define sem-season/e (fin/e "Spring" "Summer" "Fall"))
 
-(define (season->n season)
-  (match season
-    ["Winter" 0]
-    ["Spring" 1]
-    ["Summer" 2]
-    ["Fall" 3]))
-
-(define (to-pair x)
-  (cons (floor (/ x 4))
-        (nth-season (remainder x 4))))
-
-(define (from-pair y)
-  (+ (* (car y) 4) (season->n (cdr y))))
-
+;; an enumeration of the quarters; all pairs of year/qtr-season
+;; where year is below 2027, except for 2026 summer and fall.
 (define qtr/e
-  (map/e to-pair
-         from-pair
-         natural/e
-         #:contract (cons/c natural? (or/c "Winter" "Spring" "Summer" "Fall"))))
+  (except/e
+   (list/e (below/e 2027) qtr-season/e)
+   '(2026 "Summer")
+   '(2026 "Fall")))
+
+;; an enumeration of the semesters; all pairs of year/sem-season
+;; where year is >= 2026, except for 2026 Spring:
+(define sem/e
+  (except/e
+   (list/e (nat+/e 2026) sem-season/e)
+   '(2026 "Spring")))
+
+;; I'm responsible for ensuring that the elements here don't overlap.
+;; yep, can confirm. It's up to me.
+
+;; staple together qtr/e and sem/e to make term/e
+(define term/e
+  (append/e qtr/e sem/e))
+
 
 (module+ test
+
   (require rackunit)
-  (check-equal? (from-pair (to-pair 234)) 234)
+  
+  (check-equal? (to-nat qtr/e '(2026 "Spring"))
+                (to-nat term/e '(2026 "Spring")))
+
+  (check-equal? (enum-n->term (enum-term->n '(2026 "Spring")))
+                '(2026 "Spring"))
+
+  (define danger-sequence
+    '((2025 "Fall") (2026 "Winter") (2026 "Spring") (2026 "Summer") (2026 "Fall")
+                    (2027 "Spring") (2027 "Summer") (2027 "Fall")))
+
+  ;; ensure that the result of to-nat on the danger sequence is a sequential
+  ;; range of natural numbers:
   (check-equal?
-   (for/list ([qtr-n (in-range (to-nat qtr/e '(2014 . "Winter"))
-                               (to-nat qtr/e '(2016 . "Summer")))])
-     (from-nat qtr/e qtr-n))
-   '((2014 . "Winter") (2014 . "Spring") (2014 . "Summer") (2014 . "Fall")
-                       (2015 . "Winter") (2015 . "Spring") (2015 . "Summer") (2015 . "Fall")
-                       (2016 . "Winter") (2016 . "Spring"))))
+   (map (λ (pr) (enum-term->n pr)) danger-sequence)
+   (range (enum-term->n (first danger-sequence))
+          (add1 (enum-term->n (last danger-sequence))))))
+
+
+
 

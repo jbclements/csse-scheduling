@@ -1,6 +1,7 @@
 #lang typed/racket/base
 
 ;; THIS IS A REWRITE OF QTR-MATH TO USE THE TERM "TERM" INSTEAD
+;; eventually qtr-math should be deprecatable
 
 ;; functions for mapping back and forth between terms,
 ;; fall years, and catalog cycles
@@ -8,7 +9,7 @@
 ;; there are four different representations of a term:
 ;; 1) A pair of season and year.
 ;; 2) A cal poly term number (represented as a natural) -- not sequential!
-;; 3) A sequential numbering of all terms including summer quarter
+;; 3) A sequential numbering of all terms including summer term
 ;; 4) A sequential numbering of all terms not including summer term.
 ;; This code can map between any of them. It does lots of other stuff too.
 
@@ -16,47 +17,56 @@
          "./types.rkt"
          (only-in racket/list range))
 
-(provide CatalogCycle
+#;(provide CatalogCycle
          catalog-cycle?
          fall-year->catalog-cycle
          catalog-cycle->fall-years
          catalog-cycle-<?
          fall-year->base-qtr
-         qtr->fall-year
-         qtr->catalog-cycle
-         qtrs-in-range
-         qtr->season
-         qtr->year
-         qtr->string
-         string->qtr
-         fall-year->qtrs
-         catalog-cycle->qtrs
-         encode-qtr
-         season-after-qtr
-         next-qtr
-         next-qtr/no-summer
-         prev-qtr
-         prev-qtr/no-summer
-         qtr-subtract
-         qtr-subtract/no-summer
-         qtr-add
-         qtr-add/no-summer
-         qtrs-per-year/no-summer
+         term->fall-year
+         term->catalog-cycle
+         terms-in-range
+         term->season
+         term->year
+         term->string
+         string->term
+         fall-year->terms
+         catalog-cycle->terms
+         encode-term
+         season-after-term
+         next-term
+         next-term/no-summer
+         prev-term
+         prev-term/no-summer
+         term-subtract
+         term-subtract/no-summer
+         term-add
+         term-add/no-summer
+         terms-per-year/no-summer
          Season
-         Qtr)
+         Qtr
+         Term)
 
 ;; this is the natural encoding of a quarter
-(define-type Qtr-Pair (Pairof Natural Season))
+(define-type Term-Pair (Pairof Natural Season))
+(define-type S-Term-Pair (Pairof Natural SemesterSeason))
 
 (define-type Season (U "Winter" "Spring" "Summer" "Fall"))
+(define-type SemesterSeason (U "Spring" "Summer" "Fall"))
+
+
 
 (require/typed "qtr-enum.rkt"
-               [enum-qtr->n (-> Qtr-Pair Natural)]
-               [enum-n->qtr (-> Natural Qtr-Pair)])
+               [enum-qtr->n (-> Term-Pair Natural)]
+               [enum-n->qtr (-> Natural Term-Pair)])
+
+(require/typed "semester-enum.rkt"
+               [enum-s-term->n (-> S-Term-Pair Natural)]
+               [enum-n->s-term (-> Natural S-Term-Pair)])
 
 (require/typed "qtr-enum-nosummer.rkt"
-               [(enum-qtr->n enum-qtr->n/nosmr) (-> Qtr-Pair Natural)]
-               [(enum-n->qtr enum-n->qtr/nosmr) (-> Natural Qtr-Pair)])
+               [(enum-qtr->n enum-qtr->n/nosmr) (-> Term-Pair Natural)]
+               [(enum-n->qtr enum-n->qtr/nosmr) (-> Natural Term-Pair)])
 
 (define first-encodable-year : Natural 1900)
 
@@ -233,7 +243,7 @@
   (encode-qtr/2 (cons year (coerce-season season))))
 
 ;; given qtr-pair, return the cal poly qtr number
-(define (encode-qtr/2 [qp : Qtr-Pair]) : Qtr
+(define (encode-qtr/2 [qp : Term-Pair]) : Qtr
   (define year (car qp))
   (define season (cdr qp))
   (define century-code
@@ -250,7 +260,7 @@
      (season->qtr-offset (coerce-season season))))
 
 ;; map a cal poly qtr number to a qtr-pair
-(define (decode-qtr [qtr : Qtr]) : Qtr-Pair
+(define (decode-qtr [qtr : Qtr]) : Term-Pair
   (cons (qtr->year qtr) (qtr->season qtr)))
 
 ;; given a quarter, return its string form, e.g. 2018 -> "Fall 2001"
@@ -280,7 +290,7 @@
                 (enum-qtr->n (decode-qtr max)))))
   (define filtered-pairs
     (filter (cond [include-summer? (λ (x) x)]
-                  [else (λ ([qpr : Qtr-Pair]) (not (equal? (cdr qpr) "Summer")))])
+                  [else (λ ([qpr : Term-Pair]) (not (equal? (cdr qpr) "Summer")))])
             qtr-pairs))
   (map encode-qtr/2 filtered-pairs))
 
