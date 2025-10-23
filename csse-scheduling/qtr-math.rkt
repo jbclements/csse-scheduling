@@ -41,7 +41,31 @@
          qtr-add/no-summer
          qtrs-per-year/no-summer
          Season
-         Qtr)
+         Qtr
+
+         fall-year->base-term
+         term->fall-year
+         term->catalog-cycle
+         terms-in-range
+         term->season
+         term->year
+         term->string
+         string->term
+         fall-year->terms
+         catalog-cycle->terms
+         encode-term
+         season-after-term
+         next-term
+         next-term/no-summer
+         prev-term
+         prev-term/no-summer
+         term-subtract
+         term-subtract/no-summer
+         term-add
+         term-add/no-summer
+         sems-per-year/no-summer
+         CPTN
+         )
 
 ;; this is the natural encoding of a quarter
 (define-type Term-Pair (Pairof Natural Season))
@@ -216,11 +240,12 @@
 ;; FIXME
 ;; okay this one is actually scary:
 (define qtrs-per-year/no-summer 3)
+(define sems-per-year/no-summer 2)
 
-;; return the year in which a quarter number falls
-(define (term->year [qtr : CPTN]) : Natural
-  (define century-code (floor (/ qtr 1000)))
-  (define year-code (modulo (floor (/ qtr 10)) 100))
+;; return the year in which a CPTN falls
+(define (term->year [term : CPTN]) : Natural
+  (define century-code (floor (/ term 1000)))
+  (define year-code (modulo (floor (/ term 10)) 100))
   (define century-offset
     (match century-code
       [0 1900]
@@ -230,7 +255,7 @@
       ;; in the year 2300 we just give up.
       [_ (raise-argument-error 'qtr-year
                                "qtr with century code of 0, 2, 3, or 4"
-                               0 qtr)]))
+                               0 term)]))
   (+ century-offset year-code))
 (define qtr->year term->year) ;; bridge
 
@@ -239,12 +264,12 @@
   (encode-term/2 (cons year (coerce-season season))))
 (define encode-qtr encode-term) ;; bridge
 
-;; given qtr-pair, return the cal poly qtr number
-(define (encode-term/2 [qp : Term-Pair]) : CPTN
-  (when (not (term? qp))
-    (error 'encode-term "expected legal term, got: ~e" qp))
-  (define year (car qp))
-  (define season (cdr qp))
+;; given term-pair, return the cal poly qtr number
+(define (encode-term/2 [tp : Term-Pair]) : CPTN
+  (when (not (term? tp))
+    (error 'encode-term "expected legal term pair, got: ~e" tp))
+  (define year (car tp))
+  (define season (cdr tp))
   (define century-code
     (cond [(<= 1900 year 1999) 0]
           [(<= 2000 year 2099) 2]
@@ -256,131 +281,151 @@
                                       0 year)]))
   (+ (* 1000 century-code)
      (* 10 (modulo year 100))
-     (season->qtr-offset (coerce-season season))))
+     (season->term-offset (coerce-season season))))
 
 ;; map a cal poly qtr number to a qtr-pair
-(define (decode-qtr [qtr : Qtr]) : Term-Pair
-  (cons (qtr->year qtr) (qtr->season qtr)))
+(define (decode-term [term : CPTN]) : Term-Pair
+  (cons (qtr->year term) (qtr->season term)))
+(define decode-qtr decode-term) ;; bridge
 
-;; given a quarter, return its string form, e.g. 2018 -> "Fall 2001"
-(define (qtr->string [qtr : Natural]) : String
-  (string-append (qtr->season qtr) " " (number->string (qtr->year qtr))))
+;; given a term, return its string form, e.g. 2018 -> "Fall 2001"
+(define (term->string [term : CPTN]) : String
+  (string-append (term->season term) " " (number->string (term->year term))))
+(define qtr->string term->string) ;; bridge
 
-;; given a string form, e.g. "Fall 2001", return the corresponding qtr
-(define (string->qtr [str : String]) : Natural
+;; given a string form, e.g. "Fall 2001", return the corresponding term number
+(define (string->term [str : String]) : CPTN
   (match str
     [(regexp #px"^([^ ]+) ([0-9]+)$" (list _ season year))
      ;; casts must succeed by definition of regexp
-     (encode-qtr (cast (string->number (cast year String)) Natural)
-                 (cast season String))]
+     (encode-term (cast (string->number (cast year String)) Natural)
+                  (cast season String))]
     [other
      (raise-argument-error 'string->qtr
                            "string like \"Fall 2001\""
                            0 str)]))
+(define string->qtr string->term) ;; bridge
 
 ;; FIXME TMP delete these after porting (but this code should work correctly for all legal qtrs:
-(define enum-qtr->n enum-term->n)
-(define enum-n->qtr enum-n->term)
-(define enum-qtr->n/nosmr enum-term->n/no-smr)
-(define enum-n->qtr/nosmr enum-n->term/no-smr)
+(define enum-qtr->n enum-term->n) ;; bridge
+(define enum-n->qtr enum-n->term) ;; bridge
+(define enum-qtr->n/nosmr enum-term->n/no-smr) ;; bridge
+(define enum-n->qtr/nosmr enum-n->term/no-smr) ;; bridge
 
 ;; return the quarter numbers greater than or equal
 ;; to the first quarter and less than the second.
 ;; ignore summer quarters.
-(: qtrs-in-range (Natural Natural [#:include-summer? Boolean] -> (Listof Natural)))
-(define (qtrs-in-range min max #:include-summer? [include-summer? #f])
-  (define qtr-pairs
+(define (terms-in-range [min : CPTN] [max : CPTN] #:include-summer? [include-summer? : Boolean #f])
+  : (Listof CPTN)
+  (define term-pairs
     (map enum-n->term
-         (range (enum-qtr->n (decode-qtr min))
-                (enum-qtr->n (decode-qtr max)))))
+         (range (enum-term->n (decode-term min))
+                (enum-term->n (decode-term max)))))
   (define filtered-pairs
     (filter (cond [include-summer? (λ (x) x)]
-                  [else (λ ([qpr : Term-Pair]) (not (equal? (cdr qpr) "Summer")))])
-            qtr-pairs))
+                  [else (λ ([tpr : Term-Pair]) (not (equal? (cdr tpr) "Summer")))])
+            term-pairs))
   (map encode-term/2 filtered-pairs))
+(define qtrs-in-range terms-in-range) ;; bridge
 
 ;; given a year, return the quarters of the academic year beginning in
 ;; the fall of the given year (omitting all summer quarters)
-(define (fall-year->qtrs [year : Natural]) : (Listof Qtr)
-  (qtrs-in-range (fall-year->base-qtr year)
-                 (fall-year->base-qtr (add1 year))))
+(define (fall-year->terms [year : Natural]) : (Listof CPTN)
+  (terms-in-range (fall-year->base-term year)
+                  (fall-year->base-term (add1 year))))
+(define fall-year->qtrs fall-year->terms) ;; bridge
 
 ;; given a year, return the quarters of the academic year beginning in
 ;; the summer of the given year.
-(define (fall-year->qtrs/summer [year : Natural]) : (Listof Qtr)
-  (qtrs-in-range (fall-year->summer-qtr year)
-                 (fall-year->summer-qtr (add1 year))
-                 #:include-summer? #t))
+(define (fall-year->terms/summer [year : Natural]) : (Listof CPTN)
+  (terms-in-range (fall-year->summer-term year)
+                  (fall-year->summer-term (add1 year))
+                  #:include-summer? #t))
 
 ;; given a catalog cycle, return the quarters that fall into it.
-(define (catalog-cycle->qtrs [cycle : CatalogCycle]
-                             #:include-summer? [include-summer? : Boolean #f])
-  : (Listof Qtr)
-  (define enumerator (cond [include-summer? fall-year->qtrs/summer]
-                           [else fall-year->qtrs]))
+(define (catalog-cycle->terms [cycle : CatalogCycle]
+                              #:include-summer? [include-summer? : Boolean #f])
+  : (Listof CPTN)
+  (define enumerator (cond [include-summer? fall-year->terms/summer]
+                           [else fall-year->terms]))
   (apply append (map enumerator (catalog-cycle->fall-years cycle))))
+(define catalog-cycle->qtrs catalog-cycle->terms) ;; bridge
 
 ;; return the cal poly number of the first quarter following 'qtr'
 ;; that has the season 'season'.
-(define (season-after-qtr [season : Season] [qtr : Qtr]) : Qtr
-  (define qtr-pair-n : Natural (enum-qtr->n (decode-qtr qtr)))
+(define (season-after-term [season : Season] [term : CPTN]) : CPTN
+  (define qtr-pair-n : Natural (enum-term->n (decode-term term)))
   ;; a nice stream of following quarters would be easier to read...
   (define matching-n
-    (let loop : Natural [(i : Natural 0)]
-      (cond [(equal? season (cdr (enum-n->qtr (+ qtr-pair-n i))))
-             (+ qtr-pair-n i)]
+    (let loop : Natural [(i : Natural qtr-pair-n)]
+      (cond [(equal? season (cdr (enum-n->term i))) i]
             [else (loop (add1 i))])))
-  (encode-term/2 (enum-n->qtr matching-n)))
+  (encode-term/2 (enum-n->term matching-n)))
+(define season-after-qtr season-after-term) ;; bridge
 
-(define (qtr->n [qtr : Qtr]) : Natural
-  (enum-qtr->n (decode-qtr qtr)))
+(define (term->n [term : CPTN]) : Natural
+  (enum-term->n (decode-term term)))
+(define qtr->n term->n) ;; bridge
 
-(define (qtr->n/nosmr [qtr : Qtr]) : Natural
-  (enum-qtr->n/nosmr (decode-qtr qtr)))
+(define (term->n/no-smr [term : CPTN]) : Natural
+  (enum-term->n/no-smr (decode-term term)))
+(define qtr->n/nosmr term->n/no-smr)
 
-(define (n->qtr [i : Integer]) : Qtr
-  (encode-term/2 (enum-n->qtr (ensure-natural-idx i))))
+(define (n->term [i : Integer]) : CPTN
+  (encode-term/2 (enum-n->term (ensure-natural-idx i))))
+(define n->qtr n->term)
 
-(define (n->qtr/nosmr [i : Integer]) : Qtr
-  (encode-term/2 (enum-n->qtr/nosmr (ensure-natural-idx i))))
+(define (n->term/no-smr [i : Integer]) : CPTN
+  (encode-term/2 (enum-n->term/no-smr (ensure-natural-idx i))))
+(define n->qtr/nosmr n->term/no-smr) ;; bridge
 
 ;; how many qtrs between these two? (1 = next quarter)
-(define (qtr-subtract [qtrA : Qtr] [qtrB : Qtr]) : Integer
-  (- (qtr->n qtrA)
-     (qtr->n qtrB)))
+(define (term-subtract [termA : CPTN] [termB : CPTN]) : Integer
+  (- (term->n termA)
+     (term->n termB)))
+(define qtr-subtract term-subtract) ;; bridge
 
 ;; how many qtrs between these two, omitting all summers?
-(define (qtr-subtract/no-summer [qtrA : Qtr] [qtrB : Qtr]) : Integer
-  (- (qtr->n/nosmr qtrA)
-     (qtr->n/nosmr qtrB)))
+(define (term-subtract/no-summer [termA : CPTN] [termB : CPTN]) : Integer
+  (- (qtr->n/nosmr termA)
+     (qtr->n/nosmr termB)))
+(define qtr-subtract/no-summer term-subtract/no-summer) ;; bridge
 
 ;; what's the quarter 'n' quarters later? (1 = next quarter, -1 = last quarter)
-(define (qtr-add [qtrA : Qtr] [i : Integer]) : Qtr
-  (n->qtr (+ i (qtr->n qtrA))))
+(define (term-add [termA : CPTN] [i : Integer]) : CPTN
+  (n->term (+ i (term->n termA))))
+(define qtr-add term-add) ;; bridge
 
 ;; same but ignore summer.
-(define (qtr-add/no-summer [qtrA : Qtr] [i : Integer]) : Qtr
-  (n->qtr/nosmr (+ i (qtr->n/nosmr qtrA))))
+(define (term-add/no-summer [termA : CPTN] [i : Integer]) : CPTN
+  (n->term/no-smr (+ i (term->n/no-smr termA))))
+(define qtr-add/no-summer term-add/no-summer) ;; bridge
 
 ;; what quarter comes after this one?
-(define (next-qtr [qtr : Qtr]) : Qtr
-  (qtr-add qtr 1))
+(define (next-term [term : CPTN]) : CPTN
+  (term-add term 1))
+(define next-qtr next-term) ;; bridge
 
 ;; ignoring summer, what quarter comes after this one?
-(define (next-qtr/no-summer [qtr : Qtr]) : Qtr
-  (qtr-add/no-summer qtr 1))
+(define (next-term/no-summer [term : CPTN]) : CPTN
+  (qtr-add/no-summer term 1))
+(define next-qtr/no-summer next-term/no-summer) ;; bridge
 
 ;; this will get triggered for the year zero...
 (define (ensure-natural-idx [n : Integer]) : Natural
   (cond [(< n 0) (error 'ensure-natural-idx "expected number >= 0, got ~v" n)]
         [else n]))
 
-;; return the qtr before this one
-(define (prev-qtr [qtr : Qtr]) : Qtr
-  (qtr-add qtr -1))
 
-(define (prev-qtr/no-summer [qtr : Qtr]) : Qtr
-  (qtr-add/no-summer qtr -1))
+;; what term comes before this one?
+(define (prev-term [term : CPTN]) : CPTN
+  (term-add term -1))
+(define prev-qtr prev-term) ;; bridge
+
+;; ignoring summer, what term comes after this one?
+(define (prev-term/no-summer [term : CPTN]) : CPTN
+  (qtr-add/no-summer term -1))
+(define prev-qtr/no-summer prev-term/no-summer) ;; bridge
 
 (module+ test
   (require typed/rackunit)
