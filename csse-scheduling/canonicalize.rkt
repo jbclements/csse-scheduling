@@ -116,7 +116,7 @@
 ;; should have named this term, sigh...
 (: canonicalize/term (Natural (U Symbol String) (U Natural String) -> Course-Id))
 (define (canonicalize/term term subject number)
-  (canonicalize (term->catalog-cycle term) subject number))
+  (canonicalize (qtr->catalog-cycle term) subject number))
 
 
 ;; like canonicalize, but accepts qtr rather than catalog cycle
