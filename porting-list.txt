@@ -1,0 +1,140 @@
+github.com/AlDanial/cloc v 1.98  T=0.18 s (678.7 files/s, 79818.2 lines/s)
+----------------------------------------------------------------------------------------------------------------------------------
+File                                                                                           blank        comment           code
+----------------------------------------------------------------------------------------------------------------------------------
+./csse-scheduling/progress/flow-chart-check.rkt                                                   14              6           1106
+./csse-scheduling/progress/degree-requirements.rkt                                               134            130            792
+./csse-scheduling/doc/manual-style.css                                                           147             46            599
+./csse-scheduling/progress/flow-chart.rkt                                                         89             79            598
+./csse-scheduling/progress/degree-reqs-check.rkt                                                   9              4            580
+./csse-scheduling/department-course-ownership/course-list.rkt                                     14             10            442
+./csse-scheduling/course-listings.rkt                                                             62             49            433
+./csse-scheduling/doc/scribble.css                                                                95             39            427
+./csse-scheduling/read-schedule.rkt                                                               83             67            395
+./csse-scheduling/qtr-math.rkt                                                                    77             64            329
+./csse-scheduling/coordinators.csv                                                                 0              0            283
+./csse-scheduling/scheduled-by-csse-dept.rkt                                                      47             46            246
+./csse-scheduling/doc/manual-racket.css                                                           70             16            240
+./csse-scheduling/progress/seats-required-model.rkt                                               40             51            236
+./csse-scheduling/course-lists/2022-2026-cpe-te-course-table.csv                                   0              0            220
+./csse-scheduling/canonicalize.rkt                                                                56             37            215
+./csse-scheduling/doc/manual-racket.js                                                            43             21            186
+./csse-scheduling/doc/racket.css                                                                  55             14            182
+./csse-scheduling/course-lists/2021-2022-cpe-te-course-table.csv                                   0              0            177
+./csse-scheduling/csse-scheduling.scrbl                                                           52             10            172
+./csse-scheduling/course-lists/2020-2021-cs-minor-course-table.txt                                 0              0            158
+./csse-scheduling/fetch-mapping.rkt                                                               24              9            152
+./csse-scheduling/course-lists/2020-2021-csc-te-course-table.txt                                   0              0            150
+./csse-scheduling/course-lists/2020-2021-se-te-course-table.txt                                    0              0            148
+./csse-scheduling/doc/scribble-common.js                                                          25             18            129
+./csse-scheduling/course-lists/2020-2021-ee-te-other.txt                                           0              0            120
+./csse-scheduling/schedule-availability-sanity.rkt                                                28             18            112
+./csse-scheduling/progress/student-progress-table.rkt                                             28              7            100
+./csse-scheduling/doc/csse-scheduling/blueboxes.rktd                                               0              0             92
+./csse-scheduling/supervisory.rkt                                                                 18             15             91
+./csse-scheduling/course-lists/2020-2021-csc-ul-te-course-table.txt                                0              0             90
+./csse-scheduling/course-lists/2020-2021-se-ul-te-course-table.txt                                 0              0             88
+./csse-scheduling/course-lists/2022-2026-cs-minor-course-table.csv                                 0              0             86
+./coverage/assets/main.css                                                                        21              1             84
+./csse-scheduling/coordinators.rkt                                                                23             23             80
+./csse-scheduling/course-lists/2022-2026-csc-te-course-table.csv                                   0              0             78
+./csse-scheduling/progress/student-progress.rkt                                                   24             10             78
+./csse-scheduling/doc/manual-fonts.css                                                            65            109             77
+./csse-scheduling/course-lists/2022-2026-se-te-course-table.csv                                    0              0             76
+./csse-scheduling/course-lists/2021-2022-csc-te-course-table.csv                                   0              0             72
+./csse-scheduling/term-enum.rkt                                                                   33             12             70
+./csse-scheduling/course-lists/2021-2022-se-te-course-table.csv                                    0              0             69
+./csse-scheduling/seat-req-utils.rkt                                                              15             14             68
+./csse-scheduling/course-lists/2020-2021-ee-te-lec.txt                                             0              0             64
+./csse-scheduling/ownership.rkt                                                                   22              7             61
+./coverage/assets/app.js                                                                           8              0             59
+./csse-scheduling/course-lists/2021-2022-cs-minor-course-table.csv                                 0              0             59
+./csse-scheduling/course-lists/2021-2022-ee-te-other.csv                                           0              0             59
+./csse-scheduling/types.rkt                                                                       26             14             59
+./csse-scheduling/course-lists/2022-2026-ee-te-other.csv                                           0              0             57
+./csse-scheduling/CPE-housed courses.csv                                                           9              0             48
+./csse-scheduling/emplid-hasher.rkt                                                               20             13             47
+./csse-scheduling/course-lists/2020-2021-ee-te-lec-lab.txt                                         0              0             46
+./csse-scheduling/course-lists/2022-2026-csc-ul-te-course-table.csv                                0              0             45
+./csse-scheduling/course-lists/2022-2026-se-ul-te-course-table.csv                                 0              0             44
+./csse-scheduling/course-lists/2021-2022-csc-ul-te-course-table.csv                                0              0             42
+./csse-scheduling/course-lists/2021-2022-se-ul-te-course-table.csv                                 0              0             41
+./csse-scheduling/credentials.rkt                                                                  9              0             38
+./csse-scheduling/doc/csse-scheduling/index.html                                                   0              0             35
+./csse-scheduling/scripts/scrape-coordinators.rkt                                                  9              2             35
+./csse-scheduling/course-lists/2020-2021-csc-ms-500-level-course-table.txt                         0              0             34
+./csse-scheduling/course-lists/2020-2021-ee-te-lab.txt                                             0              0             34
+./csse-scheduling/course-lists/2019-2020-csc-ms-500-level-course-table.txt                         0              0             32
+./csse-scheduling/course-lists/2021-2022-ee-te-lec.csv                                             0              0             32
+./csse-scheduling/group-courses.rkt                                                                5              7             32
+./csse-scheduling/course-lists/2022-2026-ee-te-lec.csv                                             0              0             31
+./csse-scheduling/course-lists/2022-2026-ee-te-lec-lab.csv                                         0              0             26
+./csse-scheduling/course-lists/2021-2022-ee-te-lec-lab.csv                                         0              0             25
+./csse-scheduling/course-lists/2021-2022-cpe-extra-te-course-table.csv                             0              0             24
+./info.rkt                                                                                         7              0             24
+./csse-scheduling/course-lists/2022-2026-csc-ms-500-level-course-table.csv                         0              0             21
+./csse-scheduling/course-coordinator-responsibilities.txt                                          7              0             20
+./csse-scheduling/course-lists/2022-2026-ee-te-lab.csv                                             0              0             19
+./csse-scheduling/course-lists/2021-2022-csc-ms-500-level-course-table.csv                         0              0             18
+./csse-scheduling/progress/student-catalog-cycle.rkt                                               4              4             18
+./csse-scheduling/config.rkt                                                                       6              0             16
+./csse-scheduling/department-course-ownership/extract-course-list.rkt                              8              8             15
+./csse-scheduling/discard-bom.rkt                                                                  7              1             13
+./csse-scheduling/main.rkt                                                                         2              0             11
+./csse-scheduling/info.rkt                                                                         5              1             10
+./csse-scheduling/progress/main.rkt                                                                2              0              7
+./README.md                                                                                        0              0              2
+./coverage/csse-scheduling/canonicalize.html                                                       0              0              1
+./coverage/csse-scheduling/config.html                                                             0              0              1
+./coverage/csse-scheduling/coordinators.html                                                       0              0              1
+./coverage/csse-scheduling/course-listings.html                                                    0              0              1
+./coverage/csse-scheduling/credentials.html                                                        0              0              1
+./coverage/csse-scheduling/csse-scheduling.html                                                    0              0              1
+./coverage/csse-scheduling/department-course-ownership/course-list.html                            0              0              1
+./coverage/csse-scheduling/department-course-ownership/extract-course-list.html                    0              0              1
+./coverage/csse-scheduling/discard-bom.html                                                        0              0              1
+./coverage/csse-scheduling/emplid-hasher.html                                                      0              0              1
+./coverage/csse-scheduling/fetch-mapping.html                                                      0              0              1
+./coverage/csse-scheduling/group-courses.html                                                      0              0              1
+./coverage/csse-scheduling/info.html                                                               0              0              1
+./coverage/csse-scheduling/main.html                                                               0              0              1
+./coverage/csse-scheduling/ownership.html                                                          0              0              1
+./coverage/csse-scheduling/progress/degree-reqs-check.html                                         0              0              1
+./coverage/csse-scheduling/progress/degree-requirements.html                                       0              0              1
+./coverage/csse-scheduling/progress/flow-chart-check.html                                          0              0              1
+./coverage/csse-scheduling/progress/flow-chart.html                                                0              0              1
+./coverage/csse-scheduling/progress/main.html                                                      0              0              1
+./coverage/csse-scheduling/progress/seats-required-model.html                                      0              0              1
+./coverage/csse-scheduling/progress/student-catalog-cycle.html                                     0              0              1
+./coverage/csse-scheduling/progress/student-progress-table.html                                    0              0              1
+./coverage/csse-scheduling/progress/student-progress.html                                          0              0              1
+./coverage/csse-scheduling/qtr-math.html                                                           0              0              1
+./coverage/csse-scheduling/read-schedule.html                                                      0              0              1
+./coverage/csse-scheduling/schedule-availability-sanity.html                                       0              0              1
+./coverage/csse-scheduling/scheduled-by-csse-dept.html                                             0              0              1
+./coverage/csse-scheduling/scripts/scrape-coordinators.html                                        0              0              1
+./coverage/csse-scheduling/seat-req-utils.html                                                     0              0              1
+./coverage/csse-scheduling/supervisory.html                                                        0              0              1
+./coverage/csse-scheduling/term-enum.html                                                          0              0              1
+./coverage/csse-scheduling/types.html                                                              0              0              1
+./coverage/index.html                                                                              0              0              1
+./coverage/info.html                                                                               0              0              1
+./csse-scheduling/config-prvt.rktd                                                                 0              0              1
+./csse-scheduling/credentials-prvt.rktd                                                            0              0              1
+----------------------------------------------------------------------------------------------------------------------------------
+SUM:                                                                                            1547            982          11466
+----------------------------------------------------------------------------------------------------------------------------------
+
+-------------------------------------------------------------------------------
+Language                     files          blank        comment           code
+-------------------------------------------------------------------------------
+Racket                          37           1002            718           6775
+CSV                             24              9              0           1652
+CSS                              6            453            225           1609
+Text                            12              7              0            984
+JavaScript                       3             76             39            374
+HTML                            36              0              0             70
+Markdown                         1              0              0              2
+-------------------------------------------------------------------------------
+SUM:                           119           1547            982          11466
+-------------------------------------------------------------------------------
