@@ -11,17 +11,23 @@
 
 (provide emplid->hashed)
 
-(require "config.rkt")
+(require "config.rkt" racket/format)
 (require/typed sha
                [sha256 (Bytes -> Bytes)])
+
+
 
 (define hash-text
   (string-trim
    (file->string
     (build-path (cast (config-env 'onedrive-directory) String) "student-data-hash/student-hash-key.txt"))))
 
+(define bytes-hash : (Mutable-HashTable Byte Natural)
+  (make-hash))
+
 ;; convert to hex string, add leading zero if necessary
 (define (hexpair [n : Byte]) : String
+  (hash-set! bytes-hash n (add1 (hash-ref bytes-hash n (λ () 0))))
   (define hex (number->string n 16))
   (cond [(= (string-length hex) 1) (string-append "0" hex)]
         [else hex]))
@@ -33,19 +39,14 @@
 
 ;; I'm ignoring the possibility of collisions.
 
-(define (emplid->hashed [emplid : String])
+(define (emplid->hashed [emplid : String]) : String
   ;; shorter than 5 is probably an implausibly large number of leading zeros
   (when (not (regexp-match #px"^[0-9]{5,9}$" emplid))
     (error 'emplid->hashed "expected 9-digit string possibly with leading zeros trimmed, got: ~e"
            emplid))
   (define padding-string
-    (cond [(<= (string-length emplid) 9)
-           (apply string-append
-                  (build-list (- 9 (string-length emplid)) (λ (_) "0")))]
-          [else (raise-argument-error
-                 'emplid->hashed
-                 "string of length <= 9"
-                 0 emplid)]))
+    (apply string-append
+           (build-list (- 9 (string-length emplid)) (λ (_) "0"))))
   (apply
    string-append
    (map hexpair
@@ -64,7 +65,16 @@
   (check-equal? (emplid->hashed "01234")
                 "b6e25c191fb6d111cc3a")
 
-  (check-equal? (emplid->hashed "1234")
-          (emplid->hashed "000001234")))
+  (check-equal? (emplid->hashed "001234")
+          (emplid->hashed "000001234"))
+
+  (check-equal? (hexpair 4) "04")
+  (check-equal? (hexpair 16) "10")
+
+  (check-exn #px"expected 9-digit string"
+             (λ () (emplid->hashed "4")))
+  (check-exn #px"expected 9-digit string"
+             (λ () (emplid->hashed "48127a430")))
+)
 
 
