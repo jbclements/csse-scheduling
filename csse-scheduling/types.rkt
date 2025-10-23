@@ -5,12 +5,14 @@
 (require (only-in racket/list first second third fourth))
 
 (define-type Qtr Natural)
+(define-type CPTN Natural) ;; Cal Poly Term Number. Replaces Qtr, essentially
 (define-type Course-Id String)
 (define-type Grade String)
 (define-type Units Real)
 (define-type Grade-Record (List Qtr Course-Id Units Grade))
 
-(define gr-qtr : (Grade-Record -> Qtr) first)
+(define gr-term : (Grade-Record -> CPTN) first)
+(define gr-qtr gr-term) ;; bridge
 (define gr-course : (Grade-Record -> Course-Id) second)
 (define gr-units : (Grade-Record -> Units) third)
 (define gr-grade : (Grade-Record -> String) fourth)
@@ -19,26 +21,36 @@
 ;; ... combine with Course-Or-Group
 (define-type ReqName Course-Or-Group)
 
-(define-type Major-Abbr (U "CSC" "CPE" "SE" "EE"))
+;; this could be unused?
+;; commenting out, see if compilation fails somewhere
+(define-type Major-Abbr (U "BOGUS"))
+;(define-type Major-Abbr (U "CSC" "CPE" "SE" "EE"))
 
 (define-type Course-Or-Group (U Course-Id CourseGroup))
 (define-type CourseGroup (Listof Symbol))
 
-(define-type Maybe-Qtr (U Natural #f))
+(define-type Maybe-Qtr Maybe-CPTN)
+(define-type Maybe-CPTN (U CPTN #f))
 
 ;; a requirement for a number of seats
 (struct Seat-Requirement ([label : Category] ;; which requirement is this? (used for prioritizing)
                           [course : Course-Or-Group] ;; what course do they want?
-                          [qtr-req : Maybe-Qtr] ;; when do they want it?
+                          [term-req : Maybe-CPTN] ;; when do they want it?
                           [seats : Real])  ;; how many do they want?
   #:transparent)
+
+;; bridge, maybe unneeded
+(define Seat-Requirement-qtr-req Seat-Requirement-term-req)
 
 ;; a requirement for a number of sections
 (struct Section-Requirement ([label : Category] ;; which requirement is this? (used for prioritizing)
                              [course : Course-Or-Group] ;; what course do they want?
-                             [qtr-req : Maybe-Qtr] ;; when do they want it?
+                             [term-req : Maybe-CPTN] ;; when do they want it?
                              [sections : Real])  ;; how many do they want?
   #:transparent)
+
+;; bridge, maybe unneeded
+(define Section-Requirement-qtr-req Section-Requirement-term-req)
 
 
 ;; an association from requirement-names to seats

@@ -4,7 +4,10 @@
          data/enumerate/lib)
 
 (provide enum-n->term
-         enum-term->n)
+         enum-term->n
+         enum-n->term/no-smr
+         enum-term->n/no-smr
+         term?)
 
 (define (enum-n->term n)
   (from-nat term/e n))
@@ -17,6 +20,9 @@
 
 (define (enum-term->n/no-smr term)
   (to-nat term-no-smr/e term))
+
+(define (term? term)
+  ((enum-contract term/e) term))
 
 
 ;; WE ARE DISALLOWING YEARS BEFORE THE BIRTH OF CHRIST.
@@ -97,7 +103,12 @@
   (check-equal?
    (map (λ (pr) (enum-term->n/no-smr pr)) danger-sequence/no-smr)
    (range (enum-term->n/no-smr (first danger-sequence))
-          (add1 (enum-term->n/no-smr (last danger-sequence))))))
+          (add1 (enum-term->n/no-smr (last danger-sequence)))))
+
+  (check-true (flat-contract? (enum-contract term/e)))
+
+  (check-true (term? '(2017 "Winter")))
+  (check-false (term? '(2027 "Winter"))))
 
 
 
