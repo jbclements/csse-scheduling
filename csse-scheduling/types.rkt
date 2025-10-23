@@ -21,10 +21,7 @@
 ;; ... combine with Course-Or-Group
 (define-type ReqName Course-Or-Group)
 
-;; this could be unused?
-;; commenting out, see if compilation fails somewhere
-(define-type Major-Abbr (U "BOGUS"))
-;(define-type Major-Abbr (U "CSC" "CPE" "SE" "EE"))
+(define-type Major-Abbr (U "CSC" "CPE" "SE" "EE"))
 
 (define-type Course-Or-Group (U Course-Id CourseGroup))
 (define-type CourseGroup (Listof Symbol))

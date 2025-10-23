@@ -44,16 +44,16 @@
          Qtr)
 
 ;; this is the natural encoding of a quarter
-(define-type Qtr-Pair (Pairof Natural Season))
+(define-type Term-Pair (Pairof Natural Season))
 
 (define-type Season (U "Winter" "Spring" "Summer" "Fall"))
 
 (require/typed "term-enum.rkt"
-               [enum-term->n (-> Qtr-Pair Natural)]
-               [enum-n->term (-> Natural Qtr-Pair)]
-               [enum-term->n/no-smr (-> Qtr-Pair Natural)]
-               [enum-n->term/no-smr (-> Natural Qtr-Pair)]
-               [term? (-> (List Natural Season) Boolean)]
+               [enum-term->n (-> Term-Pair Natural)]
+               [enum-n->term (-> Natural Term-Pair)]
+               [enum-term->n/no-smr (-> Term-Pair Natural)]
+               [enum-n->term/no-smr (-> Natural Term-Pair)]
+               [term? (-> Term-Pair Boolean)]
                )
 
 (define first-encodable-year : Natural 1900)
@@ -240,8 +240,8 @@
 (define encode-qtr encode-term) ;; bridge
 
 ;; given qtr-pair, return the cal poly qtr number
-(define (encode-term/2 [qp : Qtr-Pair]) : CPTN
-  (when (not (term? (list (car qp) (cdr qp))))
+(define (encode-term/2 [qp : Term-Pair]) : CPTN
+  (when (not (term? qp))
     (error 'encode-term "expected legal term, got: ~e" qp))
   (define year (car qp))
   (define season (cdr qp))
@@ -259,7 +259,7 @@
      (season->qtr-offset (coerce-season season))))
 
 ;; map a cal poly qtr number to a qtr-pair
-(define (decode-qtr [qtr : Qtr]) : Qtr-Pair
+(define (decode-qtr [qtr : Qtr]) : Term-Pair
   (cons (qtr->year qtr) (qtr->season qtr)))
 
 ;; given a quarter, return its string form, e.g. 2018 -> "Fall 2001"
@@ -295,7 +295,7 @@
                 (enum-qtr->n (decode-qtr max)))))
   (define filtered-pairs
     (filter (cond [include-summer? (λ (x) x)]
-                  [else (λ ([qpr : Qtr-Pair]) (not (equal? (cdr qpr) "Summer")))])
+                  [else (λ ([qpr : Term-Pair]) (not (equal? (cdr qpr) "Summer")))])
             qtr-pairs))
   (map encode-term/2 filtered-pairs))
 
