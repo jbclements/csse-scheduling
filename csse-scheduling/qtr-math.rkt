@@ -218,8 +218,7 @@
 
 ;; given a quarter, return its season: "Fall", "Winter", etc.
 (define (term->season [term : CPTN]) : Season
-  (unless (cptn? term)
-    (error 'term->season "expected legal term number, got: ~e" term))
+  (legal-cptn-check term 'term->season)
   (term->season/unchecked term))
 
 ;; don't check whether this is a legal season (required to avoid infinite loop in cptn? )
@@ -249,6 +248,9 @@
 
 ;; return the year in which a CPTN falls
 (define (term->year [term : CPTN]) : Natural
+  (legal-cptn-check term 'term->year))
+
+(define (term->year/unchecked [term : CPTN]) : Natural
   (define century-code (floor (/ term 1000)))
   (define year-code (modulo (floor (/ term 10)) 100))
   (define century-offset
@@ -271,8 +273,7 @@
 
 ;; given term-pair, return the cal poly qtr number
 (define (encode-term/2 [tp : Term-Pair]) : CPTN
-  (when (not (term? tp))
-    (error 'encode-term "expected legal term pair, got: ~e" tp))
+  (legal-term-pair-check tp)
   (define year (car tp))
   (define season (cdr tp))
   (define century-code
@@ -428,8 +429,20 @@
   (term-add/no-summer term -1))
 (define prev-qtr/no-summer prev-term/no-summer) ;; bridge
 
+
+(define (legal-cptn-check [term : CPTN] [fun-id : Symbol]) : True
+  (unless (cptn? term)
+    (error fun-id "expected legal term number, got: ~e" term)))
+
+(define (legal-term-pair-check [tp : Term-Pair] [fun-id : Symbol]) : True
+  (when (not (term? tp))
+    (error fun-id "expected legal term pair, got: ~e" tp)))
+
 (module+ test
-  (require typed/rackunit)
+  (require typed/rackunit
+           syntax/parse
+           (for-syntax syntax/parse
+                       racket))
 
 
   
@@ -510,7 +523,6 @@
   (check-equal? (term->season 2018) "Fall")
   (check-equal? (term->season 2102) "Winter")  
   (check-equal? (term->season 2274) "Spring")
-  (legal-term-check term->season)
 
   (check-equal? (qtr->string 2102) "Winter 2010")
   (check-equal? (qtr->string 328) "Fall 1932")
@@ -519,7 +531,6 @@
   (check-equal? (term->string 2102) "Winter 2010")
   (check-equal? (term->string 328) "Fall 1932")
   (check-equal? (term->string 2288) "Fall 2028")
-  (legal-term-check term->string)
   
   (check-equal? (string->term "Fall 1932") 328)
 
@@ -563,28 +574,36 @@
   (check-equal? (catalog-cycle-<? "2019-2020" "2019-2020") #f)
   (check-equal? (catalog-cycle-<? "2020-2021" "2019-2020") #f)
 
+  #;(define-syntax (mylet stx)
+    (syntax-parse stx
+      [(_ ((var:id rhs:expr) ...) body ...+)
+       #'((lambda (var ...) body ...) rhs ...)]))
 
   (define-syntax (legal-term-check stx)
-    (syntax-case))
+    (syntax-parse stx
+      [(_ fun)
+       (syntax/loc stx
+         (check-exn #px"legal term"
+                    (λ () (fun 2282))))]))
 
   (legal-term-check term->fall-year)
   (legal-term-check term->catalog-cycle)
-  (legal-term-check terms-in-range)
+  ;(legal-term-check terms-in-range)
   (legal-term-check term->season)
   (legal-term-check term->year)
   (legal-term-check term->string)
-  (legal-term-check string->term)
   (legal-term-check fall-year->terms)
-  (legal-term-check catalog-cycle->terms)
-  (legal-term-check encode-term)
-  (legal-term-check season-after-term)
   (legal-term-check next-term)
   (legal-term-check next-term/no-summer)
   (legal-term-check prev-term)
   (legal-term-check prev-term/no-summer)
-  (legal-term-check term-subtract)
-  (legal-term-check term-subtract/no-summer)
-  (legal-term-check term-add)
-  (legal-term-check term-add/no-summer)
+
+  (define lt #px"legal term")
+  (check-exn lt (λ () (term-subtract 2282 4)))
+  (check-exn lt (λ () (term-subtract/no-summer 2282 4)))
+  (check-exn lt (λ () (term-add 2282 4)))
+  (check-exn lt (λ () (term-add/no-summer 2282 4)))
   
+  (legal-term-check term->season)
+  (legal-term-check term->string)
 )
