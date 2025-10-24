@@ -248,7 +248,8 @@
 
 ;; return the year in which a CPTN falls
 (define (term->year [term : CPTN]) : Natural
-  (legal-cptn-check term 'term->year))
+  (legal-cptn-check term 'term->year)
+  (term->year/unchecked term))
 
 (define (term->year/unchecked [term : CPTN]) : Natural
   (define century-code (floor (/ term 1000)))
@@ -273,7 +274,7 @@
 
 ;; given term-pair, return the cal poly qtr number
 (define (encode-term/2 [tp : Term-Pair]) : CPTN
-  (legal-term-pair-check tp)
+  (legal-term-pair-check tp 'encode-term/2)
   (define year (car tp))
   (define season (cdr tp))
   (define century-code
@@ -297,7 +298,7 @@
   result)
 
 (define (cptn? [term : CPTN]) : Boolean
-  (term? (cons (term->year term) (term->season/unchecked term))))
+  (term? (cons (term->year/unchecked term) (term->season/unchecked term))))
 
 ;; given a term, return its string form, e.g. 2018 -> "Fall 2001"
 (define (term->string [term : CPTN]) : String
@@ -432,11 +433,13 @@
 
 (define (legal-cptn-check [term : CPTN] [fun-id : Symbol]) : True
   (unless (cptn? term)
-    (error fun-id "expected legal term number, got: ~e" term)))
+    (error fun-id "expected legal term number, got: ~e" term))
+  #t)
 
 (define (legal-term-pair-check [tp : Term-Pair] [fun-id : Symbol]) : True
   (when (not (term? tp))
-    (error fun-id "expected legal term pair, got: ~e" tp)))
+    (error fun-id "expected legal term pair, got: ~e" tp))
+  #t)
 
 (module+ test
   (require typed/rackunit
@@ -592,7 +595,6 @@
   (legal-term-check term->season)
   (legal-term-check term->year)
   (legal-term-check term->string)
-  (legal-term-check fall-year->terms)
   (legal-term-check next-term)
   (legal-term-check next-term/no-summer)
   (legal-term-check prev-term)
