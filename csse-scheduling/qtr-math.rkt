@@ -44,25 +44,25 @@
          Qtr
 
          fall-year->base-term
-         term->fall-year
-         term->catalog-cycle
-         terms-in-range
-         term->season
-         term->year
-         term->string
+         term->fall-year ;; check
+         term->catalog-cycle ;; check
+         terms-in-range ;; check
+         term->season ;; checked
+         term->year ;; check
+         term->string ;; check
          string->term
          fall-year->terms
          catalog-cycle->terms
-         encode-term
-         season-after-term
-         next-term
-         next-term/no-summer
-         prev-term
-         prev-term/no-summer
-         term-subtract
-         term-subtract/no-summer
-         term-add
-         term-add/no-summer
+         encode-term ;; check?
+         season-after-term ;; check
+         next-term ;; check
+         next-term/no-summer ;; check
+         prev-term ;; check
+         prev-term/no-summer ;; check
+         term-subtract ;; check
+         term-subtract/no-summer ;; check
+         term-add ;; check
+         term-add/no-summer ;; check
          sems-per-year/no-summer
          CPTN
          )
@@ -177,13 +177,12 @@
 
 ;; map a year to the fall cptn that occurs in it (see example below)
 (define (fall-year->base-term [year : Natural]) : CPTN
-  (encode-qtr year "Fall"))
+  (encode-term year "Fall"))
 (define fall-year->base-qtr fall-year->base-term) ;; bridge
 
 ;; map a year to the summer cptn that occurs in it. (*before* the fall quarter.)
 (define (fall-year->summer-term [year : Natural]) : CPTN
-  (encode-qtr year "Summer"))
-(define fall-year->summer-qtr fall-year->summer-term) ;; bridge
+  (encode-term year "Summer"))
 
 ;; map a qtr to the fall year (summer goes forward...)
 (define (term->fall-year [term : CPTN]) : Natural
@@ -219,6 +218,12 @@
 
 ;; given a quarter, return its season: "Fall", "Winter", etc.
 (define (term->season [term : CPTN]) : Season
+  (unless (cptn? term)
+    (error 'term->season "expected legal term number, got: ~e" term))
+  (term->season/unchecked term))
+
+;; don't check whether this is a legal season (required to avoid infinite loop in cptn? )
+(define (term->season/unchecked [term : CPTN]) : Season
   (match (modulo term 10)
     [2 "Winter"]
     [4 "Spring"]
@@ -285,8 +290,13 @@
 
 ;; map a cal poly qtr number to a qtr-pair
 (define (decode-term [term : CPTN]) : Term-Pair
-  (cons (qtr->year term) (qtr->season term)))
-(define decode-qtr decode-term) ;; bridge
+  (define result (cons (term->year term) (term->season term)))
+  (unless (term? result)
+    (error 'decode-term "expected legal term number, got: ~e" term))
+  result)
+
+(define (cptn? [term : CPTN]) : Boolean
+  (term? (cons (term->year term) (term->season/unchecked term))))
 
 ;; given a term, return its string form, e.g. 2018 -> "Fall 2001"
 (define (term->string [term : CPTN]) : String
@@ -306,11 +316,6 @@
                            0 str)]))
 (define string->qtr string->term) ;; bridge
 
-;; FIXME TMP delete these after porting (but this code should work correctly for all legal qtrs:
-(define enum-qtr->n enum-term->n) ;; bridge
-(define enum-n->qtr enum-n->term) ;; bridge
-(define enum-qtr->n/nosmr enum-term->n/no-smr) ;; bridge
-(define enum-n->qtr/nosmr enum-n->term/no-smr) ;; bridge
 
 ;; return the quarter numbers greater than or equal
 ;; to the first quarter and less than the second.
@@ -365,19 +370,15 @@
 
 (define (term->n [term : CPTN]) : Natural
   (enum-term->n (decode-term term)))
-(define qtr->n term->n) ;; bridge
 
 (define (term->n/no-smr [term : CPTN]) : Natural
   (enum-term->n/no-smr (decode-term term)))
-(define qtr->n/nosmr term->n/no-smr)
 
 (define (n->term [i : Integer]) : CPTN
   (encode-term/2 (enum-n->term (ensure-natural-idx i))))
-(define n->qtr n->term)
 
 (define (n->term/no-smr [i : Integer]) : CPTN
   (encode-term/2 (enum-n->term/no-smr (ensure-natural-idx i))))
-(define n->qtr/nosmr n->term/no-smr) ;; bridge
 
 ;; how many qtrs between these two? (1 = next quarter)
 (define (term-subtract [termA : CPTN] [termB : CPTN]) : Integer
@@ -387,8 +388,8 @@
 
 ;; how many qtrs between these two, omitting all summers?
 (define (term-subtract/no-summer [termA : CPTN] [termB : CPTN]) : Integer
-  (- (qtr->n/nosmr termA)
-     (qtr->n/nosmr termB)))
+  (- (term->n/no-smr termA)
+     (term->n/no-smr termB)))
 (define qtr-subtract/no-summer term-subtract/no-summer) ;; bridge
 
 ;; what's the quarter 'n' quarters later? (1 = next quarter, -1 = last quarter)
@@ -408,7 +409,7 @@
 
 ;; ignoring summer, what quarter comes after this one?
 (define (next-term/no-summer [term : CPTN]) : CPTN
-  (qtr-add/no-summer term 1))
+  (term-add/no-summer term 1))
 (define next-qtr/no-summer next-term/no-summer) ;; bridge
 
 ;; this will get triggered for the year zero...
@@ -424,7 +425,7 @@
 
 ;; ignoring summer, what term comes after this one?
 (define (prev-term/no-summer [term : CPTN]) : CPTN
-  (qtr-add/no-summer term -1))
+  (term-add/no-summer term -1))
 (define prev-qtr/no-summer prev-term/no-summer) ;; bridge
 
 (module+ test
@@ -439,9 +440,23 @@
                 '(2158 2162 2164 #;2166 2168 2172 2174 #;2176))
   (check-equal? (catalog-cycle->qtrs (ann "2015-2017" CatalogCycle) #:include-summer? #t)
                 '(2156 2158 2162 2164 2166 2168 2172 2174))
+
+  (check-equal? (catalog-cycle->terms "2015-2017")
+                '(2158 2162 2164 #;2166 2168 2172 2174 #;2176))
+  (check-equal? (catalog-cycle->terms (ann "2015-2017" CatalogCycle) #:include-summer? #t)
+                '(2156 2158 2162 2164 2166 2168 2172 2174))
+
+  (check-equal? (catalog-cycle->qtrs "2026-2028")
+                '(#;2266 2268 2274 #;2276 2278 2284))
+  (check-equal? (catalog-cycle->qtrs (ann "2026-2028" CatalogCycle) #:include-summer? #t)
+                '(2266 2268 2274 2276 2278 2284))
   
   (check-equal? (qtr->year 2018) 2001)
   (check-equal? (qtr->year 976) 1997)
+
+  (check-equal? (term->year 2284) 2028)
+  (check-equal? (term->year 2018) 2001)
+  (check-equal? (term->year 976) 1997)
   
   (check-equal? (fall-year->base-qtr 2017) 2178)
   (check-equal? (fall-year->base-qtr 1997) 978)
@@ -449,9 +464,23 @@
   (check-equal? (qtr->fall-year 2176) 2017)
   (check-equal? (qtr->fall-year 2174) 2016)
   (check-equal? (qtr->fall-year 788) 1978)
+
+  (check-equal? (fall-year->base-term 2028) 2288)
+  (check-equal? (fall-year->base-term 2017) 2178)
+  (check-equal? (fall-year->base-term 1997) 978)
+  (check-equal? (term->fall-year 2288) 2028)
+  (check-equal? (term->fall-year 2284) 2027)
+  (check-equal? (term->fall-year 2178) 2017)
+  (check-equal? (term->fall-year 2176) 2017)
+  (check-equal? (term->fall-year 2174) 2016)
+  (check-equal? (term->fall-year 788) 1978)
   
   (check-equal? (qtr->catalog-cycle 2178) "2017-2019")
   (check-equal? (qtr->catalog-cycle 964)  "1994-1997")
+
+  (check-equal? (term->catalog-cycle 2284) "2026-2028")
+  (check-equal? (term->catalog-cycle 2178) "2017-2019")
+  (check-equal? (term->catalog-cycle 964)  "1994-1997")
   
   (check-equal? (fall-year->catalog-cycle 2006) "2005-2007")
   (check-equal? (fall-year->catalog-cycle 2000) "2000-2001")
@@ -465,12 +494,34 @@
   (check-equal? (qtrs-in-range 982 2014)
                 '(982 984 988 992 994 998 2002 2004 2008 2012))
 
+  (check-equal? (terms-in-range 2154 2182)
+                '(2154 2158 2162 2164 2168 2172 2174 2178))
+  (check-equal? (terms-in-range 2154 2182 #:include-summer? #t)
+                '(2154 2156 2158 2162 2164 2166 2168 2172 2174 2176 2178))
+  (check-equal? (terms-in-range 982 2014)
+                '(982 984 988 992 994 998 2002 2004 2008 2012))
+  (check-equal? (terms-in-range 2264 2278) '(2264 #;2266 2268 2274 #;2276))
+  (check-equal? (terms-in-range 2264 2278 #:include-summer? #t)
+                '(2264 2266 2268 2274 2276))
+
   (check-equal? (qtr->season 2018) "Fall")
   (check-equal? (qtr->season 2102) "Winter")
+
+  (check-equal? (term->season 2018) "Fall")
+  (check-equal? (term->season 2102) "Winter")  
+  (check-equal? (term->season 2274) "Spring")
+  (legal-term-check term->season)
 
   (check-equal? (qtr->string 2102) "Winter 2010")
   (check-equal? (qtr->string 328) "Fall 1932")
   (check-equal? (string->qtr "Fall 1932") 328)
+
+  (check-equal? (term->string 2102) "Winter 2010")
+  (check-equal? (term->string 328) "Fall 1932")
+  (check-equal? (term->string 2288) "Fall 2028")
+  (legal-term-check term->string)
+  
+  (check-equal? (string->term "Fall 1932") 328)
 
   (check-equal? (fall-year->qtrs 2016) '(2168 2172 2174))
 
@@ -511,5 +562,29 @@
   (check-equal? (catalog-cycle-<? "2005-2007" "2020-2021") #t)
   (check-equal? (catalog-cycle-<? "2019-2020" "2019-2020") #f)
   (check-equal? (catalog-cycle-<? "2020-2021" "2019-2020") #f)
+
+
+  (define-syntax (legal-term-check stx)
+    (syntax-case))
+
+  (legal-term-check term->fall-year)
+  (legal-term-check term->catalog-cycle)
+  (legal-term-check terms-in-range)
+  (legal-term-check term->season)
+  (legal-term-check term->year)
+  (legal-term-check term->string)
+  (legal-term-check string->term)
+  (legal-term-check fall-year->terms)
+  (legal-term-check catalog-cycle->terms)
+  (legal-term-check encode-term)
+  (legal-term-check season-after-term)
+  (legal-term-check next-term)
+  (legal-term-check next-term/no-summer)
+  (legal-term-check prev-term)
+  (legal-term-check prev-term/no-summer)
+  (legal-term-check term-subtract)
+  (legal-term-check term-subtract/no-summer)
+  (legal-term-check term-add)
+  (legal-term-check term-add/no-summer)
   
 )
