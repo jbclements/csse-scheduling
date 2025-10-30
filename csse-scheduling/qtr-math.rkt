@@ -72,6 +72,8 @@
 
 (define-type Season (U "Winter" "Spring" "Summer" "Fall"))
 
+(define seasons-count 4)
+
 (require/typed "term-enum.rkt"
                [enum-term->n (-> Term-Pair Natural)]
                [enum-n->term (-> Natural Term-Pair)]
@@ -364,9 +366,15 @@
   (define qtr-pair-n : Natural (enum-term->n (decode-term term)))
   ;; a nice stream of following quarters would be easier to read...
   (define matching-n
-    (let loop : Natural [(i : Natural qtr-pair-n)]
+    (let loop : Natural [(i : Natural qtr-pair-n)
+                         (count : Natural 0)]
       (cond [(equal? season (cdr (enum-n->term i))) i]
-            [else (loop (add1 i))])))
+            ;; give up after two years (winter never comes again after 2262)
+            [(>= count (* 2 seasons-count))
+             (error 'season-after-term
+                    "can't find any more of season ~e after ~e"
+                    season term)]
+            [else (loop (add1 i) (add1 count))])))
   (encode-term/2 (enum-n->term matching-n)))
 (define season-after-qtr season-after-term) ;; bridge
 
@@ -547,6 +555,9 @@
   (check-equal? (season-after-qtr "Fall" 2188) 2188)
   (check-equal? (season-after-qtr "Spring" 2188) 2194)
   (check-equal? (season-after-qtr "Fall" 2184) 2188)
+  (check-equal? (season-after-qtr "Winter" 2184) 2192)
+  (check-exn #px"can't find any more of season"
+             (λ ()(season-after-qtr "Winter" 2268)))
 
   (check-equal? (parse-catalog-cycle "2019-2020") (list 2019 2020))
   (check-exn #px"does not match beginning"
@@ -608,4 +619,6 @@
   
   (legal-term-check term->season)
   (legal-term-check term->string)
+
+  ;; (season-after-qtr "Winter" 2268)
 )
