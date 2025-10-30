@@ -19,8 +19,11 @@
    (cons '(cpe-arch) (list "cpe315" "cpe333"))
    (cons '(cpe-sp-1) (list "cpe461" "csc497"))
    (cons '(cpe-sp-2) (list "cpe462" "csc498"))
+   (cons '(cpe-sp-sem-1) (list "cpe4460" "csc4260" "engr4460"))
+   (cons '(cpe-sp-sem-2) (list "cpe4461" "csc4261" "engr4461"))
    (cons '(csc-sp-1) (list "csc491" "csc497"))
    (cons '(csc-sp-2) (list "csc492" "csc498"))
+   (cons '(csc-sp) (list "csc4161" "csc4261" "csc4460" "csc4461" "data4460" "engr4461" "engr4464"))
    (cons '(CSCMSTHESIS) (list "csc497" "csc498"
                               "csc596" "csc597" "csc599"))
    (cons '(microcon) (list "cpe329" "cpe316" "cpe336"))
@@ -36,6 +39,7 @@
    ;; imprecise, allows 461 + 464
    (cons '(ee-sp-1) '("ee461" "ee463"))
    (cons '(ee-sp-2) '("ee462" "ee464"))
+   (cons '(se-databases) '("csc3660" "csc3665"))
    ))
 
 ;; make sure they're all canonical

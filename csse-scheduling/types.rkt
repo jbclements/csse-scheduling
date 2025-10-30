@@ -30,7 +30,7 @@
 (define-type Maybe-CPTN (U CPTN #f))
 
 ;; a requirement for a number of seats
-(struct Seat-Requirement ([label : Category] ;; which requirement is this? (used for prioritizing)
+(struct Seat-Requirement ([label : Category] ;; which population is this? (used for prioritizing)
                           [course : Course-Or-Group] ;; what course do they want?
                           [term-req : Maybe-CPTN] ;; when do they want it?
                           [seats : Real])  ;; how many do they want?

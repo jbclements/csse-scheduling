@@ -29,6 +29,8 @@
 
          course-group-names)
 
+
+
 (define 2017cc : CatalogCycle "2017-2019")
 
 ;; given a list of grades, a course id, and a predicate mapping a grade to
@@ -341,6 +343,10 @@
 (define (passed-upper-level-se-technical-elective? [cc : CatalogCycle]) : ReqFun
   (passed-one-of/req (hash-ref se-ul-te-course-table cc)))
 
+;; passed the se-specific technical elective for se majors
+(define (passed-se-specific-technical-elective? [cc : CatalogCycle]) : ReqFun
+  (passed-one-of/req (hash-ref se-se-te-course-table cc)))
+
 ;; passed one of the lec-lab courses or a lec and a lab separately.
 ;; this abstraction is just barely okay.
 (define (passed-ee-te-lec-lab-req? [cc : CatalogCycle]) : ReqFun
@@ -379,18 +385,16 @@
       (cond [success-grade (list (remove success-grade grs))]
             ['()]))))
 
+(define ((make-TE-requirement-name [prefix : String]  #:sem [semester? : Boolean #f]) [i : Natural])
+  : Symbol
+  (string->symbol (~a prefix"-TE-" (if semester? "sem-" "") i)))
 
 ;; make a list of technical elective requirements for a given major
-(define (make-TE-requirements [prefix : String] [req : CCReqFun] [n : Natural])
+(define (make-TE-requirements [prefix : String] [req : CCReqFun] [n : Natural] #:sem [semester? : Boolean #f])
   : (Listof (Pair Symbol CCReqFun))
   (for/list
       ([i : Natural (in-range n)])
-    (cons ((make-TE-requirement-name prefix) i) req)))
-
-(: make-TE-requirement-name (String -> (Natural -> Symbol)))
-(define ((make-TE-requirement-name [prefix : String]) [i : Natural]) : Symbol
-  (string->symbol (~a prefix"-TE-" i)))
-
+    (cons ((make-TE-requirement-name prefix #:sem semester?) i) req)))
 
 ;; signal an error if two requirements have the same name
 (define (ensure-distinct-names [reqs : (Listof Requirement)]) : (Listof Requirement)
@@ -464,6 +468,8 @@
      
      (upper-level-se-TE
       . ,passed-upper-level-se-technical-elective?)
+     (se-elective
+      . ,passed-se-specific-technical-elective?)
      (special-problems/se-TE
       . ,(ccparam
           cc
@@ -484,9 +490,14 @@
    ;; n should be the largest number of TE requirements used in a flowchart
    (make-TE-requirements "csc" passed-csc-technical-elective? 5)
    (make-TE-requirements "cpe" passed-cpe-technical-elective? 5)
-   (make-TE-requirements "se" passed-se-technical-elective? 3))))
+   (make-TE-requirements "se" passed-se-technical-elective? 3)
 
-;; used to check that these names have entries in supervisory.rkt
+   (make-TE-requirements "csc" passed-csc-technical-elective? 4 #:sem #t)
+   (make-TE-requirements "cpe" passed-cpe-technical-elective? 4 #:sem #t)
+   (make-TE-requirements "se" passed-se-technical-elective? 4 #:sem #t)
+   )))
+
+;; Used to check that these names have entries in supervisory.rkt
 (define course-group-names : (Listof Symbol) (hash-keys req-table))
 
 (define (req-lookup [spec : (U Symbol String)] [cc : CatalogCycle]) : ReqFun
@@ -598,6 +609,28 @@
            (build-list 3 (make-TE-requirement-name "csc"))))
          )))
 
+
+
+(define (make-26-csc-requirements [cc : CatalogCycle]) : LACAR
+  (cons (list '(CSC) cc)
+        (all-of-these
+         cc
+         (append
+          '("csc1000"
+            "csc1001"
+            "csc1024"
+            "csc2001"
+            "csc2050"
+            "cpe2300"
+            "csc3001"
+            "csc3100"
+            "csc3201"
+            "csc3300"
+            "csc3449"
+            "csc4553"
+            csc-sp)
+          (build-list 4 (make-TE-requirement-name "csc"))))))
+
 ;; upcoming: databases becomes required.
 
 ;; the master list of requirements
@@ -645,6 +678,28 @@
                      ;; 16 TE units minus upper-level minus special problems
                      (build-list 2 (make-TE-requirement-name "se")))))))
 
+
+(define (make-26-se-requirements [cc : CatalogCycle]) : LACAR
+  (cons (list '(SE) cc)
+        (all-of-these
+         cc
+         (append
+          '("csc1000"
+            "csc1001"
+            "csc1024"
+            "csc2001"
+            "csc2050"
+            "csc3001"
+            "csc3100"
+            "csc3201"
+            "csc3300"
+            "csc3449"
+            se-databases
+            "csc4160"
+            "csc4161"
+            se-elective
+            )
+          (build-list 2 (make-TE-requirement-name "se" #:sem #t))))))
 
 ;; NB: These include TE requirements which will soak up e.g. 315, but
 ;; also non-TE requirements, so be sure to put them between concrete requirements
@@ -723,6 +778,30 @@
           cc
           (build-list 3 (make-TE-requirement-name "cpe"))))))
 
+(define (make-26-cpe-requirements [cc : CatalogCycle]) : LACAR
+  (cons (list '(CPE) cc)
+        (all-of-these
+         cc
+         (append
+          '("csc1000"
+            "csc1001"
+            "csc1024"
+            "csc2001"
+            "csc2050"
+            "cpe2300"
+            "cpe2301"
+            "cpe3160"
+            "csc3201"
+            "csc3300"
+            "cpe4464"
+            "csc4553"
+            "ee2211"
+            "ee2241"
+            cpe-sp-sem-1
+            cpe-sp-sem-2)
+          ;; up to 8 units can be any 2k-5k course in CENG or BCSM
+          (build-list 4 (make-TE-requirement-name "cpe" #:sem #t))))))
+
 (define common-ee-requirements-list
   '("cpe133" "cpe233"
              ;; slight approximation, should be (or (and ... ...) (and ... ...))
@@ -797,18 +876,21 @@
           (make-90-csc-requirements "2020-2021")
           (make-21-csc-requirements "2021-2022")
           (make-22-csc-requirements "2022-2026")
+          (make-26-csc-requirements "2026-2028")
           ;; SE
           (cons (list '(SE) (ann "2017-2019" CatalogCycle)) 2017-2019-se-requirements)
           (make-901-se-requirements "2019-2020")
           (make-901-se-requirements "2020-2021")
           (make-901-se-requirements "2021-2022")
           (make-901-se-requirements "2022-2026")
+          (make-26-se-requirements "2026-2028")
           ;; CPE
           (cons (list '(CPE) (ann "2017-2019" CatalogCycle)) 2017-2019-cpe-requirements)
           (make-901-cpe-requirements "2019-2020")
           (make-901-cpe-requirements "2020-2021")
           (make-901-cpe-requirements "2021-2022")
           (make-2022-cpe-requirements "2022-2026")
+          (make-26-cpe-requirements "2026-2028")
           ;; EE
           (make-901-ee-requirements "2019-2020")
           (make-901-ee-requirements "2020-2021")

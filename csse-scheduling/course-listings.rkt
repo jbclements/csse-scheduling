@@ -18,7 +18,7 @@
          ee-te-other-table
          )
 
-(define must-have-these-cycles '("2019-2020" "2020-2021" "2021-2022" "2022-2026"))
+(define must-have-these-cycles '("2019-2020" "2020-2021" "2021-2022" "2022-2026" "2026-2028"))
 
 (define-runtime-path here ".")
 
@@ -379,7 +379,8 @@
                 (cons "2019-2020" 2019-2020-csc-ul-te-courses)
                 (table-pair "2020-2021" table-name)
                 (table-pair2 "2021-2022" table-name)
-                (table-pair2 "2022-2026" table-name))
+                (table-pair2 "2022-2026" table-name)
+                (table-pair2 "2026-2028" table-name))
           (Listof (Pairof String (Listof String)))))))
 
 (define se-te-course-table : CC-Course-Hash
@@ -391,7 +392,8 @@
                 (cons "2019-2020" 2019-2020-se-te-courses)
                 (table-pair "2020-2021" table-name)
                 (table-pair2 "2021-2022" table-name)
-                (table-pair2 "2022-2026" table-name))
+                (table-pair2 "2022-2026" table-name)
+                (table-pair2 "2026-2028" table-name))
           (Listof (Pairof String (Listof String)))))))
 
 (define se-ul-te-course-table : CC-Course-Hash
@@ -407,7 +409,24 @@
        (Listof (Pairof String (Listof String))))
       (map (λ ([cc : CatalogCycle]) : (Pairof CatalogCycle (Listof String))
              (table-pair2 cc table-name))
-           (ann (list "2021-2022" "2022-2026")
+           (ann (list "2021-2022" "2022-2026" "2026-2028")
+                (Listof CatalogCycle)))))))
+
+;; on semesters, there's a new se-specific technical elective
+(define se-se-te-course-table : CC-Course-Hash
+  (let ()
+    (define table-name "se-se-te-course-table")
+    (make-cc-course-hash
+     table-name
+     (append
+      (ann
+       ;; unsatisfiable requirement for pre-semester quarters
+       (for/list ([cc '("2017-2019" "2019-2020" "2020-2021" "2021-2022" "2022-2026")])
+         (ann (cons cc '()) (Pairof String (Listof String))))
+       (Listof (Pairof String (Listof String))))
+      (map (λ ([cc : CatalogCycle]) : (Pairof CatalogCycle (Listof String))
+             (table-pair2 cc table-name))
+           (ann (list #;"2021-2022" #;"2022-2026" "2026-2028")
                 (Listof CatalogCycle)))))))
 
 ;; use this query to compute CPE TE courses for now:
@@ -425,7 +444,8 @@
        ("2019-2020" . ,2019-2020-cpe-te-courses)
        ("2020-2021" . ,2020-2021-cpe-te-courses)
        ,(table-pair2 "2021-2022" table-name)
-       ,(table-pair2 "2022-2026" table-name)))))
+       ,(table-pair2 "2022-2026" table-name)
+       ,(table-pair2 "2026-2028" table-name)))))
 
 (define cpe-extra-te-course-table : CC-Course-Hash
   (let ()
@@ -435,7 +455,8 @@
    `(("2019-2020" . ())
      ("2020-2021" . ())
      ,(table-pair2 "2021-2022" table-name)
-     ("2022-2026" . ())))))
+     ("2022-2026" . ())
+     ("2026-2028" . ())))))
 
 
 (define csc-ms-open-level-course-table : CC-Course-Hash
@@ -449,14 +470,15 @@
        ("2019-2020" . ,2019-2020-cpe-te-courses)
        ("2020-2021" . ,2020-2021-cpe-te-courses)
        ,(table-pair2 "2021-2022" table-name)
-       ,(table-pair2 "2022-2026" table-name)))))
+       ,(table-pair2 "2022-2026" table-name)
+       ,(table-pair2 "2026-2028" table-name)))))
 
 ;; given a table name, read in the appropriate files in their appropriate
 ;; formats
 (define (read-table-pairs [table-name : String])
   (append
    (cycles->table-pairs table-name (list "2019-2020" "2020-2021"))
-   (cycles->table-pair2s table-name (list "2021-2022" "2022-2026"))))
+   (cycles->table-pair2s table-name (list "2021-2022" "2022-2026" "2026-2028"))))
 
 ;; for some tables, this will do the whole thing at once...
 (define (read-cc-course-hash [table-name : String])
@@ -490,7 +512,8 @@
                 (cons "2019-2020" 2019-2020-csc-te-courses)
                 (table-pair "2020-2021" table-name)
                 (table-pair2 "2021-2022" table-name)
-                (table-pair2 "2022-2026" table-name))
+                (table-pair2 "2022-2026" table-name)
+                (table-pair2 "2026-2028" table-name))
           (Listof (Pairof String (Listof String)))))))
 
 

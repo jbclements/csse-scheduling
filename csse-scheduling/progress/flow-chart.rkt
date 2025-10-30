@@ -121,6 +121,28 @@
      ((csc-TE-3) 10)
      )))
 
+
+(define csc-2026-2028-flowchart : Flowchart-Spec
+  '(("csc1000" 1)
+    ("csc1001" 2)
+    ("csc1024" 1)
+    ("csc2001" 3)
+    ("csc2050" 4)
+    ("cpe2300" 4)
+    ("csc3001" 5)
+    ("csc3100" 6)
+    ("csc3201" 5)
+    ("csc3300" 6)
+    ("csc3449" 5)
+    ((csc-TE-1) 6)
+    
+    ("csc4553" 7)
+    ((csc-TE-2) 7)
+    
+    ((csc-sp) 8)
+    ((csc-TE-3) 8)
+    ((csc-TE-4) 8)))
+
 (define common-se-flowchart/pre : Flowchart-Spec
   '(;; year 1
     ("csc101" 2)
@@ -164,6 +186,31 @@
 ;; looks the same as se-2019-2020
 (define se-2020-2021-flowchart/pre : Flowchart-Spec
   se-2019-2020-flowchart/pre)
+
+(define se-2026-2028-flowchart : Flowchart-Spec
+  '(("csc1000" 1)
+    ("csc1024" 1)
+    
+    ("csc1001" 2)
+    
+    ("csc2001" 3)
+    
+    ("csc2050" 4)
+    
+    ("csc3001" 5)
+    ("csc3100" 5)
+    ((se-databases) 5)
+    
+    ("csc3201" 6)
+    ("csc3449" 6)
+    ((se-TE-1) 6)
+
+    ("csc4160" 7)
+    ("csc3300" 7)
+    ((se-TE-2) 7)
+
+    ("csc4161" 8)
+    ((se-TE-3) 8)))
 
 (define common-cpe-flowchart/pre : Flowchart-Spec
   '(("csc101" 2)
@@ -259,6 +306,35 @@
     ((cpe-sp-2) 12)
     ;((cpe-TE-3) 12)
     ((cpe-TE/400) 12)))
+
+(define cpe-2026-2028-flowchart : Flowchart-Spec
+  '(("csc1000" 1)
+    ("csc1024" 1)
+
+    ("csc1001" 2)
+
+    ("csc2001" 3)
+    ("cpe2300" 3)
+    ("cpe2301" 3)
+
+    ("ee2211" 4)
+    ("ee2241" 4)
+    ("csc2050" 4)
+
+    ("csc3201" 5)
+    ("csc4553" 5)
+    ("cpe3300" 5)
+
+    ("cpe4464" 6)
+    ("cpe3160" 6)
+    ;; YEP, LEAVING OUT EE REQ...
+
+    ((cpe-sp-sem-1) 7)
+    ((cpe-TE-1) 7)
+    ((cpe-TE-2) 7)
+
+    ((cpe-sp-sem-2) 8)
+    ((cpe-TE-3) 8)))
 
 (define ee-common-flowchart : Flowchart-Spec
   '(;; FIRST YEAR
@@ -403,6 +479,9 @@
      (make-flowchart-pair 'CSC "2020-2021" csc-2020-2021-flowchart/pre)
      (make-flowchart-pair 'CSC "2021-2022" csc-2021-2022-flowchart/pre)
      (make-flowchart-pair 'CSC "2022-2026" csc-2022-2026-flowchart/pre)
+     (ann
+      (list (cons (ann (list '(CSC) "2026-2028") LAC) csc-2026-2028-flowchart))
+      (Listof (Pairof LAC Flowchart-Spec)))
      ;; SE
      (make-flowchart-pair 'SE "2017-2019" se-2017-2019-flowchart/pre)
      (make-flowchart-pair 'SE "2019-2020" se-2019-2020-flowchart/pre)
@@ -411,12 +490,18 @@
      (make-flowchart-pair 'SE "2021-2022" se-2020-2021-flowchart/pre)
      ;; ditto...
      (make-flowchart-pair 'SE "2022-2026" se-2020-2021-flowchart/pre)
+     (ann
+      (list (cons (ann (list '(SE) "2026-2028") LAC) se-2026-2028-flowchart))
+      (Listof (Pairof LAC Flowchart-Spec)))
      ;; CPE
      (make-flowchart-pair 'CPE "2017-2019" cpe-2017-2019-flowchart/pre)
      (make-flowchart-pair 'CPE "2019-2020" cpe-2019-2020-flowchart/pre)
      (make-flowchart-pair 'CPE "2020-2021" cpe-2020-2021-flowchart/pre)
      (make-flowchart-pair 'CPE "2021-2022" cpe-2020-2021-flowchart/pre)
      (make-flowchart-pair 'CPE "2022-2026" cpe-2022-2026-flowchart/pre)
+     (ann
+      (list (cons (ann (list '(CPE) "2026-2028") LAC) cpe-2026-2028-flowchart))
+      (Listof (Pairof LAC Flowchart-Spec)))
      (ann
       (list 
           (cons (islac '((EE) "2019-2020")) ee-common-flowchart)
