@@ -47,6 +47,7 @@
 ;; these courses are not supervisory.
 (define not-supervisory : (Listof Symbol)
   (append
+    (list 'csc-TE-sem-2 'csc-TE-sem-3 'cpe-TE-sem-1 'cpe-TE-sem-2 'csc-TE-sem-1 'se-TE-sem-1 'se-TE-sem-0 'se-TE-sem-3 'se-TE-sem-2 'cpe-TE-sem-0 'cpe-TE-sem-3 'csc-TE-sem-0 'se-elective)
    (list 'csc-TE-3
          'csc-TE-2
          'cpe-TE-4
