@@ -114,7 +114,13 @@
       "ee500"
       "ee594"
       "ee595"
-      "ee599"))))
+      "ee599"
+
+      ;; SEMESTER LIST, need to revisit, just sprinkling a few in here
+      "csc4460"
+      
+
+      ))))
 
 ;; return non-supervisory courses that have one of these subjects
 ;; (these lists will overlap for cross-listed courses)

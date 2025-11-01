@@ -119,7 +119,8 @@
   (check-equal? (supervisory? '(microcon)) #f)
   (check-equal? (supervisory? '(cpe-signals)) #f)
 
-  
+  ;; currently this signals an error, and I think that's okay for now:
+  #;(check-true (supervisory? '(csc-sp)))
 
   )
 

@@ -19,6 +19,13 @@
 (define lec-standard-wtus 45)
 (define absent-wtus 0)
 
+(define tt-sem-standard-wtus 20)
+(define tt-sem-first-year-wtus 16)
+(define tt-sem-second-year-wtus 16)
+(define lec-sem-standard-wtus 30)
+
+
+;; FIXME SEM not ported yet:
 
 ;; given a schedule and availability, provide warnings about
 ;; mismatches between the lists of instructors, then provide
@@ -98,22 +105,35 @@
           (round-to-hundredth spare-wtus)
           (round-to-hundredth total-wtus))))
 
-(define (availability->total-wtus [availability : Sexp])
+(define (availability->total-wtus [availability : Sexp] #:sem [semester? #f])
   ;; cast must succeed by earlier intersection check:
   (match availability
-    ['tt-standard tt-standard-wtus]
-    ['tt-first-year tt-first-year-wtus]
-    ['tt-second-year tt-second-year-wtus]
-    ['lec-standard lec-standard-wtus]
+    ['tt-standard (if semester? tt-sem-standard-wtus tt-standard-wtus)]
+    ['tt-first-year (if semester? tt-sem-first-year-wtus tt-first-year-wtus)]
+    ['tt-second-year (if semester? tt-sem-second-year-wtus tt-second-year-wtus)]
+    ['lec-standard (if semester? lec-sem-standard-wtus lec-standard-wtus)]
     ['absent absent-wtus]
     [(list 'total (? real? wtus)) wtus]
     [(list (list 'f (? real? fall-wtus))
            (list 'w (? real? winter-wtus))
            (list 's (? real? spring-wtus)))
+     (unless (not semester?)
+       (error 'availability->total-wtus
+              "semester availability should not include winter availability"))
      (+ fall-wtus
         winter-wtus
         spring-wtus)]
+    [(list (list 'f (? real? fall-wtus))
+           (list 's (? real? spring-wtus)))
+     (unless semester?
+       (error 'availability->total-wtus
+              "quarter availability should include winter availability"))
+     (+ fall-wtus
+        spring-wtus)]
     [(list (or 'fall-winter 'fall-spring 'winter-spring) (? real? wtus))
+     (unless (not semester?)
+       (error 'availability->total-wtus
+              "semester availability should not be stated as ~e" availability))
      wtus]
     ;; perform no checks, return zero.
     ['not-ours 0]
@@ -122,7 +142,9 @@
 (module+ test
   (require typed/rackunit)
   (check-equal? (availability->total-wtus 'lec-standard) 45)
-  (check-equal? (availability->total-wtus '(fall-winter 3.3)) 3.3))
+  (check-equal? (availability->total-wtus 'lec-standard #:sem #t) 30)
+  (check-equal? (availability->total-wtus '(fall-winter 3.3)) 3.3)
+  (check-equal? (availability->total-wtus '((f 10) (s 10)) #:sem #t) 20))
 
 ;; ensure that the sum of the scheduled wtus are <= to the limit,
 ;; then return spare wtus
