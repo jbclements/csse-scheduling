@@ -10,7 +10,8 @@
          "qtr-math.rkt")
 
 (provide spare-capacity-check
-         availability->total-wtus)
+         availability->total-wtus
+         availability->total-fall-wtus)
 
 
 (define tt-standard-wtus 30)
@@ -139,6 +140,38 @@
     ['not-ours 0]
     [other (error 'spare-wtus "unrecognized availability format (2): ~e" other)]))
 
+(define (availability->total-fall-wtus [availability : Sexp] #:sem [semester? #f])
+  ;; cast must succeed by earlier intersection check:
+  (define term-div (if semester? 2 3))
+  (match availability
+    ['tt-standard (/ (if semester? tt-sem-standard-wtus tt-standard-wtus) term-div)]
+    ['tt-first-year (/ (if semester? tt-sem-first-year-wtus tt-first-year-wtus) term-div)]
+    ['tt-second-year (/ (if semester? tt-sem-second-year-wtus tt-second-year-wtus) term-div)]
+    ['lec-standard (/ (if semester? lec-sem-standard-wtus lec-standard-wtus) term-div)]
+    ['absent absent-wtus]
+    [(list 'total (? real? wtus)) (/ wtus term-div)]
+    [(list (list 'f (? real? fall-wtus))
+           (list 'w (? real? winter-wtus))
+           (list 's (? real? spring-wtus)))
+     (unless (not semester?)
+       (error 'availability->total-wtus
+              "semester availability should not include winter availability"))
+     fall-wtus]
+    [(list (list 'f (? real? fall-wtus))
+           (list 's (? real? spring-wtus)))
+     (unless semester?
+       (error 'availability->total-wtus
+              "quarter availability should include winter availability"))
+     fall-wtus]
+    [(list (or 'fall-winter 'fall-spring 'winter-spring) (? real? wtus))
+     (unless (not semester?)
+       (error 'availability->total-wtus
+              "semester availability should not be stated as ~e" availability))
+     wtus]
+    ;; perform no checks, return zero.
+    ['not-ours 0]
+    [other (error 'spare-wtus "unrecognized availability format (2): ~e" other)]))
+
 (module+ test
   (require typed/rackunit)
   (check-equal? (availability->total-wtus 'lec-standard) 45)
@@ -172,9 +205,6 @@
   (/ (round (* n 100)) 100))
 
 
-
-
-
-
-
-
+(module+ test
+  (require typed/rackunit)
+  (check-equal? (availability->total-fall-wtus '(total 30) #:sem #t) 15))

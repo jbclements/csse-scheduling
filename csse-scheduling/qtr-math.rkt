@@ -600,6 +600,9 @@
          (check-exn #px"legal term"
                     (λ () (fun 2282))))]))
 
+  (check-equal? (fall-year->terms 2025) '(2258 2262 2264))
+  (check-equal? (fall-year->terms 2026) '(2268 2274))
+
   (legal-term-check term->fall-year)
   (legal-term-check term->catalog-cycle)
   ;(legal-term-check terms-in-range)
