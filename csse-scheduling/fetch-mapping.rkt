@@ -70,6 +70,8 @@
      (list->set ids))))
 
 (define (configurations-cache cycle)
+  (unless (catalog-cycle? cycle)
+    (raise-argument-error 'configurations-cache "cycle" cycle))
   (cache-query
    "scheduling"
    (~a cycle"-course-configurations.withcache")

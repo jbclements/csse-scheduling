@@ -52,16 +52,17 @@
 
 ;; represents a year's teaching assignments.. subtype of Sexp
 (define-type Schedule (Pairof Natural (Listof InstructorA)))
+(define-type SemSchedule (Pairof Natural (Listof InstructorSA)))
 
 ;; represents an instructor's assignments for the year
-(define-type InstructorA (List Symbol
-                              (Pair 'f QuarterA)
-                              (Pair 'w QuarterA)
-                              (Pair 's QuarterA)))
+(define-type InstructorA (Pair Symbol InstructorASched))
+(define-type InstructorASched (List (Pair 'f QuarterA)
+                                    (Pair 'w QuarterA)
+                                    (Pair 's QuarterA)))
 ;; same for semesters
-(define-type InstructorSA (List Symbol
-                                (Pair 'f QuarterA)
-                                (Pair 's QuarterA)))
+(define-type InstructorSA (Pair Symbol InstructorSASched))
+(define-type InstructorSASched (List (Pair 'f QuarterA)
+                                     (Pair 's QuarterA)))
 
 ;; a quarter's assignment *as it's represented in the schedule-FALLQTR.rktd file*
 (define-type QuarterA (Listof CourseA))
@@ -150,9 +151,9 @@
 (define (year-sections-equivalent [schedule : Schedule]) : SectionsTable
   (sections-equivalent (schedule->records schedule)))
 
-;; given a schedule, validate it and return it as a list of records.
-(: schedule->records (Schedule -> (Listof Record)))
-(define (schedule->records schedule)
+;; semester version. Type differences percolate through?
+(define (schedule->records [schedule : (U Schedule SemSchedule)])
+  : (Listof Record)
   (define instructor-records (rest schedule))
   (define catalog-cycle (fall-year->catalog-cycle
                          (term->fall-year (first schedule))))
@@ -162,17 +163,18 @@
            "expected base quarter which is Fall,  got: ~a\v" base-term))
   (apply append
          (for/list : (Listof (Listof Record))
-           ([irec (in-list instructor-records)])
+           ([irec instructor-records])
            (define instructor (first irec))
            (apply
             append
             (for/list : (Listof (Listof Record))
-              ([season (in-list (rest irec))])
+              ([season (rest irec)])
               (define term (season-after-term (coerce-season (first season)) base-term))
               (courseAs->Records catalog-cycle (rest season) instructor term))))))
 
 ;; map a list of courseA's to a list of Records
-(define (courseAs->Records [cycle : CatalogCycle] [cas : (Listof CourseA)] [instructor : Symbol] [qtr : Natural]) : (Listof Record)
+(define (courseAs->Records [cycle : CatalogCycle] [cas : (Listof CourseA)]
+                           [instructor : Symbol] [qtr : Natural]) : (Listof Record)
   (for/list : (Listof Record)
     ([c (in-list cas)])
     (list instructor qtr
@@ -285,6 +287,7 @@
           size))))
 
 (define-predicate instructor? InstructorA)
+(define-predicate sem-instructor? InstructorSA)
 
 ;; remove underscores (they're just placeholders)
 (define (strip-placeholders [i : InstructorA]) : InstructorA
@@ -293,16 +296,30 @@
         (cons 'w (strip-underscores (rest (third i))))
         (cons 's (strip-underscores (rest (fourth i))))))
 
+(define (sem-strip-placeholders [i : InstructorSA]) : InstructorSA
+  (list (first i)
+        (cons 'f (strip-underscores (rest (second i))))
+        (cons 's (strip-underscores (rest (third i))))))
+
 (define (strip-underscores [cs : QuarterA]) : QuarterA
   (filter (λ ([c : CourseA]) : Boolean
             (not (equal? c '_)))
           cs))
 
+;; do type-classes allow abstraction over the following pair of functions?
 (: sexp->instructor (Any -> InstructorA))
 (define (sexp->instructor s)
   (cond [(instructor? s) (strip-placeholders s)]
         [else (raise-argument-error
                'sexp->instructor
+               "legal instructor s-expression"
+               0 s)]))
+
+(: sexp->sem-instructor (Any -> InstructorSA))
+(define (sexp->sem-instructor s)
+  (cond [(sem-instructor? s) (sem-strip-placeholders s)]
+        [else (raise-argument-error
+               'sexp->sem-instructor
                "legal instructor s-expression"
                0 s)]))
 
@@ -327,17 +344,29 @@
   (sixth r))
 
 
+
 ;; validate that this is a legal schedule sexp, remove omitted instructors, return a schedule
 ;; (which is still an S-expression. IOW, this function can be the identity.
 (define (validate-schedule [schedule-sexp : Sexp]
                            [instructors-to-omit : Omits])
   : Schedule
+  ((inst validate-schedule-helper InstructorA)
+   schedule-sexp sexp->instructor first instructors-to-omit subtract-some-quarters))
+
+(define (validate-semester-schedule [schedule-sexp : Sexp]
+                                    [instructors-to-omit : Omits])
+  : SemSchedule
+  ((inst validate-schedule-helper InstructorSA)
+   schedule-sexp sexp->sem-instructor first instructors-to-omit sem-subtract-some-quarters))
+
+;; abstraction for the above two allows either kind of Instructor type.
+(: validate-schedule-helper (All (IType) (Sexp (Sexp -> IType) (IType -> Symbol) Omits (IType (Listof Symbol) -> IType) -> (Pairof Natural (Listof IType)))))
+(define (validate-schedule-helper schedule-sexp translator instructor-name instructors-to-omit subtractor)
   (match schedule-sexp
     [(cons (? natural? fall-qtr) (? list? instructor-sexps))
-     (define instructors (map sexp->instructor instructor-sexps))
-     (define non-omitted (subtract-instructors instructors instructors-to-omit))
-     (define maybe-duplicated-instructor (check-duplicates (map (ann first (-> InstructorA Symbol))
-                                                                instructors)))
+     (define instructors (map translator instructor-sexps))
+     (define non-omitted ((inst subtract-instructors IType) instructors instructor-name instructors-to-omit subtractor))
+     (define maybe-duplicated-instructor (check-duplicates (map instructor-name instructors)))
      (when maybe-duplicated-instructor
        (error 'validate-schedule "instructor appears more than once: ~e\n"
               maybe-duplicated-instructor))
@@ -346,10 +375,14 @@
                                  "list containing fall qtr and list of instructors"
                                  0 schedule-sexp)]))
 
+
 ;; remove records corresponding to the named instructors.
 ;; signal an error if these instructors don't appear in the list.
-(define (subtract-instructors [instructors : (Listof InstructorA)]
-                              [to-omit : Omits])
+(: subtract-instructors (All (IType) ((Listof IType)
+                                      (IType -> Symbol) Omits
+                                      (IType (Listof Symbol) -> IType)
+                                      -> (Listof IType))))
+(define (subtract-instructors instructors instructor-name to-omit subtractor)
   (define to-omit-names
     (map (λ ([i : (U Symbol (List Symbol Any))])
            (cond [(symbol? i) i]
@@ -359,26 +392,27 @@
     (filter (ann pair? (-> (U Symbol (List Symbol (Listof Symbol)))
                            Boolean : (List Symbol (Listof Symbol))))
             to-omit))
-  (for ([i (in-list to-omit-names)])
-    (unless (assoc i instructors)
+  (for ([name (in-list to-omit-names)])
+    (unless (findf (λ ([i : IType]) (equal? (instructor-name i) name))
+                   instructors)
       (error 'subtract-instructors
              "can't omit non-existent instructor: ~e"
-             i)))
+             name)))
   (filter-map
-   (λ ([i : InstructorA]) : (U False InstructorA)
-     (cond [(member (first i) to-omit-names)
+   (λ ([i : IType]) : (U False IType)
+     (cond [(member (instructor-name i) to-omit-names)
             ;; could be whole-year, or just some quarters
-            (cond [(member (first i) to-omit)
+            (cond [(member (instructor-name i) to-omit)
                    ;; whole year... just drop it
                    #f]
                   [else
-                   (match (assoc (first i) partial-year-omits)
+                   (match (assoc (instructor-name i) partial-year-omits)
                      [#f (error 'subtract-instructors "internal error, can't find record")]
-                     [(list _ quarters)
-                      (subtract-some-quarters i quarters)])])]
+                     [(list _ quarters) (subtractor i quarters)])])]
            [else
             i]))
    instructors))
+
 
 (define (subtract-some-quarters [i : InstructorA] [drop-quarters : (Listof Symbol)])
   : InstructorA
@@ -386,6 +420,13 @@
         (cons 'f (maybe-drop (rest (second i)) 'f drop-quarters))
         (cons 'w (maybe-drop (rest (third i)) 'w drop-quarters))
         (cons 's (maybe-drop (rest (fourth i)) 's drop-quarters))))
+
+
+(define (sem-subtract-some-quarters [i : InstructorSA] [drop-quarters : (Listof Symbol)])
+  : InstructorSA
+  (list (first i)
+        (cons 'f (maybe-drop (rest (second i)) 'f drop-quarters))
+        (cons 's (maybe-drop (rest (third i)) 's drop-quarters))))
 
 (define (maybe-drop [qtr : (Listof CourseA)] [qtr-sym : Symbol] [to-drop : (Listof Symbol)])
   : (Listof CourseA)
@@ -395,24 +436,30 @@
 (module+ test
   (require typed/rackunit)
 
-  (check-equal? (subtract-instructors '((a (f 1) (w 3) (s 4))
-                                        (b (f 2) (w 4) (s 3))
-                                        (c (f 3) (w 5) (s 9))
-                                        (d (f 4) (w 6) (s 1234))
-                                        (e (f 5) (w 8) (s 17)))
-                                      '(d (e (w)) b))
+  (check-equal? ((inst subtract-instructors InstructorA)
+                 '((a (f 1) (w 3) (s 4))
+                   (b (f 2) (w 4) (s 3))
+                   (c (f 3) (w 5) (s 9))
+                   (d (f 4) (w 6) (s 1234))
+                   (e (f 5) (w 8) (s 17)))
+                 first
+                 '(d (e (w)) b)
+                 subtract-some-quarters)
                 '((a (f 1) (w 3) (s 4))
                   (c (f 3) (w 5) (s 9))
                   (e (f 5) (w) (s 17))))
 
   (check-exn #px"non-existent instructor"
              (λ ()
-               (subtract-instructors '((a (f) (w) (s))
-                                       (b (f) (w) (s))
-                                       (c (f) (w) (s))
-                                       (d (f) (w) (s))
-                                       (e (f) (w) (s)))
-                                     '(d q)))))
+               ((inst subtract-instructors InstructorA)
+                '((a (f) (w) (s))
+                  (b (f) (w) (s))
+                  (c (f) (w) (s))
+                  (d (f) (w) (s))
+                  (e (f) (w) (s)))
+                first
+                '(d q)
+                subtract-some-quarters))))
 
 
 ;; given a list of records, return the # of sections of each course
@@ -517,6 +564,16 @@
             "unexpected assigned-time format: ~v"
             other)]))
 
+(define (semester-assigned-time-flatten [assigned-time-spec : Sexp]) : (U Real (List Real Real))
+  (match (assigned-time-flatten assigned-time-spec)
+    [(? real? r) r]
+    [(list (? real? f) (? real? w) (? real? s))
+     (unless (= w 0)
+       (error 'semester-assigned-time-flatten
+              "expected winter assigned time to be zero under semesters, got: ~e"
+              w))
+     (list f s)]))
+
 ;; select only records in particular quarters or with a given name
 (define (record-filter [records : (Listof Record)]
                        #:course [course : (U False CourseID) #f]
@@ -541,6 +598,12 @@
 
   (check-equal? (assigned-time-flatten '(total 19)) 19)
   (check-equal? (assigned-time-flatten '((w 3) (s 2))) '(0 3 2))
+
+  (check-equal? (semester-assigned-time-flatten '(total 19)) 19)
+  (check-equal? (semester-assigned-time-flatten '((f 3) (s 2))) '(3 2))
+  (check-exn #px"winter assigned time to be zero"
+             (λ () (semester-assigned-time-flatten '((w 3) (s 2)))))
+  
 
   )
 
