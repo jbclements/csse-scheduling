@@ -13,6 +13,7 @@
          [only-in racket/math natural?])
 
 (provide validate-schedule
+         validate-semester-schedule
          schedule->records
          sections-equivalent
          record->sections-equivalent
@@ -38,7 +39,9 @@
          record-filter
          by-num-by-season
          Schedule
+         SemSchedule
          InstructorA
+         InstructorSA
          QuarterA
          CourseA
          course-a?
