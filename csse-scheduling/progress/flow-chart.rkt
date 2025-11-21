@@ -203,14 +203,14 @@
     
     ("csc3201" 6)
     ("csc3449" 6)
-    ((se-TE-sem-0) 6)
+    ((se-elective) 6)
 
     ("csc4160" 7)
     ("csc3300" 7)
-    ((se-TE-sem-1) 7)
+    ((se-TE-sem-0) 7)
 
     ("csc4161" 8)
-    ((se-TE-sem-2) 8)))
+    ((se-TE-sem-1) 8)))
 
 (define common-cpe-flowchart/pre : Flowchart-Spec
   '(("csc101" 2)
@@ -330,11 +330,11 @@
     ;; YEP, LEAVING OUT EE REQ...
 
     ((cpe-sp-sem-1) 7)
+    ((cpe-TE-sem-0) 7)
     ((cpe-TE-sem-1) 7)
-    ((cpe-TE-sem-2) 7)
 
     ((cpe-sp-sem-2) 8)
-    ((cpe-TE-sem-3) 8)))
+    ((cpe-TE-sem-2) 8)))
 
 (define ee-common-flowchart : Flowchart-Spec
   '(;; FIRST YEAR

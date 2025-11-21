@@ -65,6 +65,8 @@
          term-add/no-summer ;; check
          sems-per-year/no-summer
          CPTN
+
+         coerce-season
          )
 
 ;; this is the natural encoding of a quarter
@@ -209,10 +211,10 @@
 ;; given a string or symbol, coerce it to a season if possible
 (define (coerce-season [s : (U Symbol String)]) : Season
   (match s
-    [(or 'winter "winter" "Winter") "Winter"]
-    [(or 'spring "spring" "Spring") "Spring"]
+    [(or 'w 'winter "winter" "Winter") "Winter"]
+    [(or 's 'spring "spring" "Spring") "Spring"]
     [(or 'summer "summer" "Summer") "Summer"]
-    [(or 'fall "fall" "Fall") "Fall"]
+    [(or 'f 'fall "fall" "Fall") "Fall"]
     [other
      (raise-argument-error 'coerce-season
                            "season-like symbol or string"
@@ -360,7 +362,7 @@
   (apply append (map enumerator (catalog-cycle->fall-years cycle))))
 (define catalog-cycle->qtrs catalog-cycle->terms) ;; bridge
 
-;; return the cal poly number of the first quarter following 'qtr'
+;; return the cal poly number of the first term following 'term'
 ;; that has the season 'season'.
 (define (season-after-term [season : Season] [term : CPTN]) : CPTN
   (define qtr-pair-n : Natural (enum-term->n (decode-term term)))

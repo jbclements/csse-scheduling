@@ -58,6 +58,10 @@
                               (Pair 'f QuarterA)
                               (Pair 'w QuarterA)
                               (Pair 's QuarterA)))
+;; same for semesters
+(define-type InstructorSA (List Symbol
+                                (Pair 'f QuarterA)
+                                (Pair 's QuarterA)))
 
 ;; a quarter's assignment *as it's represented in the schedule-FALLQTR.rktd file*
 (define-type QuarterA (Listof CourseA))
@@ -118,17 +122,20 @@
   ("csc481" (2168 2) (2172 2) (2174 2)))
 (define-type SectionsTable (Listof SectionsTableRow))
 (define-type SectionsTableRow
-  (List CourseID (Listof (List Qtr Exact-Rational))))
+  (List CourseID (Listof (List CPTN Exact-Rational))))
 
 ;; return the course associated with a table row
 (: table-row-course (SectionsTableRow -> CourseID))
 (define table-row-course first)
 
 ;; return the qtrs associated with a table row
-(: table-row-qtrs (SectionsTableRow -> (Listof (List Qtr Exact-Rational))))
+(: table-row-qtrs (SectionsTableRow -> (Listof (List CPTN Exact-Rational))))
 (define table-row-qtrs second)
+(: table-row-terms (SectionsTableRow -> (Listof (List CPTN Exact-Rational))))
+(define table-row-terms second)
 
-;; given two sections-tables with non-overlapping qtrs, join them together
+
+;; given two sections-tables with non-overlapping terms, join them together
 (define (join-sections-tables [a : SectionsTable]
                               [b : SectionsTable])
   : SectionsTable
@@ -136,7 +143,7 @@
   (for/list : SectionsTable
     ([g (in-list groups)])
     (ann
-     (list (table-row-course (first g)) (apply append (map table-row-qtrs g)))
+     (list (table-row-course (first g)) (apply append (map table-row-terms g)))
      SectionsTableRow)))
 
 ;; given a schedule, return a sections table for that year
@@ -148,11 +155,11 @@
 (define (schedule->records schedule)
   (define instructor-records (rest schedule))
   (define catalog-cycle (fall-year->catalog-cycle
-                         (qtr->fall-year (first schedule))))
-  (define base-qtr (first schedule))
-  (unless (= (modulo base-qtr 10) 8)
+                         (term->fall-year (first schedule))))
+  (define base-term (first schedule))
+  (unless (equal? (term->season base-term) "Fall")
     (error 'schedule->records
-           "expected base quarter ending in 8, got: ~a\v" base-qtr))
+           "expected base quarter which is Fall,  got: ~a\v" base-term))
   (apply append
          (for/list : (Listof (Listof Record))
            ([irec (in-list instructor-records)])
@@ -160,9 +167,9 @@
            (apply
             append
             (for/list : (Listof (Listof Record))
-              ([qtr-offset : Natural (in-list '(0 4 6))]
-               [season (in-list (rest irec))])
-              (courseAs->Records catalog-cycle (rest season) instructor (+ base-qtr qtr-offset)))))))
+              ([season (in-list (rest irec))])
+              (define term (season-after-term (coerce-season (first season)) base-term))
+              (courseAs->Records catalog-cycle (rest season) instructor term))))))
 
 ;; map a list of courseA's to a list of Records
 (define (courseAs->Records [cycle : CatalogCycle] [cas : (Listof CourseA)] [instructor : Symbol] [qtr : Natural]) : (Listof Record)

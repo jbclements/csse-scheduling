@@ -629,7 +629,7 @@
             "csc3449"
             "csc4553"
             csc-sp)
-          (build-list 4 (make-TE-requirement-name "csc"))))))
+          (build-list 4 (make-TE-requirement-name "csc" #:sem #t))))))
 
 ;; upcoming: databases becomes required.
 
@@ -792,7 +792,7 @@
             "cpe2301"
             "cpe3160"
             "csc3201"
-            "csc3300"
+            "cpe3300"
             "cpe4464"
             "csc4553"
             "ee2211"
@@ -800,7 +800,7 @@
             cpe-sp-sem-1
             cpe-sp-sem-2)
           ;; up to 8 units can be any 2k-5k course in CENG or BCSM
-          (build-list 4 (make-TE-requirement-name "cpe" #:sem #t))))))
+          (build-list 3 (make-TE-requirement-name "cpe" #:sem #t))))))
 
 (define common-ee-requirements-list
   '("cpe133" "cpe233"

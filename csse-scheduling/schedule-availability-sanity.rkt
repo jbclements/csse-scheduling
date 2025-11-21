@@ -62,49 +62,52 @@
   ;; these instructors appear in both lists:
   (define instructors (set-intersect scheduled-names available-names))
 
-
-
   (for/list : (Listof (List Symbol Real Real))
     ([name (in-list instructors)])
     ;; cast can't fail by earlier intersection check:
-    (define schedule (cast (assoc name scheduled) InstructorA))
-    (define checky (λ ([qtrs : (Listof (U 'f 'w 's))]
-                       [wtus : Real])
-                     (check-wtus this-cycle name schedule qtrs wtus)))
-    (define spare-wtus
-      ;; cast must succeed by earlier intersection check:
-      (match (second (cast (assoc name availability)
-                           (List Symbol Sexp)))
-        ['tt-standard (checky '(f w s) tt-standard-wtus)]
-        ['tt-first-year (checky '(f w s) tt-first-year-wtus)]
-        ['tt-second-year (checky '(f w s) tt-second-year-wtus)]
-        ['lec-standard (checky '(f w s) lec-standard-wtus)]
-        ['absent (checky '(f w s) absent-wtus)]
-        [(list 'total (? real? wtus)) (checky '(f w s) wtus)]
-        [(list (list 'f (? real? fall-wtus))
-               (list 'w (? real? winter-wtus))
-               (list 's (? real? spring-wtus)))
-         (+ (checky '(f) fall-wtus)
-            (checky '(w) winter-wtus)
-            (checky '(s) spring-wtus))]
-        [(list 'fall-winter (? real? wtus))
-         (+ (checky '(f w) wtus)
-            (checky '(s) 0))]
-        [(list 'winter-spring (? real? wtus))
-         (+ (checky '(f) 0)
-            (checky '(w s) wtus))]
-        [(list 'fall-spring (? real? wtus))
-         (+ (checky '(w) 0)
-            (checky '(f s) wtus))]
-        ;; perform no checks, return zero.
-        ['not-ours 0]
-        [other (error 'spare-wtus "unrecognized availability format (1): ~e" other)]))
-    (define total-wtus (availability->total-wtus
-                            (second (cast (assoc name availability)
-                                          (List Symbol Sexp)))))
-    (list name
-          (round-to-hundredth spare-wtus)
-          (round-to-hundredth total-wtus))))
+    (instructor-availability name (cast (assoc name scheduled) InstructorA)
+                             this-cycle
+                             (second (cast (assoc name availability)
+                                           (List Symbol Sexp))))))
+
+(define (instructor-availability [name : Symbol] [schedule : InstructorA] [this-cycle : CatalogCycle]
+                                 [availability : Sexp])
+  : (List Symbol Real Real)
+  (define checky (λ ([qtrs : (Listof (U 'f 'w 's))]
+                     [wtus : Real])
+                   (check-wtus this-cycle name schedule qtrs wtus)))
+  (define spare-wtus
+    ;; cast must succeed by earlier intersection check:
+    (match availability
+      ['tt-standard (checky '(f w s) tt-standard-wtus)]
+      ['tt-first-year (checky '(f w s) tt-first-year-wtus)]
+      ['tt-second-year (checky '(f w s) tt-second-year-wtus)]
+      ['lec-standard (checky '(f w s) lec-standard-wtus)]
+      ['absent (checky '(f w s) absent-wtus)]
+      [(list 'total (? real? wtus)) (checky '(f w s) wtus)]
+      [(list (list 'f (? real? fall-wtus))
+             (list 'w (? real? winter-wtus))
+             (list 's (? real? spring-wtus)))
+       (+ (checky '(f) fall-wtus)
+          (checky '(w) winter-wtus)
+          (checky '(s) spring-wtus))]
+      [(list 'fall-winter (? real? wtus))
+       (+ (checky '(f w) wtus)
+          (checky '(s) 0))]
+      [(list 'winter-spring (? real? wtus))
+       (+ (checky '(f) 0)
+          (checky '(w s) wtus))]
+      [(list 'fall-spring (? real? wtus))
+       (+ (checky '(w) 0)
+          (checky '(f s) wtus))]
+      ;; perform no checks, return zero.
+      ['not-ours 0]
+      [other (error 'spare-wtus "unrecognized availability format (1): ~e" other)]))
+  (define total-wtus (availability->total-wtus
+                      availability))
+  (list name
+        (round-to-hundredth spare-wtus)
+        (round-to-hundredth total-wtus)))
 
 (define (availability->total-wtus [availability : Sexp] #:sem [semester? #f])
   ;; cast must succeed by earlier intersection check:
@@ -183,7 +186,7 @@
 ;; then return spare wtus
 (define (check-wtus [this-cycle : CatalogCycle]
                     [name : Symbol] [schedule : InstructorA]
-                    [qtrs : (Listof (U 'f 'w 's))]
+                    [terms : (Listof (U 'f 'w 's))]
                     [limit : Real])
     (define wtu-sum
       (apply
@@ -191,13 +194,13 @@
        (map (λ ([c : CourseA]) (courseA-wtus this-cycle c))
             (apply (inst append CourseA)
                    (for/list : (Listof (Listof CourseA))
-                     ([q (in-list qtrs)])
+                     ([t (in-list terms)])
                      ;; cast should succeed because q in '(f w s)
-                     (cdr (cast (assoc q (cdr schedule))
+                     (cdr (cast (assoc t (cdr schedule))
                                 (Pairof Symbol QuarterA))))))))
     (when (< (+ limit 1e-5) wtu-sum)
       (printf "instructor ~v has ~v > ~v wtus for quarters ~v\n"
-              name wtu-sum limit qtrs))
+              name wtu-sum limit terms))
     (- limit wtu-sum))
 
 
