@@ -67,6 +67,9 @@
          CPTN
 
          coerce-season
+         semester-transition-year
+         first-semester-cptn
+         semester-term?
          )
 
 ;; this is the natural encoding of a quarter
@@ -82,6 +85,7 @@
                [enum-term->n/no-smr (-> Term-Pair Natural)]
                [enum-n->term/no-smr (-> Natural Term-Pair)]
                [term? (-> Term-Pair Boolean)]
+               [semester-transition-year Natural]
                )
 
 (define first-encodable-year : Natural 1900)
@@ -294,6 +298,8 @@
      (* 10 (modulo year 100))
      (season->term-offset (coerce-season season))))
 
+
+
 ;; map a cal poly qtr number to a qtr-pair
 (define (decode-term [term : CPTN]) : Term-Pair
   (define result (cons (term->year term) (term->season term)))
@@ -450,6 +456,11 @@
   (when (not (term? tp))
     (error fun-id "expected legal term pair, got: ~e" tp))
   #t)
+
+;; the first term that is a semester
+(define first-semester-cptn (encode-term semester-transition-year "Fall"))
+(define (semester-term? [term : CPTN])
+  (<= first-semester-cptn term))
 
 (module+ test
   (require typed/rackunit

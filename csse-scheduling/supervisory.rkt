@@ -10,11 +10,17 @@
 
 ;; could be checked against FAD...
 
+;; oof... I'm starting to wonder whether the distinction between
+;; supervisory and non-supervisory courses is really going to work
+;; the same in semesters...
+
 ;; is this course or group supervisory?
 (define (supervisory? [course : Course-Or-Group]) : Boolean
   (match course
     [(? string? course)
      (set-member? supervisory-courses course)]
+    ;; special case, surely this is going to trip me up in the future...
+    [(list 'csc-sp) #t]
     [(list sym)
      (match (assoc course simple-group-courses)
        [(cons _ (list course-ids ...))

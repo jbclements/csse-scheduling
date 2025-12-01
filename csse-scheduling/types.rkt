@@ -70,6 +70,7 @@
 
                          'stat-bs-firstyear
                          'math-bs-firstyear
+                         'math-bs
 
                          'arce-bs
                          'brae-bs

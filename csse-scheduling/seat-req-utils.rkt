@@ -78,11 +78,17 @@
 ;; the seat model is full-year. filter out only those quarters that we want.
 ;; given a list of requirements and a fraction to which to reduce non-quarter-specific
 ;; requirements, return a filtered set of requirements
-(define (seat-requirements-filter-quarters [seat-requirements : (Listof Seat-Requirement)]
-                                      [qtrs : (Listof Natural)])
+(define (seat-requirements-filter-terms [seat-requirements : (Listof Seat-Requirement)]
+                                        [terms : (Listof CPTN)])
   : (Listof Seat-Requirement)
   ;; what fraction of the whole-year requirements should we include?
-  (define frac (/ (length qtrs) qtrs-per-year/no-summer))
+  (define frac
+    (match (remove-duplicates (map semester-term? terms))
+      [(list #t) (/ (length terms) sems-per-year/no-summer)]
+      [(list #f) (/ (length terms) qtrs-per-year/no-summer)]
+      [(list) 0] ;; terms list must be empty
+      [other (error 'seat-requirements-filter-terms
+                    "mix of semesters and quarters in term list: ~e" terms)]))
   (filter
    (ann (λ (x) (not (not x)))
         ((U False Seat-Requirement) -> Boolean : #:+ Seat-Requirement))
@@ -92,6 +98,7 @@
        [(Seat-Requirement label course qtr-req seats)
         (match qtr-req
           [#f (Seat-Requirement label course qtr-req (* frac seats))]
-          [(? exact-integer? n) (cond [(member n qtrs) req]
+          [(? exact-integer? n) (cond [(member n terms) req]
                                       [else #f])])]))))
+(define seat-requirements-filter-quarters seat-requirements-filter-terms)
 

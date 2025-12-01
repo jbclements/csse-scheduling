@@ -7,7 +7,8 @@
          enum-term->n
          enum-n->term/no-smr
          enum-term->n/no-smr
-         term?)
+         term?
+         semester-transition-year)
 
 (define (enum-n->term n)
   (from-nat term/e n))
@@ -32,32 +33,34 @@
 (define sem-season/e (fin/e "Spring" "Summer" "Fall"))
 (define sem-season-no-smr/e (fin/e "Spring" "Fall"))
 
+(define semester-transition-year 2026)
+
 ;; an enumeration of the quarters; all pairs of year/qtr-season
 ;; where year is below 2027, except for 2026 summer and fall.
 (define qtr/e
   (except/e
-   (cons/e (below/e 2027) qtr-season/e)
-   '(2026 . "Summer")
-   '(2026 . "Fall")))
+   (cons/e (below/e (add1 semester-transition-year)) qtr-season/e)
+   (cons semester-transition-year "Summer")
+   (cons semester-transition-year "Fall")))
 
 ;; same thing without summer
 (define qtr-no-smr/e
   (except/e
-   (cons/e (below/e 2027) qtr-season-no-smr/e)
-   '(2026 . "Fall")))
+   (cons/e (below/e (add1 semester-transition-year)) qtr-season-no-smr/e)
+   (cons semester-transition-year "Fall")))
 
 ;; an enumeration of the semesters; all pairs of year/sem-season
 ;; where year is >= 2026, except for 2026 Spring:
 (define sem/e
   (except/e
-   (cons/e (nat+/e 2026) sem-season/e)
-   '(2026 . "Spring")))
+   (cons/e (nat+/e semester-transition-year) sem-season/e)
+   (cons semester-transition-year "Spring")))
 
 ;; same thing without summer
 (define sem-no-smr/e
   (except/e
-   (cons/e (nat+/e 2026) sem-season-no-smr/e)
-   '(2026 . "Spring")))
+   (cons/e (nat+/e semester-transition-year) sem-season-no-smr/e)
+   (cons semester-transition-year "Spring")))
 
 ;; I'm responsible for ensuring that the elements here don't overlap.
 ;; yep, can confirm. It's up to me.
