@@ -10,6 +10,7 @@
                [display-table ((Listof (Listof Any)) Output-Port -> Void)])
 
 (provide write-seat-requirements-log
+         seat-requirements-filter-terms
          seat-requirements-filter-quarters)
 
 ;; utility function for printing out seat requirement lists:
