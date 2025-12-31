@@ -8,7 +8,8 @@
          enum-n->term/no-smr
          enum-term->n/no-smr
          term?
-         semester-transition-year)
+         semester-transition-year
+         first-semester-year)
 
 (define (enum-n->term n)
   (from-nat term/e n))
@@ -33,7 +34,8 @@
 (define sem-season/e (fin/e "Spring" "Summer" "Fall"))
 (define sem-season-no-smr/e (fin/e "Spring" "Fall"))
 
-(define semester-transition-year 2026)
+(define first-semester-year 2026)
+(define semester-transition-year first-semester-year)
 
 ;; an enumeration of the quarters; all pairs of year/qtr-season
 ;; where year is below 2027, except for 2026 summer and fall.

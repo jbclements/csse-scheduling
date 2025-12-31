@@ -68,6 +68,7 @@
 
          coerce-season
          semester-transition-year
+         first-semester-year ;; same as semester-transition-year, this is a better name...
          first-semester-cptn
          semester-term?
          )
@@ -85,7 +86,9 @@
                [enum-term->n/no-smr (-> Term-Pair Natural)]
                [enum-n->term/no-smr (-> Natural Term-Pair)]
                [term? (-> Term-Pair Boolean)]
+               ;; not a great name, should have used first-semester-year
                [semester-transition-year Natural]
+               [first-semester-year Natural]
                )
 
 (define first-encodable-year : Natural 1900)
