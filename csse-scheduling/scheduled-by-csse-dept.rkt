@@ -67,10 +67,13 @@
 
 ;; should this be parameterized by the catalog cycle? sigh...
 
+;; FIXME YES IT SHOULD. This is now blocking the sections-offered spreadsheet.
 
-;; wait... can't this be determined by informatino from fetch-mapping? Urg, maybe not.
 ;; these are supervisory courses, so they aren't scheduled
 ;; by the scheduler
+
+;; wait... can't this be determined by informatino from fetch-mapping? Urg, maybe not.
+
 ;; just checked this using the code in one-off-scripts/supervisory-courses
 ;; NB EE 463 is both supervisory and a lab, essentially. Ugh. For our purposes
 ;; it makes sense to categorize it as supervisory, since it's not scheduled.
