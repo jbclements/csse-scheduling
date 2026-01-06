@@ -70,7 +70,12 @@
 ;; a quarter's assignment *as it's represented in the schedule-FALLQTR.rktd file*
 (define-type QuarterA (Listof CourseA))
 
-;; represents a course assignment; use the X to manually specify WTUs. This is the abbreviated
+;; An assignment is either a CourseA or a Release
+(define-type Assignment (U CourseA Release))
+
+(define-type Release (list 'R Nonnegative-))
+
+;; CourseA : represents a course assignment; use the X to manually specify WTUs. This is the abbreviated
 ;; format that I use to enter them.
 ;; examples:
 ;; 'csc123 : csc 123
@@ -78,10 +83,11 @@
 ;; '(M 123) : a 2x section of 123
 ;; '(X (MM cpe464) 2) : a 2x section of 123 in which the instructor gets only 2 wtus
 ;; '(S 430) ; a split course of 430 (not allowing both split and X for now...
-(define-type CourseA (U NoprintCourse MaybeSplitCourse))
+;; '(R 3.5) ;; release time of 3.5 WTUs
+(define-type CourseA (U NoprintCourse CourseRelease MaybeSplitCourse))
 (define-predicate course-a? CourseA)
 
-;; a course that's set to not print
+;; a course that's set to not print ... but actually, I don't think I actually use this?
 (define-type NoprintCourse (List 'N MaybeSplitCourse))
 (define-predicate noprint-course? NoprintCourse)
 
@@ -90,9 +96,10 @@
 (define-type SplitCourse (List 'S MaybeWTUCourse))
 (define-predicate split-course? SplitCourse)
 
-(define-type MaybeWTUCourse (U WTUCourse CourseB))
+(define-type MaybeWTUCourse (U WTUCourse WTURelease CourseB))
 ;; a course with an explicit specification of WTUs:
 (define-type WTUCourse (List 'X CourseB Nonnegative-Exact-Rational))
+(define-type WTURelease (List 'R Nonnegative-Exact-Rational))
 (define-predicate wtu-course? WTUCourse)
 
 ;; represents a course assignment, optionally mega or 2xmega
@@ -615,4 +622,5 @@
   (require typed/rackunit)
   (check-equal? (courseA-wtus "2019-2020" 430) 5)
   (check-equal? (courseA-wtus "2019-2020" '(MM 430)) 9)
-  (check-equal? (courseA-wtus "2019-2020" '(X (MM 430) #e3.2)) #e3.2))
+  (check-equal? (courseA-wtus "2019-2020" '(X (MM 430) #e3.2)) #e3.2)
+  (check-equal? (courseA-wtus "2026-2028" '(R 3)) 3))
