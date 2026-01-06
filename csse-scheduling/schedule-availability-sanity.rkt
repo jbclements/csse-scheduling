@@ -23,9 +23,9 @@
 ;; proposed 3-wtu reduction for research
 (define tt-wtu-reduction 3)
 
-(define tt-sem-standard-wtus (- 20 tt-wtu-reduction))
-(define tt-sem-first-year-wtus 16)
-(define tt-sem-second-year-wtus 16)
+(define tt-sem-standard-wtus (- 22 tt-wtu-reduction))
+(define tt-sem-first-year-wtus 18)
+(define tt-sem-second-year-wtus 18)
 (define lec-sem-standard-wtus 30)
 
 
