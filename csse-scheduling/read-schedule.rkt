@@ -14,7 +14,7 @@
 
 (provide validate-schedule
          validate-semester-schedule
-         schedule->records
+         schedule->course-records
          sections-equivalent
          record->sections-equivalent
          record->wtus
@@ -26,6 +26,7 @@
          courseA-size
          courseA-wtus
          courseA-wtu-override
+         assignment-wtus
          topic?
          canonicalize-topic
          Record
@@ -44,6 +45,7 @@
          InstructorSA
          QuarterA
          CourseA
+         Assignment
          course-a?
          assigned-time-flatten)
 
@@ -68,12 +70,17 @@
                                      (Pair 's QuarterA)))
 
 ;; a quarter's assignment *as it's represented in the schedule-FALLQTR.rktd file*
-(define-type QuarterA (Listof CourseA))
+(define-type QuarterA (Listof Assignment))
 
 ;; An assignment is either a CourseA or a Release
 (define-type Assignment (U CourseA Release))
+(define-type Release (List 'R Nonnegative-Exact-Rational))
+(define-predicate release? Release)
 
-(define-type Release (list 'R Nonnegative-))
+(: non-release-assignment? (Assignment -> Boolean : #:+ CourseA #:- Release))
+(define (non-release-assignment? a)
+  (cond [(release? a) #f]
+        [else #t]))
 
 ;; CourseA : represents a course assignment; use the X to manually specify WTUs. This is the abbreviated
 ;; format that I use to enter them.
@@ -84,7 +91,7 @@
 ;; '(X (MM cpe464) 2) : a 2x section of 123 in which the instructor gets only 2 wtus
 ;; '(S 430) ; a split course of 430 (not allowing both split and X for now...
 ;; '(R 3.5) ;; release time of 3.5 WTUs
-(define-type CourseA (U NoprintCourse CourseRelease MaybeSplitCourse))
+(define-type CourseA (U NoprintCourse MaybeSplitCourse))
 (define-predicate course-a? CourseA)
 
 ;; a course that's set to not print ... but actually, I don't think I actually use this?
@@ -96,10 +103,9 @@
 (define-type SplitCourse (List 'S MaybeWTUCourse))
 (define-predicate split-course? SplitCourse)
 
-(define-type MaybeWTUCourse (U WTUCourse WTURelease CourseB))
+(define-type MaybeWTUCourse (U WTUCourse CourseB))
 ;; a course with an explicit specification of WTUs:
 (define-type WTUCourse (List 'X CourseB Nonnegative-Exact-Rational))
-(define-type WTURelease (List 'R Nonnegative-Exact-Rational))
 (define-predicate wtu-course? WTUCourse)
 
 ;; represents a course assignment, optionally mega or 2xmega
@@ -159,10 +165,10 @@
 
 ;; given a schedule, return a sections table for that year
 (define (year-sections-equivalent [schedule : Schedule]) : SectionsTable
-  (sections-equivalent (schedule->records schedule)))
+  (sections-equivalent (schedule->course-records schedule)))
 
-;; semester version. Type differences percolate through?
-(define (schedule->records [schedule : (U Schedule SemSchedule)])
+
+(define (schedule->course-records [schedule : (U Schedule SemSchedule)])
   : (Listof Record)
   (define instructor-records (rest schedule))
   (define catalog-cycle (fall-year->catalog-cycle
@@ -180,7 +186,7 @@
             (for/list : (Listof (Listof Record))
               ([season (rest irec)])
               (define term (season-after-term (coerce-season (first season)) base-term))
-              (courseAs->Records catalog-cycle (rest season) instructor term))))))
+              (courseAs->Records catalog-cycle (filter non-release-assignment? (rest season)) instructor term))))))
 
 ;; map a list of courseA's to a list of Records
 (define (courseAs->Records [cycle : CatalogCycle] [cas : (Listof CourseA)]
@@ -275,6 +281,12 @@
    (courseA-wtu-override courseA)
    (courseA-size courseA)))
 
+;; # of wtus for an Assignment
+(define (assignment-wtus [this-cycle : CatalogCycle]
+                         [assignment : Assignment]) : Real
+  (cond [(release? assignment) (second assignment)]
+        [else (courseA-wtus this-cycle assignment)]))
+
 ;; used both by courseA-wtus and record->wtus
 (define (course-wtus-helper [this-cycle : CatalogCycle]
                             [id : Course-Id]
@@ -312,7 +324,7 @@
         (cons 's (strip-underscores (rest (third i))))))
 
 (define (strip-underscores [cs : QuarterA]) : QuarterA
-  (filter (λ ([c : CourseA]) : Boolean
+  (filter (λ ([c : Assignment]) : Boolean
             (not (equal? c '_)))
           cs))
 
@@ -438,8 +450,8 @@
         (cons 'f (maybe-drop (rest (second i)) 'f drop-quarters))
         (cons 's (maybe-drop (rest (third i)) 's drop-quarters))))
 
-(define (maybe-drop [qtr : (Listof CourseA)] [qtr-sym : Symbol] [to-drop : (Listof Symbol)])
-  : (Listof CourseA)
+(define (maybe-drop [qtr : QuarterA] [qtr-sym : Symbol] [to-drop : (Listof Symbol)])
+  : QuarterA
   (cond [(member qtr-sym to-drop) '()]
         [else qtr]))
 
@@ -623,4 +635,4 @@
   (check-equal? (courseA-wtus "2019-2020" 430) 5)
   (check-equal? (courseA-wtus "2019-2020" '(MM 430)) 9)
   (check-equal? (courseA-wtus "2019-2020" '(X (MM 430) #e3.2)) #e3.2)
-  (check-equal? (courseA-wtus "2026-2028" '(R 3)) 3))
+  )

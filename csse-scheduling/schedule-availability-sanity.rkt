@@ -1,4 +1,3 @@
-
 #lang typed/racket
 
 ;; this file checks that the instructors don't have more units
@@ -207,9 +206,9 @@
     (define wtu-sum
       (apply
        +
-       (map (λ ([c : CourseA]) (courseA-wtus this-cycle c))
-            (apply (inst append CourseA)
-                   (for/list : (Listof (Listof CourseA))
+       (map (λ ([c : Assignment]) (assignment-wtus this-cycle c))
+            (apply (inst append Assignment)
+                   (for/list : (Listof (Listof Assignment))
                      ([t (in-list terms)])
                      ;; cast should succeed because q in '(f w s)
                      (cdr (cast (assoc t (cdr schedule))
