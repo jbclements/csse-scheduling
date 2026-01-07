@@ -47,7 +47,8 @@
          CourseA
          Assignment
          course-a?
-         assigned-time-flatten)
+         assigned-time-flatten
+         non-release-assignment?)
 
 
 
