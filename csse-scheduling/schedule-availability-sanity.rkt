@@ -12,21 +12,56 @@
          semester-spare-capacity-check
          availability->total-wtus)
 
+;; make sure the two are the same, then return either one of them
+(define (=Z a b)
+  (unless (equal? a b)
+    (error '=Z "these two were supposed to be equal: ~e and ~e"
+           a b))
+  b)
 
-(define tt-standard-wtus 30)
-(define tt-first-year-wtus 20)
-(define tt-second-year-wtus 20)
-(define lec-standard-wtus 45)
+;; the contract
+(define full-time-wtus-per-term 15)
+
+;; tt reductions
+(define tt-service-wtus-per-term      3)
+(define tt-qtr-advising-wtus-per-term 2)
+(define tt-qtr-standard-wtus-per-term (=Z (- full-time-wtus-per-term
+                                             tt-service-wtus-per-term
+                                             tt-qtr-advising-wtus-per-term)
+                                          10))
+
+;; qtrs
+(define qtrs-per-year 3)
+
+(define lec-qtr-standard-wtus (=Z (* qtrs-per-year full-time-wtus-per-term)
+                                  45))
+(define tt-qtr-standard-wtus  (=Z (* qtrs-per-year tt-qtr-standard-wtus-per-term)
+                                  30))
+(define tt-qtr-first-year-wtus 20)
+(define tt-qtr-second-year-wtus 20)
+
 (define absent-wtus 0)
 
+;; semesters
+
+(define semesters-per-year 2)
 
 ;; proposed 3-wtu reduction for research
-(define tt-wtu-reduction 3)
+(define tt-scholarship-wtu-reduction 3) ;; per year, not per term
+(define tt-sem-advising-wtus-per-term 1)
 
-(define tt-sem-standard-wtus (- 22 tt-wtu-reduction))
+(define lec-sem-standard-wtus (=Z (* semesters-per-year full-time-wtus-per-term)
+                                  30))
+(define tt-sem-standard-wtus (=Z (- (* semesters-per-year
+                                       (- full-time-wtus-per-term
+                                          tt-service-wtus-per-term
+                                          tt-sem-advising-wtus-per-term))
+                                    tt-sem-advising-wtus-per-term)
+                                 21))
+
 (define tt-sem-first-year-wtus 18)
 (define tt-sem-second-year-wtus 18)
-(define lec-sem-standard-wtus 30)
+
 
 
 ;; given a schedule and availability, provide warnings about
@@ -101,10 +136,10 @@
   (define spare-wtus
     ;; cast must succeed by earlier intersection check:
     (match availability
-      ['tt-standard (checky '(f w s) tt-standard-wtus)]
-      ['tt-first-year (checky '(f w s) tt-first-year-wtus)]
-      ['tt-second-year (checky '(f w s) tt-second-year-wtus)]
-      ['lec-standard (checky '(f w s) lec-standard-wtus)]
+      ['tt-standard (checky '(f w s) tt-qtr-standard-wtus)]
+      ['tt-first-year (checky '(f w s) tt-qtr-first-year-wtus)]
+      ['tt-second-year (checky '(f w s) tt-qtr-second-year-wtus)]
+      ['lec-standard (checky '(f w s) lec-qtr-standard-wtus)]
       ['absent (checky '(f w s) absent-wtus)]
       [(list 'total (? real? wtus)) (checky '(f w s) wtus)]
       [(list (list 'f (? real? fall-wtus))
@@ -164,10 +199,10 @@
 (define (availability->total-wtus [availability : Sexp] #:sem [semester? #f])
   ;; cast must succeed by earlier intersection check:
   (match availability
-    ['tt-standard (if semester? tt-sem-standard-wtus tt-standard-wtus)]
-    ['tt-first-year (if semester? tt-sem-first-year-wtus tt-first-year-wtus)]
-    ['tt-second-year (if semester? tt-sem-second-year-wtus tt-second-year-wtus)]
-    ['lec-standard (if semester? lec-sem-standard-wtus lec-standard-wtus)]
+    ['tt-standard (if semester? tt-sem-standard-wtus tt-qtr-standard-wtus)]
+    ['tt-first-year (if semester? tt-sem-first-year-wtus tt-qtr-first-year-wtus)]
+    ['tt-second-year (if semester? tt-sem-second-year-wtus tt-qtr-second-year-wtus)]
+    ['lec-standard (if semester? lec-sem-standard-wtus lec-qtr-standard-wtus)]
     ['absent absent-wtus]
     [(list 'total (? real? wtus)) wtus]
     [(list (list 'f (? real? fall-wtus))
