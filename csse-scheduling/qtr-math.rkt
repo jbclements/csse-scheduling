@@ -71,6 +71,7 @@
          first-semester-year ;; same as semester-transition-year, this is a better name...
          first-semester-cptn
          semester-term?
+         semester-catalog?
          )
 
 ;; this is the natural encoding of a quarter
@@ -111,6 +112,7 @@
  "2001-2003" "2003-2005"
  "2005-2007" "2007-2009" "2009-2011" "2011-2013" "2013-2015"
  "2015-2017" "2017-2019" "2019-2020" "2020-2021" "2021-2022" "2022-2026"
+ ;; first semester catalog:
  "2026-2028")
 
 ;; make sure each pair lines up, and that each cycle is valid
@@ -460,8 +462,24 @@
     (error fun-id "expected legal term pair, got: ~e" tp))
   #t)
 
+;; honestly this is should be the "base" specification
+(define first-semester-catalog-cycle : CatalogCycle "2026-2028")
+
+
 ;; the first term that is a semester
 (define first-semester-cptn (encode-term semester-transition-year "Fall"))
+
+;; is the given catalogy cycle a semester catalog cycle?
+(define (semester-catalog? [cc : CatalogCycle])
+  (<= first-semester-cptn (car (catalog-cycle->terms cc))))
+
+(unless (equal? (car (catalog-cycle->terms first-semester-catalog-cycle))
+                first-semester-cptn)
+  (error 'first-semester-cptn
+         "first semester CPTN ~a should be the same as first term in first semester catalog ~a"
+         first-semester-cptn
+         (car (catalog-cycle->terms first-semester-catalog-cycle))))
+
 (define (semester-term? [term : CPTN])
   (<= first-semester-cptn term))
 
@@ -639,5 +657,7 @@
   (legal-term-check term->season)
   (legal-term-check term->string)
 
+  (check-equal? (semester-catalog? (ann "2022-2026" CatalogCycle)) #f)
+  (check-equal? (semester-catalog? (ann "2026-2028" CatalogCycle)) #t)
   ;; (season-after-qtr "Winter" 2268)
 )
