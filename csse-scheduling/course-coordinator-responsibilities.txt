@@ -1,27 +1,46 @@
-The job of course coordinator is important, but almost totally undefined.
+At Cal Poly, we generally have small classes. This means that for many
+courses, there may be ten or more individual sections of that course
+running at the same time, taught by four or more distinct instructors.
+This can lead to a situation in which two students may take the same
+course and finish the course having satisfied utterly different learning
+objectives.
 
-This document tries to define it.
+Broadly speaking, the job of the course coordinator is to mitigate this
+problem by supervising a given course, ensuring that the course is taught
+in a way that ensures that students in the course are well-educated and
+well-prepared for follow-on courses (if there are any).
 
-Please feel free to make pull requests against this document, and please
-understand that for now, all of this is just my opinion (John Clements).
+As part of this, the course coordinator is responsible for maintaining a
+document that describes the learning objectives of the course.
 
-Broadly speaking, the job of the course coordinator is to supervise a
-given course, ensuring that the course is taught in a way that ensures
-that students in the course are well-educated and well-prepared for
-follow-on courses (if there are any).
+The course coordinator should have input into who is teaching the
+course, though this may be advisory. The course coordinator should be
+notified in a timely manner who is teaching the course in upcoming terms.
 
-As part of this, the course coordinator is responsible for maintaining
-the course ECO (Extended Course Outline), a document that describes the
-learning objectives (or are those outcomes?) of the course.
+Course coordinators of any course can "declare" that a course will have
+a common final or common assignments or common labs or common midterms.
+For each of these, the course coordinator may declare that such an
+element will be graded in common. Any of these declarations may be
+reversed by the department. If the course coordinator declares a common
+element, he or she is responsible for supplying these materials in a
+timely manner, preferably before the start of the course, and for
+enabling the timely grading of the assignment or test.
 
-The course coordinator is also notified of who's going to be teaching
-the given course, at least when I remember to run the script. Should be
-about 10 weeks before the start of the quarter. Or something.
+In the case of assignments and labs, instructors can make reasonable
+modifications, and should inform the coordinator of these changes. In
+the case of exams (including midterms), alterations should be made only
+with the agreement of the coordinator.
 
-Some course coordinators, especially in lower-level courses, prepare
-final exams to be used by all sections of the course. In my opinion,
-this is a Good Idea, and provides a basic focal point for similarity in
-course outcomes. Note, however, that preparing these late in the quarter
-can lead to general unhappiness; you have been warned.
+Course coordination can be handled jointly, if desired.
 
-Have I forgotten things? Almost certainly, yes.
+Course coordinators are expected to exert control over a course only
+to the degree necessary to ensure reasonable coverage of course objectives,
+and in the case of courses required by other later courses, to ensure
+that the students are in a sufficiently similar state to allow the later
+course to proceed without dramatic disruption.
+
+The course coordinators should be chosen by the department chair and
+curriculum chair, and approved by the department. Any course for which a
+coordinator has not been chosen will be considered to be coordinated by
+the department chair and the curriculum chair jointly.
+
