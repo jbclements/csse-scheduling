@@ -1,4 +1,3 @@
-
 #lang typed/racket/base
 
 ;; this file maps subject/number pairs to canonical ids.
@@ -25,6 +24,8 @@
          MappingRow
          CatalogCycle
          last-mapped-qtr
+         default-subject-preference-order
+         id-has-subj-mapping?
          )
 
 (require/typed "fetch-mapping.rkt"
@@ -34,7 +35,8 @@
          racket/set
          "types.rkt"
          "qtr-math.rkt"
-         (only-in racket/list remove-duplicates filter-map))
+         (only-in racket/list remove-duplicates filter-map)
+         threading)
 
 ;; if any of these are not in #px"^[A-Z]+$", serious collision problems could occur
 (define-type Subject
@@ -57,6 +59,18 @@
 (: mapping-row-id (MappingRow -> Course-Id))
 (define (mapping-row-id r)
   (vector-ref r 3))
+
+(: mapping-row-cycle (MappingRow -> CatalogCycle))
+(define (mapping-row-cycle r)
+  (vector-ref r 0))
+
+(: mapping-row-subject (MappingRow -> Subject))
+(define (mapping-row-subject r)
+  (vector-ref r 1))
+
+(: mapping-row-course-num (MappingRow -> CourseNum))
+(define (mapping-row-course-num r)
+  (vector-ref r 2))
 
 ;; this can't be captured by a TR type
 (: coursenum? (String -> Boolean))
@@ -213,6 +227,10 @@
                        (equal? (vector-ref r 1) subject)))
                 mappings))))
 
+
+;;> shouldn't this function take a catalog cycle? Do you ever want all of them across
+;;> catalog cycles?
+
 ;; return all of the mappings for a given class id
 (: id-mappings (Course-Id -> (Listof (List CatalogCycle Subject CourseNum))))
 (define (id-mappings id)
@@ -227,37 +245,55 @@
                (vector-ref r 2)))
        rows))
 
+(define (id-mappings/cc [id : Course-Id] [cc : CatalogCycle])
+  : (Listof MappingRow)
+  (~>
+   mappings
+   (filter (λ ([r : MappingRow])
+             (and (equal? (mapping-row-id r) id)
+                  (equal? (mapping-row-cycle r) cc)))
+           _)))
+
 ;; given an id, choose a mapping
-(: id->mapping (Course-Id CatalogCycle -> (List Subject CourseNum)))
-(define (id->mapping id cc)
-  (define mappings
-    (filter (λ ([mapping : (List CatalogCycle Subject CourseNum)]) : Boolean
-              (equal? (car mapping) cc))
-            (id-mappings id)))
-  (match mappings
-    ['() (error 'id->mapping "no mapping for course ~v in cycle ~v" id cc)]
-    [other
-     (define best-mapping
-       (for/fold : (List CatalogCycle Subject CourseNum)
-         ([best : (List CatalogCycle Subject CourseNum) (car mappings)])
-         ([m : (List CatalogCycle Subject CourseNum) (cdr mappings)])
-         (cond [(better-mapping? m best) m]
-               [else best])))
-     (list (cadr best-mapping) (caddr best-mapping))]))
+(: id->mapping (Course-Id CatalogCycle [#:pref-order (Listof Subject)]
+                          -> (List Subject CourseNum)))
+(define (id->mapping id cc #:pref-order [pref-order default-subject-preference-order])
+  (ensure-canonical id)
+  (define rows
+    (~>
+     (id-mappings/cc id cc)
+     ((inst sort MappingRow Subject)
+      (better-subject pref-order) #:key mapping-row-subject)))
+  (match rows
+    [(list) (error 'id->mapping "no mapping for course ~v in cycle ~v" id cc)]
+    [other (define best (car rows))
+           (list (mapping-row-subject best)
+                 (mapping-row-course-num best))]))
 
-(define (better-mapping? [a : (List CatalogCycle Subject CourseNum)]
-                         [b : (List CatalogCycle Subject CourseNum)]) : Boolean
-  (cond [(equal? (cadr a) (cadr b))
-         (error 'better-mapping? "comparing two mappings with same subject: ~e and ~e"
-                a b)]
-        [(equal? (cadr a) "CSC") #t]
-        [(equal? (cadr b) "CSC") #f]
-        [(equal? (cadr a) "CPE") #t]
-        [(equal? (cadr b) "CPE") #f]
-        [else
-         (string<? (cadr a) (cadr b))]))
+(define (id-has-subj-mapping? [id : Course-Id] [cc : CatalogCycle]
+                              [subject : Subject])
+  (~>
+   (id-mappings/cc id cc)
+   (filter (λ ([r : MappingRow])
+             (equal? (mapping-row-subject r) subject))
+           _)
+   (null?)
+   (not)))
 
 
+(define default-subject-preference-order (ann '("CSC" "CPE" "DATA" "EE")
+                                              (Listof Subject)))
+
+;; given two subjects, return #t is the first is preferred to the second
+(: better-subject ((Listof Subject) -> (Subject Subject -> Boolean)))
+(define ((better-subject pref-order) s1 s2)
+  (< (index-of/+ s1 pref-order) (index-of/+ s2 pref-order)))
+
+(: index-of/+ (All (T) (T (Listof T) -> Natural)))
+(define (index-of/+ elt l)
+  (cond [(null? l) 0]
+        [else (cond [(equal? elt (car l)) 0]
+                    [else (add1 (index-of/+ elt (cdr l)))])]))
 
 ;; defines a mapping from course ids to strings for the purposes
 ;; of sorting. Interleaves CSC and CPE, and other majors
@@ -274,7 +310,12 @@
 
   
 (check-equal? (id->mapping "csc348" "2022-2026") (list "CSC" "248"))
-(check-equal? (id->mapping "csc202" "2022-2026") (list "CSC" "202"))
+  (check-equal? (id->mapping "csc202" "2022-2026") (list "CSC" "202"))
+  (check-equal? (id->mapping "csc202" (ann "2022-2026"
+                                           CatalogCycle)
+                             #:pref-order (ann '("CPE" "CSC")
+                                               (Listof Subject)))
+                (list "CPE" "202"))
   
 
   (check-equal? (canonicalize/num "2015-2017" 430) "csc430")
@@ -303,6 +344,12 @@
   (check-equal? (course-key "csc243") "243-csc243")
 
   (check-true (coursenum? "1000L"))
+
+  (check-equal? (id-mappings/cc "csc4610" "2026-2028")
+                '(#("2026-2028" "CSC" "4610" "csc4610")
+                  #("2026-2028" "DATA" "4610" "csc4610")))
+  (check-false (id-has-subj-mapping? "csc4610" "2026-2028" "CPE"))
+  (check-true (id-has-subj-mapping? "csc4610" "2026-2028" "DATA"))
 
   )
 
