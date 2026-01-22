@@ -25,8 +25,9 @@
      ;; subject cannot be false, by defn of regexp
      (match (list subject num)
        [(list _ "2IP") #f] ;; EE has "study abroad" courses in their catalog?
-       [(list "EE" "4IP") #f]
-       [(list "STAT" _) #f] ;; ignore all stats courses
+       [(list _ "4IP") #f]
+       [(list _ "5IP") #f]
+       #;[(list "STAT" _) #f] ;; ignore all stats courses
        [other
         (canonicalize catalog (cast subject String) (cast num String))])]
     ))
@@ -38,6 +39,12 @@
 
 ;; are all of the sets in the list independent?
 (define (all-independent? [los : (Listof (Listof String))]) : Boolean
+  (cond [(empty? los) #t]
+        [else
+         (and (andmap (λ ([s : (Listof String)]) (separate? s (first los))) (rest los))
+              (all-independent? (rest los)))]))
+
+(define (overlapping-pairs [los : (Listof (Listof String))]) : Boolean
   (cond [(empty? los) #t]
         [else
          (and (andmap (λ ([s : (Listof String)]) (separate? s (first los))) (rest los))
@@ -344,7 +351,6 @@
      "EE 5599 – Thesis")))
 
 ;; captured on 2026-01-21
-;; NB IGNORES ALL STAT COURSES
 (define data-dept-courses
   (filter-map
    parse-clss-course-desc-row
@@ -435,10 +441,26 @@
 #;(set-intersect cpe-dept-courses
                ee-dept-courses)
 
+(define course-schedulables
+  (list (list 'cs cs-dept-courses)
+        (list 'cpe cpe-dept-courses)
+        (list 'ee ee-dept-courses)
+        (list 'data data-dept-courses)))
+
+(for* ([a (in-list course-schedulables)]
+       [b (in-list course-schedulables)]
+       #:when (not (equal? a b)))
+  (when (set-intersect (second a) (second b))
+    (fprintf (current-error-port)
+             "courses schedulable by both ~a and ~a: ~v\n"
+             (car a) (car b) (set-intersect (second a) (second b)))))
+
 (unless (all-independent?
          (list cs-dept-courses
                cpe-dept-courses
                #;ee-dept-courses
                data-dept-courses))
+  ;; uh oh...
+  
   (error 'overlap "some departments' CLSS schedulable lists overlap"))
 

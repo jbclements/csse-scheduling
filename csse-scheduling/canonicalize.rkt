@@ -42,10 +42,10 @@
 (define-type Subject
   (U "AEPS" "AERO" "AG" "AGB" "AGC" "ANT" "ARCE" "ARCH" "ART" "ASCI" "ASTR" "BIO"
      "BMED" "BOT" "BRAE" "BUS" "CD" "CE" "CHEM" "CHIN" "CM" "COM" "COMS" "CPE" "CRP"
-     "CSC" "DANC" "DATA" "DSCI" "ECON" "EDES" "EDUC" "EE" "ENGL" "ENGR" "ENVE" "ERSC"
+     "CSC" "DANC" "DAT" "DATA" "DSCI" "ECON" "EDES" "EDUC" "EE" "ENGL" "ENGR" "ENVE" "ERSC"
      "ES" "ESE" "ESM" "FPE" "FR" "FSN" "GEOG" "GEOL" "GER" "GRC" "GS" "GSA" "GSB" "GSE" "HCS" "HIST" "HLTH" "HNRC"
      "HNRS" "HUM" "IME" "ISLA" "IT" "ITAL" "ITP" "JOUR" "JPNS" "KINE" "LA"
-     "LAES" "LS" "MATE" "MATH" "MCRO" "ME" "MLL" "MSCI" "MSL" "MU" "NR" "PEM" "PEW"
+     "LAES" "LS" "MATE" "MTH" "MATH" "MCRO" "ME" "MLL" "MSCI" "MSL" "MU" "NR" "PEM" "PEW"
      "PHIL" "PHYS" "PLSC" "POLS" "PSC" "PSY" "RELS" "RPTA" "SCM" "SOC" "SPAN" "SS"
      "STAT" "TH" "UNIV" "WGS" "WGQS" "WLC" "WVIT" "ZOO"))
 

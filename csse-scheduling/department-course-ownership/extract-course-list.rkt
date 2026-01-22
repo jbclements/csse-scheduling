@@ -13,10 +13,10 @@
 ;; use the code below.
 
 (define dept
-  ;"Statistics"
+  "Statistics"
   ;"Electrical Engineering"
   #;"Computer Engineering"
-  "Computer Science and Software Engineering"
+  #;"Computer Science and Software Engineering"
   )
 
 (define filename (~a dept " – Fall 2026 – CourseLeaf_CLSS.html"))
