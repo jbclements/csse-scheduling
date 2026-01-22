@@ -41,7 +41,7 @@
 ;; if any of these are not in #px"^[A-Z]+$", serious collision problems could occur
 (define-type Subject
   (U "AEPS" "AERO" "AG" "AGB" "AGC" "ANT" "ARCE" "ARCH" "ART" "ASCI" "ASTR" "BIO"
-     "BMED" "BOT" "BRAE" "BUS" "CD" "CE" "CHEM" "CHIN" "CM" "COMS" "CPE" "CRP"
+     "BMED" "BOT" "BRAE" "BUS" "CD" "CE" "CHEM" "CHIN" "CM" "COM" "COMS" "CPE" "CRP"
      "CSC" "DANC" "DATA" "DSCI" "ECON" "EDES" "EDUC" "EE" "ENGL" "ENGR" "ENVE" "ERSC"
      "ES" "ESE" "ESM" "FPE" "FR" "FSN" "GEOG" "GEOL" "GER" "GRC" "GS" "GSA" "GSB" "GSE" "HCS" "HIST" "HLTH" "HNRC"
      "HNRS" "HUM" "IME" "ISLA" "IT" "ITAL" "ITP" "JOUR" "JPNS" "KINE" "LA"

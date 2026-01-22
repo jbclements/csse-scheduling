@@ -12,10 +12,18 @@
 ;; then click "show courses with no sections", then save the page as HTML, then
 ;; use the code below.
 
+(define dept
+  ;"Statistics"
+  ;"Electrical Engineering"
+  #;"Computer Engineering"
+  "Computer Science and Software Engineering"
+  )
+
+(define filename (~a dept " – Fall 2026 – CourseLeaf_CLSS.html"))
+
 (define sxml
-(call-with-input-file
-    "/tmp/abc.html"
-    #;"/tmp/Computer Engineering – Spring Quarter 2025 – CourseLeaf_CLSS.html"
+(call-with-input-file (build-path "/tmp" filename)
+  #;"/tmp/Computer Engineering – Spring Quarter 2025 – CourseLeaf_CLSS.html"
   html->xexp
  ))
 
