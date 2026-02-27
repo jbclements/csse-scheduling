@@ -8,6 +8,10 @@
  ;courses-we-schedule ; used?
  non-supervisory-computing-courses
  ;; includes any courses cross-listed as csc:
+ non-supervisory-csc-prefix-courses
+ non-supervisory-cpe-prefix-courses
+ non-supervisory-ee-prefix-courses
+ ;; these have to do with some notion of ownership, which gets *very* fuzzy.
  non-supervisory-csc-courses
  non-supervisory-cpe-courses
  non-supervisory-ee-courses
@@ -26,7 +30,7 @@
 ;; a subject for a number...
 (define earliest-cycle-cutoff : CatalogCycle "2015-2017")
 ;; used to determine the list of courses to be scheduled
-(define current-catalog-cycle "2022-2026")
+(define current-catalog-cycle : CatalogCycle "2022-2026")
 
 (define computing-subjects '("CSC" "CPE" "SE" "EE" "DATA"))
 
@@ -37,6 +41,7 @@
          "qtr-math.rkt"
          "credentials.rkt"
          "ownership.rkt"
+         scramble/regexp
          racket/set
          racket/list
          racket/match)
@@ -73,6 +78,7 @@
 ;; by the scheduler
 
 ;; wait... can't this be determined by informatino from fetch-mapping? Urg, maybe not.
+
 
 ;; just checked this using the code in one-off-scripts/supervisory-courses
 ;; NB EE 463 is both supervisory and a lab, essentially. Ugh. For our purposes
@@ -119,15 +125,47 @@
       "ee595"
       "ee599"
 
-      ;; SEMESTER LIST, need to revisit, just sprinkling a few in here
-      "csc4460"
+      ;; SEMESTER LIST, listed all nonstandard courses and removed a few (csc 3660/3662, some solano DAT labs)
+      "cpe4400"  ; Special Problems for Undergraduates
+      "cpe4472"  ; Special Advanced Activity
+      "cpe4495"  ; Cooperative Education Experience
+      "csc2200"  ; Special Problems for Undergraduates
+      "csc3660"  ; Introduction to Databases
+      "csc3662"  ; Introduction to Non-Relational Database Systems
+      "csc4400"  ; Special Problems
+      "csc4460"  ; Senior Project
+      "csc4461"  ; Senior Project - Research
+      "csc4472"  ; Special Advanced Activity
+      "csc4495"  ; Cooperative Education Experience
+      "csc5500"  ; Directed Study
+      "csc5572"  ; Special Advanced Activity
+      "csc5591"  ; Research in Computer Science
+      "csc5595"  ; Cooperative Education Experience
+      "csc5599"  ; Thesis
+      "ee2200"  ; Special Problems for Undergraduates
+      "ee4400"  ; Special Problems
+      "ee4465"  ; Senior Design: Individual Project I
+      "ee4466"  ; Senior Design: Individual Project II
+      "ee4485"  ; Cooperative Education Experience
+      "ee4495"  ; Cooperative Education Experience
+      "ee5500"  ; Individual Study
+      "ee5595"  ; Cooperative Education Experience
+      "ee5597"  ; Comprehensive Examination
+      "ee5599"  ; Thesis
+      "stat2200" ; Special Problems for Undergraduates
+      "stat4400" ; Special Problems for Advanced Undergraduates
+      "stat5500" ; Independent Study
+      "stat5566" ; Graduate Consulting Practicum
+      "stat5599" ; Thesis
+
       
 
       ))))
 
+
 ;; return non-supervisory courses that have one of these subjects
 ;; (these lists will overlap for cross-listed courses)
-(define (non-sup-courses-in-subjects [subjects : (Listof String)])
+(define (non-sup-courses-in-subjects [subjects : (Listof String)] [cc : CatalogCycle])
   : (Setof Course-Id)
   (set-subtract
    (list->set
@@ -135,13 +173,20 @@
      mapping-id
      (filter
       (λ ([cm : Course-Mapping])
-        (and (equal? (mapping-cycle cm) current-catalog-cycle)
+        (and (equal? (mapping-cycle cm) cc)
              (member (mapping-subject cm) subjects)))
       course-mappings)))
    supervisory-courses))
 
 (define non-supervisory-computing-courses
-  (non-sup-courses-in-subjects computing-subjects))
+  (non-sup-courses-in-subjects computing-subjects current-catalog-cycle))
+
+(define (non-supervisory-csc-prefix-courses [cc : CatalogCycle]) : (Setof Course-Id)
+  (non-sup-courses-in-subjects '("CSC") cc))
+(define (non-supervisory-cpe-prefix-courses [cc : CatalogCycle]) : (Setof Course-Id)
+  (non-sup-courses-in-subjects '("CPE") cc))
+(define (non-supervisory-ee-prefix-courses [cc : CatalogCycle]) : (Setof Course-Id)
+  (non-sup-courses-in-subjects '("EE") cc))
 
 (define known-non-schedulable-courses (set "cpe345" "cpe488"))
 ;; checking up on this mapping
@@ -171,7 +216,6 @@
                         supervisory-courses)
                        non-supervisory-computing-courses))
   (error 'ouch "moreinfo3412341"))
-
 
 (define non-supervisory-csc-courses
   (set-subtract (list->set cs-dept-courses) supervisory-courses))
