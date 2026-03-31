@@ -1,5 +1,8 @@
 #lang typed/racket
 
+
+;; It looks like this file is used to check on CLSS schedulability.
+
 (require scramble/regexp
          csse-scheduling/canonicalize)
 
