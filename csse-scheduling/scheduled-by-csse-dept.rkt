@@ -29,8 +29,6 @@
 ;; cycles before this can be ignored for the purposes of determining
 ;; a subject for a number...
 (define earliest-cycle-cutoff : CatalogCycle "2015-2017")
-;; used to determine the list of courses to be scheduled
-(define current-catalog-cycle : CatalogCycle "2022-2026")
 
 (define computing-subjects '("CSC" "CPE" "SE" "EE" "DATA"))
 
@@ -178,8 +176,8 @@
       course-mappings)))
    supervisory-courses))
 
-(define non-supervisory-computing-courses
-  (non-sup-courses-in-subjects computing-subjects current-catalog-cycle))
+(define (non-supervisory-computing-courses [cc : CatalogCycle]) : (Setof Course-Id)
+  (non-sup-courses-in-subjects computing-subjects cc))
 
 (define (non-supervisory-csc-prefix-courses [cc : CatalogCycle]) : (Setof Course-Id)
   (non-sup-courses-in-subjects '("CSC") cc))
@@ -196,7 +194,7 @@
 ;; It turns out there *are* some of theses
 (unless
     (subset?
-     (set-subtract non-supervisory-computing-courses
+     (set-subtract (non-supervisory-computing-courses "2022-2026")
                    (list->set
                     (set-union cs-dept-courses
                                cpe-dept-courses
@@ -214,7 +212,7 @@
                                     ee-dept-courses
                                     data-dept-courses))
                         supervisory-courses)
-                       non-supervisory-computing-courses))
+                       (non-supervisory-computing-courses "2022-2026")))
   (error 'ouch "moreinfo3412341"))
 
 (define non-supervisory-csc-courses
