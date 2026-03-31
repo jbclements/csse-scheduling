@@ -128,8 +128,6 @@
       "cpe4472"  ; Special Advanced Activity
       "cpe4495"  ; Cooperative Education Experience
       "csc2200"  ; Special Problems for Undergraduates
-      "csc3660"  ; Introduction to Databases
-      "csc3662"  ; Introduction to Non-Relational Database Systems
       "csc4400"  ; Special Problems
       "csc4460"  ; Senior Project
       "csc4461"  ; Senior Project - Research
