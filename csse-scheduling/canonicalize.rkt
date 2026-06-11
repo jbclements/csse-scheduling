@@ -49,8 +49,8 @@
      "PHIL" "PHYS" "PLSC" "POLS" "PSC" "PSY" "RELS" "RPTA" "SCM" "SOC" "SPAN" "SS"
      "STAT" "TH" "UNIV" "WGS" "WGQS" "WLC" "WVIT" "ZOO"))
 
-;; if any of these don't start with a digit, serious problems could occur
-(define-type CourseNum String) ;; such as "123" or "0123"
+;; see the predicate below for more detail
+(define-type CourseNum String)
 
 (define-type MappingRow (Vector CatalogCycle Subject CourseNum Course-Id))
 
