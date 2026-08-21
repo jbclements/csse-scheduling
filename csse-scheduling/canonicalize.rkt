@@ -6,6 +6,7 @@
 
 (provide canonicalize
          canonicalize/qtr
+         canonicalize/term
          canonicalize/noerr
          canonicalize/qtr/noerr
          canonicalize/num
