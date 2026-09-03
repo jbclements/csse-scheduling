@@ -48,7 +48,9 @@
      "HNRS" "HUM" "IME" "ISLA" "IT" "ITAL" "ITP" "JOUR" "JPNS" "KINE" "LA"
      "LAES" "LS" "MATE" "MTH" "MATH" "MCRO" "ME" "MLL" "MSCI" "MSL" "MU" "NR" "PEM" "PEW"
      "PHIL" "PHYS" "PLSC" "POLS" "PSC" "PSY" "RELS" "RPTA" "SCM" "SOC" "SPAN" "SS"
-     "STAT" "TH" "UNIV" "WGS" "WGQS" "WLC" "WVIT" "ZOO"))
+     "STAT" "TH" "UNIV" "WGS" "WGQS" "WLC" "WVIT" "ZOO"
+
+     "GSP"))
 
 ;; see the predicate below for more detail
 (define-type CourseNum String)
