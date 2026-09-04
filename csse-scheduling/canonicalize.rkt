@@ -50,7 +50,7 @@
      "PHIL" "PHYS" "PLSC" "POLS" "PSC" "PSY" "RELS" "RPTA" "SCM" "SOC" "SPAN" "SS"
      "STAT" "TH" "UNIV" "WGS" "WGQS" "WLC" "WVIT" "ZOO"
 
-     "GSP"))
+     "GSP" "IS" "SIE"))
 
 ;; see the predicate below for more detail
 (define-type CourseNum String)
