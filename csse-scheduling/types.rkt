@@ -84,6 +84,8 @@
 
                          'cs-minor
                          
+                         'phys-bs
+                         
                          ;; warning! overlaps with other groups:
                          'csse-cia-minor
                          'csse-data-minor
