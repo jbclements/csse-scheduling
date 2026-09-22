@@ -74,6 +74,8 @@
 
                          'arce-bs
                          'brae-bs
+                         'ie-bs
+                         'mfge-bs
 
                          'grc-bs
 
