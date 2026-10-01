@@ -198,18 +198,24 @@
   (encode-term year "Summer"))
 
 ;; map a qtr to the fall year (summer goes forward...)
+;; ... EXCEPT for 2266, which goes back... ugh... not sure whether this will continue.
 (define (term->fall-year [term : CPTN]) : Natural
-  (define base-year (term->year term)) 
-  ;; winter/spring go backward
-  (match (term->season term)
-    [(or "Winter" "Spring")
-     (define year (- base-year 1))
-     (cond [(<= first-encodable-year year) year]
-           [else (raise-argument-error 'term->fall-year
-                                       "qtr whose fall year is encodable"
-                                       0 term)])]
-    ;; Fall/Summer stay the same.
-    [_ base-year]))
+  (match term
+    ;; this summer goes backward. Sigh.
+    [2266 2025]
+    [other
+     (define base-year (term->year term))
+     ;; winter/spring go backward
+     (match (term->season term)
+       [(or "Winter" "Spring")
+        (define year (- base-year 1))
+        (cond [(<= first-encodable-year year) year]
+              [else (raise-argument-error 'term->fall-year
+                                          "qtr whose fall year is encodable"
+                                          0 term)])]
+       ;; Fall/Summer stay the same.
+       [_ base-year])]))
+
 (define qtr->fall-year term->fall-year) ;; bridge
 
 ;; map a qtr to the cycle that it occurs in
@@ -532,10 +538,11 @@
   (check-equal? (term->fall-year 2176) 2017)
   (check-equal? (term->fall-year 2174) 2016)
   (check-equal? (term->fall-year 788) 1978)
-  
+
   (check-equal? (qtr->catalog-cycle 2178) "2017-2019")
   (check-equal? (qtr->catalog-cycle 964)  "1994-1997")
 
+  (check-equal? (term->catalog-cycle 2266) "2022-2026")
   (check-equal? (term->catalog-cycle 2284) "2026-2028")
   (check-equal? (term->catalog-cycle 2178) "2017-2019")
   (check-equal? (term->catalog-cycle 964)  "1994-1997")

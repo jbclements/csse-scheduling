@@ -166,7 +166,7 @@
            (check-num number-input)]))
   (define trimmed-number
     (match number
-      [(regexp #px"^[0PS][0-9]{3}" (list _))
+      [(regexp #px"^[0PS][0-9]{3,4}$" (list _))
        (substring number 1)]
       [other number]))
   (hash-ref mapping-hash (vector cycle subject trimmed-number) #f))
