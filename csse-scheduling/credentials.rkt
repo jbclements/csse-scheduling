@@ -8,7 +8,7 @@
 (define-runtime-path here ".")
 
 (define private-credentials-file
-  (build-path here "credentials-prvt.rktd"))
+  (build-path (find-system-path 'home-dir) ".ssh" "csse-scheduling-credentials.rktd"))
 
 (define credentials-sexp
   (cond [(file-exists? private-credentials-file)
