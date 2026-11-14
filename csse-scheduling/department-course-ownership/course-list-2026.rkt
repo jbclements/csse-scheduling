@@ -3,6 +3,7 @@
 (require scramble/regexp
          csse-scheduling/canonicalize)
 
+;; THESE LISTS OVERLAP
 (provide cs-dept-courses
          cpe-dept-courses
          ee-dept-courses
@@ -51,7 +52,7 @@
               (all-independent? (rest los)))]))
 
 ;; the courses scheduled by the CS department
-;; this list captured on 2025-01-29
+;; this list captured on 2026-11-13
 (define cs-dept-courses
   (filter-map
    parse-clss-course-desc-row
@@ -350,7 +351,7 @@
      "EE 5597 – Comprehensive Examination"
      "EE 5599 – Thesis")))
 
-;; captured on 2026-01-21
+;; captured on 2026-11-13
 (define data-dept-courses
   (filter-map
    parse-clss-course-desc-row
@@ -363,6 +364,7 @@
      "DATA 1264 – Calculus for Data Science I"
      "DATA 1265 – Calculus for Data Science II"
      "DATA 1810 – Introduction to Statistical Computing with R"
+     "DATA 2000 – Data Science Seminar"
      "DATA 2621 – Introduction to Mathematical Optimization"
      "DATA 3301 – Introduction to Data Science"
      "DATA 3302 – Data Visualization"
@@ -384,11 +386,14 @@
      "DATA 5800 – Introduction to SAS and SQL for Graduate Students"
      "DATA 5820 – Intermediate Statistical Computing with R for Graduate Students"
      "MTH 1107 – Elementary Statistics"
+     "MTH 3320 – Probability and Statistics"
      "STAT 2IP – Study Abroad"
      "STAT 1000 – Statistical and Data Literacy"
      "STAT 1110 – Applied Statistical Concepts and Methods"
+     "STAT 1110 – Applied Statistical Concepts and Methods"
      "STAT 1210 – Business Statistics I"
      "STAT 1210 – Business Statistics I"
+     "STAT 1220 – Business Statistics II"
      "STAT 1220 – Business Statistics II"
      "STAT 1220 – Business Statistics II"
      "STAT 1510 – Statistics I"

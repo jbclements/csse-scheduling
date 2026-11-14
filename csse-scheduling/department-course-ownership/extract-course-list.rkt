@@ -15,8 +15,8 @@
 (define dept
   "Statistics"
   ;"Electrical Engineering"
-  #;"Computer Engineering"
-  #;"Computer Science and Software Engineering"
+  ;"Computer Engineering"
+  ;"Computer Science and Software Engineering"
   )
 
 (define filename (~a dept " – Fall 2026 – CourseLeaf_CLSS.html"))

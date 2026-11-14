@@ -27,8 +27,6 @@
 
 (define-runtime-path here ".")
 
-(define current-catalog : CatalogCycle "2020-2021")
-
 ;; a mapping from canonical course name to the last names of the
 ;; instructors that are the coordinators for that course
 (provide coordinators)
@@ -36,6 +34,7 @@
 ;; contains a canonical course name and a list of names & designators (either last names or special
 ;; identifiers like 'cpe-dept-chair
 (define-type CoordinatorRecord (List String (Listof (U String Symbol))))
+(define-predicate coordinator-record? CoordinatorRecord)
 (define-type SpecialCoordinator (U 'csse-dept-chair
                                    'csse-grad-coordinator
                                    'cpe-dept-chair
@@ -85,20 +84,21 @@
 (check-equal? (parse-coordinators "(Knight (csse-dept-chair) Queen)") '("Knight" csse-dept-chair "Queen"))
 (check-equal? (parse-coordinators "(\"biggy biggy biggy\")") '("biggy biggy biggy"))
 
+
 (define (coordinators [cc : CatalogCycle]) : CoordinatorList
   (define coordinators-list
-    (for/list : CoordinatorList ([l (in-list coordinator-strs)])
+    (for/list : (Listof (List (U False String) (Listof (U Symbol String)))) ([l (in-list coordinator-strs)])
       (define canonical-name
         (match (string-trim (first l))
           ;; 2 ad-hoc fixups:
           ;["CSC 419" (canonicalize current-catalog "CPE" "419")]
-          [(regexp #px"^([A-Z]+)(/[A-Z]+)? ([0-9]{3})$" (list _ subj subj2 num))
+          [(regexp #px"^([A-Z]+)(/[A-Z]+)? ([0-9]{3,4})$" (list _ subj subj2 num))
            (cond [(subject? subj)
                   (define canonicalized
-                    (canonicalize cc subj (assert num string?)))
+                    (canonicalize/noerr cc subj (assert num string?)))
                   (when subj2
                     (define canonicalized2
-                      (canonicalize cc (substring subj2 1)
+                      (canonicalize/noerr cc (substring subj2 1)
                                     (assert num string?)))
                     (unless (equal? canonicalized canonicalized2)
                       (error 'canonicalize
@@ -113,13 +113,14 @@ courses: ~e"
       (define coordinator
         (parse-coordinators (third l)))
       (list canonical-name coordinator)))
+  (define filtered-coordinators-list (filter coordinator-record? coordinators-list))
   ;; ensure that no course is listed more than once:
-  (define possible-duplicate (check-duplicates (map (inst first String) coordinators-list)))
+  (define possible-duplicate (check-duplicates (map (inst first String) filtered-coordinators-list)))
   (when possible-duplicate 
     (error 'duplicate "coordinators list contains duplicate: ~v\n"
            possible-duplicate))
 
-  coordinators-list)
+  filtered-coordinators-list)
 
 
 
