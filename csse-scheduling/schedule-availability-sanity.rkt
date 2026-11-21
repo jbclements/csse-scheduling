@@ -49,7 +49,7 @@
 ;; proposed 3-wtu reduction for research
 (define tt-scholarship-wtu-reduction 3) ;; per year, not per term
 (define tt-sem-advising-wtus-per-term 1.25)
-(define tt-sem-cfa-course-release 4)
+(define tt-sem-cfa-course-release 3)
 
 (define lec-sem-standard-wtus (=Z (* semesters-per-year full-time-wtus-per-term)
                                   30))
@@ -65,7 +65,7 @@
                                          tt-service-wtus-per-term
                                          tt-sem-advising-wtus-per-term
                                          tt-sem-cfa-course-release))
-                                   13.5))
+                                   15.5))
 (define tt-sem-second-year-wtus tt-sem-first-year-wtus)
 
 
