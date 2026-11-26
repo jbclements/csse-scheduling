@@ -68,6 +68,7 @@
                          
                          'laes-csc-bs
 
+                         'stat-bs
                          'stat-bs-firstyear
                          'math-bs-firstyear
                          'math-bs
@@ -81,12 +82,14 @@
 
                          'msci-bs
                          'chem-bs
+                         'bio-bs
 
                          'econ-bs
 
                          'cs-minor
                          
                          'phys-bs
+                         'phys-bs-firstyear
                          
                          ;; warning! overlaps with other groups:
                          'csse-cia-minor
@@ -96,6 +99,10 @@
                          'non-csse-data-minor
                          'non-csse-cia-minor
                          'non-csse-bioinf-minor
+
+                         'non-computing-cs-minor
+                         'computing-cs-minor
+
 
                          ;; laes?
                          ;; represents a once-only load 

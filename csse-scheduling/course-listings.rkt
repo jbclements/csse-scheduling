@@ -7,6 +7,11 @@
          (only-in racket/list check-duplicates)
          "canonicalize.rkt")
 
+;; this file provides a whole bunch of course table listings.
+;; for instance: what courses count as technical electives for
+;; CS majors on the 2026-2028 catalog? That's in the csc-te-course-table,
+;; under key "2026-2028".
+
 (provide (all-defined-out))
 #;(provide csc-te-course-table
          csc-ul-te-course-table

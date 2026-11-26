@@ -25,7 +25,7 @@
              (list _ subject num))
      ;; subject cannot be false, by defn of regexp
      (match (list subject num)
-       [(list _ "2IP") #f] ;; EE has "study abroad" courses in their catalog?
+       [(list _ "2IP") #f]
        [(list _ "4IP") #f]
        [(list _ "5IP") #f]
        #;[(list "STAT" _) #f] ;; ignore all stats courses
@@ -452,15 +452,16 @@
         (list 'ee ee-dept-courses)
         (list 'data data-dept-courses)))
 
-(for* ([a (in-list course-schedulables)]
-       [b (in-list course-schedulables)]
-       #:when (not (equal? a b)))
-  (when (set-intersect (second a) (second b))
-    (fprintf (current-error-port)
-             "courses schedulable by both ~a and ~a: ~v\n"
-             (car a) (car b) (set-intersect (second a) (second b)))))
+(define (check-for-overlap)
+  (for* ([a (in-list course-schedulables)]
+         [b (in-list course-schedulables)]
+         #:when (not (equal? a b)))
+    (when (set-intersect (second a) (second b))
+      (fprintf (current-error-port)
+               "courses schedulable by both ~a and ~a: ~v\n"
+               (car a) (car b) (set-intersect (second a) (second b))))))
 
-(unless (all-independent?
+#;(unless (all-independent?
          (list cs-dept-courses
                cpe-dept-courses
                #;ee-dept-courses

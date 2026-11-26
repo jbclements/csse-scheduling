@@ -29,10 +29,6 @@
 
          course-group-names)
 
-
-
-(define 2017cc : CatalogCycle "2017-2019")
-
 ;; given a list of grades, a course id, and a predicate mapping a grade to
 ;; a boolean, return a list of lists of grade-records indicating the
 ;; ways that the requirement could be satisfied.
@@ -659,13 +655,13 @@
 
 (define 2017-2019-se-requirements : (Listof Requirement)
   (append
-   (common-se-requirements 2017cc)
+   (common-se-requirements "2017-2019")
    (list (req "csc300")
          (req "csc491")
          (req "csc492"))
    ;; 20 TE units minus upper-level (above) minus special problems
    (all-of-these
-    2017cc
+    (ann "2017-2019" CatalogCycle)
     (build-list 3 (make-TE-requirement-name "se")))))
 ;; count TEs
 
@@ -727,13 +723,14 @@
 (define 2017-2019-cpe-requirements
   (append
    (all-of-these
-    2017cc
+    (ann "2017-2019" CatalogCycle)
     '("cpe315"
       "cpe329"
       cpe-sp-1
       cpe-sp-2))
-   (common-cpe-requirements 2017cc)
-   (all-of-these 2017cc (build-list 2 (make-TE-requirement-name "cpe")))
+   (common-cpe-requirements "2017-2019")
+   (all-of-these (ann "2017-2019" CatalogCycle)
+                 (build-list 2 (make-TE-requirement-name "cpe")))
       ))
 
 
@@ -1134,5 +1131,5 @@
                         (2204 "csc225" 4 "A")))
 
 ;; what are the requirements of an incoming first-year?
-#;(missing-requirements (hash-ref program-requirements '((CSC) "2020-2021"))
+#;(missing-requirements (hash-ref program-requirements '((CSC) "2026-2028"))
                       '())
